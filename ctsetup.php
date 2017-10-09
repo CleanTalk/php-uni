@@ -71,7 +71,7 @@
 		fclose($fd);
 		
 	// Delete instllation file
-		// unlink(__FILE__);
+		unlink(__FILE__);
 	
 		die(json_encode(array(
 			'success' => true
