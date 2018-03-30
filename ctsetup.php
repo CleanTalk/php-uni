@@ -16,15 +16,19 @@
 	
 	// Installation
 	if(isset($_POST['action']) && $_POST['action'] == 'install' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
+			
+		// Additions to INDEX.PHP
 		
-	// Additions to INDEX.PHP
-	
-		$path_to_index = __DIR__ . '/index.php';
-		
+		$path_to_index = __DIR__ . '/index.php';	
 		if(!file_exists($path_to_index)){
-			die(json_encode(array(
-				'error' => 'Unable to find index.php in the ROOT directory.',
-			)));
+			die(json_encode(array('error' => 'Unable to find index.php in the ROOT directory.')));
+		}
+		
+		// Parsing params
+		if(preg_match('/^[a-z0-9]{1,20}$/', $_POST['key'], $matches)){
+			$api_key = $matches[0];
+		}else{
+			die(json_encode(array('error' => 'Key is bad. Key is "'.$_POST['key'].'"')));
 		}
 		
 		$index_file = file_get_contents($path_to_index);
@@ -57,16 +61,16 @@
 		fwrite($fd, $index_file);
 		fclose($fd);
 		
-	// Additions to CONFIG.PHP
-	
-		$path_to_config = __DIR__ . '/cleantalk/config.php';
+	// Additions to CT_CONFIG.PHP
+		
+		$path_to_config = __DIR__ . '/cleantalk/ct_config.php';
 		$code_addition  = "//Auth key";
-		$code_addition .= "\n\t\$auth_key = '{$_POST['key']}';";
+		$code_addition .= "\n\t\$auth_key = '$api_key';";
 		
 		$file_content = file_get_contents($path_to_config);
 		$file_content = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $code_addition, $file_content, 1);
 		
-		$fd = fopen($path_to_config, 'w') or die('Unable to open config.php');
+		$fd = fopen($path_to_config, 'w') or die('Unable to open ct_config.php');
 		fwrite($fd, $file_content);
 		fclose($fd);
 		
@@ -180,5 +184,4 @@
 			<p class="underlined light_gray hide"><a href="https://cleantalk.org/publicoffer" target="_blank" class="lang license_agreement">License Agreement</a></p>
 		</div>
 	</body>
-
 </html>

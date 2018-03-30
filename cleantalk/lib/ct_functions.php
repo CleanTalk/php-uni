@@ -1,6 +1,186 @@
 <?php
 	
 	/*
+	* Performs spam test
+	* @return void or exit script
+	*/ 	
+	function apbct_spam_test($data){
+		
+		global $auth_key;
+		
+		// Patch for old PHP versions
+		require_once('ct_phpFix.php');
+				
+		// Libs
+		require_once('Cleantalk.php');
+		require_once('CleantalkRequest.php');
+		require_once('CleantalkResponse.php');
+				
+		$msg_data = apbct_get_fields_any($data);
+				
+		// Data
+		$sender_email    = ($msg_data['email']    ? $msg_data['email']    : '');
+		$sender_nickname = ($msg_data['nickname'] ? $msg_data['nickname'] : '');
+		$subject         = ($msg_data['subject']  ? $msg_data['subject']  : '');
+		$message         = ($msg_data['message']  ? $msg_data['message']  : array());
+		
+		// Flags
+		$skip            = ($msg_data['contact']  ? $msg_data['contact']  : false);
+		$registration    = ($msg_data['reg']      ? $msg_data['reg']      : false);
+		
+		// Do check if email is not set
+		if(!empty($sender_email) && !$skip){
+			
+			$ct_request = new CleantalkRequest();
+			
+			// Service pararams
+			$ct_request->auth_key             = $auth_key;
+			$ct_request->agent                = APBCT_AGENT;
+			                                  
+			// Message params                 
+			$ct_request->sender_email         = $sender_email; 
+			$ct_request->sender_nickname      = $sender_nickname; 
+			$ct_request->message              = json_encode($message);
+			
+			// IPs
+			$possible_ips = apbct_get_possible_ips();
+			$ct_request->sender_ip            = apbct_get_ip();
+			$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
+			$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
+			$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];
+			
+			// Misc params
+			$ct_request->js_on                = apbct_js_test();
+			$ct_request->submit_time          = apbct_get_submit_time();
+			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
+			$ct_request->all_headers          = function_exists('apache_request_headers') ? apache_request_headers() : apbct_apache_request_headers();
+			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
+			$ct_request->response_lang        = $response_lang;
+						
+			// Making a request
+			$ct = new Cleantalk();
+			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
+			
+			$ct_result = $registration
+				? $ct->isAllowUser($ct_request)
+				: $ct->isAllowMessage($ct_request);
+						
+			if(!empty($ct_result->errno) && !empty($ct_result->errstr)){
+				
+			}elseif($ct_result->allow == 1){
+				
+			}else{
+				apbct_die($ct_result->comment, $registration);
+			}			
+		}
+	}
+	
+	/**
+	 * Inner function - Default data array for senders 
+	 * @return array 
+	 */
+	function apbct_get_sender_info($data)
+	{	
+		
+		global $auth_key, $response_lang;
+				
+		return $sender_info = array(
+		
+			// Common
+			'remote_addr'     => $_SERVER['REMOTE_ADDR'],
+			'USER_AGENT'      => htmlspecialchars($_SERVER['HTTP_USER_AGENT']),
+			'REFFERRER'       => htmlspecialchars($_SERVER['HTTP_REFERER']),
+			'page_url'        => isset($_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']) ? htmlspecialchars($_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']) : null,
+			// 'cms_lang'        => substr(locale_get_default(), 0, 2),
+			
+			'php_session'     => session_id() != '' ? 1 : 0, 
+			'cookies_enabled' => apbct_cookies_test(),
+			'fields_number'   => sizeof($data),
+			'ct_options'      => json_encode(array('auth_key' => $auth_key, 'response_lang' => $response_lang)),
+			
+			// PHP cookies                                                                                                                                                 
+			// 'cookies_enabled'        => $cookie_is_ok,                                                                                                                     
+			// 'REFFERRER_PREVIOUS'     => !empty($_COOKIE['apbct_prev_referer'])    && $cookie_is_ok     ? $_COOKIE['apbct_prev_referer']                                    : null,
+			// 'site_landing_ts'        => !empty($_COOKIE['apbct_site_landing_ts']) && $cookie_is_ok     ? $_COOKIE['apbct_site_landing_ts']                                 : null,
+			// 'page_hits'              => !empty($_COOKIE['apbct_page_hits'])                            ? $_COOKIE['apbct_page_hits']                                       : null,
+			
+			// JS params
+			'mouse_cursor_positions' => isset($_COOKIE['apbct_pointer_data'])          ? json_decode(stripslashes($_COOKIE['apbct_pointer_data']), true) : null,
+			'js_timezone'            => isset($_COOKIE['apbct_timezone'])              ? $_COOKIE['apbct_timezone']             : null,
+			'key_press_timestamp'    => isset($_COOKIE['apbct_fkp_timestamp'])         ? $_COOKIE['apbct_fkp_timestamp']        : null,
+			'page_set_timestamp'     => isset($_COOKIE['apbct_ps_timestamp'])          ? $_COOKIE['apbct_ps_timestamp']         : null,
+			'form_visible_inputs'    => !empty($_COOKIE['apbct_visible_fields_count']) ? $_COOKIE['apbct_visible_fields_count'] : null,
+			'apbct_visible_fields'   => !empty($_COOKIE['apbct_visible_fields'])       ? $_COOKIE['apbct_visible_fields']       : null,
+		);
+	}
+	
+	/**
+	 * Gets sender ip
+	 * Filters IPv4 or IPv6
+	 * @return null|int;
+	 */
+	function apbct_get_ip()
+	{
+		$ip =        filter_var(trim($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+		$ip = !$ip ? filter_var(trim($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
+		return $ip;
+	}
+	
+	/* 
+	 * Gets possible IPs
+	 *
+	 * Checks for HTTP headers HTTP_X_FORWARDED_FOR and HTTP_X_REAL_IP and filters it for IPv6 or IPv4
+	 * returns array()
+	 */	
+	function apbct_get_possible_ips()
+	{
+		$headers = function_exists('apache_request_headers')
+			? apache_request_headers()
+			: apbct_apache_request_headers();
+		
+		// X-Forwarded-For
+		if(array_key_exists( 'X-Forwarded-For', $headers )){
+			$ips = explode(",", trim($headers['X-Forwarded-For']));
+			// First
+			$ip = trim($ips[0]);
+			$ip =        filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+			$ip = !$ip ? filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
+			$result_ips['X-Forwarded-For'] = !$ip ? '' : $ip;
+			// Last
+			if(count($ips) > 1){
+				$ip = trim($ips[count($ips)-1]);
+				$ip =        filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+				$ip = !$ip ? filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
+				$result_ips['X-Forwarded-For-Last'] = !$ip ? '' : $ip;
+			}
+		}
+		
+		// X-Real-Ip
+		if(array_key_exists( 'X-Real-Ip', $headers )){
+			$ip = trim($headers['X-Real-Ip']);
+			$ip =        filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
+			$ip = !$ip ? filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
+			$result_ips['X-Real-Ip'] = !$ip ? '' : $ip;
+		}
+		return $result_ips;
+	}
+	
+	/**
+	 * Gets submit time
+	 * Uses Cookies with check via apbct_cookies_test()
+	 * @return null|int;
+	 */
+	function apbct_get_submit_time()
+	{
+		$cookie_test_result = apbct_cookies_test();
+		if(!empty($cookie_test_result)){
+			return time() - $_COOKIE['apbct_timestamp'];
+		}else{
+			return null;
+		}
+	}
+	
+	/*
 	* Get data from an ARRAY recursively
 	* @return array
 	*/ 
@@ -213,35 +393,7 @@
 		}
 		return $value;
 	}
-	
-	/**
-	 * Inner function - Default data array for senders 
-	 * @return array 
-	 */
-	function apbct_get_sender_info()
-	{	
 		
-		global $auth_key, $response_lang;
-				
-		return $sender_info = array(
-			'USER_AGENT'      => htmlspecialchars($_SERVER['HTTP_USER_AGENT']),
-			'REFFERRER'       => htmlspecialchars($_SERVER['HTTP_REFERER']),
-			'remote_addr'     => $_SERVER['REMOTE_ADDR'],
-			'page_url'        => htmlspecialchars($_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']),
-			// 'cms_lang'        => substr(locale_get_default(), 0, 2),
-			'php_session'     => session_id() != '' ? 1 : 0, 
-			'cookies_enabled' => apbct_cookies_test(),
-			'fields_number'   => sizeof($_POST),
-			'ct_options'      => json_encode(array('auth_key' => $auth_key, 'response_lang' => $response_lang)),
-			// JS params
-			'js_info'                => '',
-			'js_timezone'            => isset($_COOKIE['apbct_timezone'])      ? $_COOKIE['apbct_timezone']                  : null,
-			'mouse_cursor_positions' => isset($_COOKIE['apbct_pointer_data'])  ? json_decode($_COOKIE['apbct_pointer_data']) : null,
-			'key_press_timestamp'    => isset($_COOKIE['apbct_fkp_timestamp']) ? $_COOKIE['apbct_fkp_timestamp']             : null,
-			'page_set_timestamp'     => isset($_COOKIE['apbct_ps_timestamp'])  ? $_COOKIE['apbct_ps_timestamp']              : null,
-		);
-	}
-	
 	/**
 	 * JavaScript test for sender
 	 * return null|0|1;
@@ -275,72 +427,6 @@
 			return null;
 	}
 	
-	/**
-	 * Gets submit time
-	 * Uses Cookies with check via apbct_cookies_test()
-	 * @return null|int;
-	 */
-	function apbct_get_submit_time()
-	{
-		$cookie_test_result = apbct_cookies_test();
-		if(!empty($cookie_test_result)){
-			return time() - $_COOKIE['apbct_timestamp'];
-		}else{
-			return null;
-		}
-	}
-	
-	/**
-	 * Gets sender ip
-	 * Filters IPv4 or IPv6
-	 * @return null|int;
-	 */
-	function apbct_get_ip()
-	{
-		$ip =        filter_var(trim($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
-		$ip = !$ip ? filter_var(trim($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
-		return $ip;
-	}
-	
-	/* 
-	 * Gets possible IPs
-	 *
-	 * Checks for HTTP headers HTTP_X_FORWARDED_FOR and HTTP_X_REAL_IP and filters it for IPv6 or IPv4
-	 * returns array()
-	 */	
-	function apbct_get_possible_ips()
-	{
-		$headers = function_exists('apache_request_headers')
-			? apache_request_headers()
-			: self::apache_request_headers();
-		
-		// X-Forwarded-For
-		if(array_key_exists( 'X-Forwarded-For', $headers )){
-			$ips = explode(",", trim($headers['X-Forwarded-For']));
-			// First
-			$ip = trim($ips[0]);
-			$ip =        filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
-			$ip = !$ip ? filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
-			$result_ips['X-Forwarded-For'] = !$ip ? '' : $ip;
-			// Last
-			if(count($ips) > 1){
-				$ip = trim($ips[count($ips)-1]);
-				$ip =        filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
-				$ip = !$ip ? filter_var(trim($ip), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
-				$result_ips['X-Forwarded-For-Last'] = !$ip ? '' : $ip;
-			}
-		}
-		
-		// X-Real-Ip
-		if(array_key_exists( 'X-Real-Ip', $headers )){
-			$ip = trim($headers['X-Real-Ip']);
-			$ip =        filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 );
-			$ip = !$ip ? filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
-			$result_ips['X-Real-Ip'] = !$ip ? '' : $ip;
-		}
-		return $result_ips;
-	}
-	
 	/* 
 	 * Gets every HTTP_ headers from $_SERVER
 	 * 
@@ -367,6 +453,28 @@
 			}
 		}
 		return $headers;
+	}
+	
+	function apbct_print_form( $arr, $k ){
+		
+		foreach( $arr as $key => $value ){
+			
+			if( !is_array( $value ) ){
+				
+				if( $k == '' )
+					print '<textarea name="'.$key.'" style="display:none;">'.htmlspecialchars( $value ).'</textarea>';
+				else
+					print '<textarea name="'.$k.'['.$key.']" style="display:none;">'.htmlspecialchars( $value ).'</textarea>';
+				
+			}else{
+				
+				if( $k == '' )
+					ct_print_form( $value,$key );
+				else
+					ct_print_form( $value, $k . '['.$key.']' );
+				
+			}
+		}
 	}
 	
 	function apbct_die($comment, $registration = false, $additional_text = null){

@@ -43,7 +43,7 @@ $( function(){
 	});
 	
 	// Default language
-	// change_language('EN');
+	change_language('EN');
 	
 });
 
