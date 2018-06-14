@@ -19,7 +19,7 @@
 			
 		// Additions to INDEX.PHP
 		
-		$path_to_index = __DIR__ . '/index.php';	
+		$path_to_index = getcwd() . '/index.php';	
 		if(!file_exists($path_to_index)){
 			die(json_encode(array('error' => 'Unable to find index.php in the ROOT directory.')));
 		}
@@ -50,7 +50,7 @@
 			$index_file = $index_file."\n\t\n?>";
 		
 		// Addition to index.php Top
-		$top_code_addition = "//Cleantalk\n\trequire_once(__DIR__ . '/cleantalk/cleantalk.php');";
+		$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
 		$index_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $index_file, 1);
 		
 		// Addition to index.php Bottom (JavaScript test)
@@ -63,7 +63,7 @@
 		
 	// Additions to CT_CONFIG.PHP
 		
-		$path_to_config = __DIR__ . '/cleantalk/ct_config.php';
+		$path_to_config = getcwd() . '/cleantalk/ct_config.php';
 		$code_addition  = "//Auth key";
 		$code_addition .= "\n\t\$auth_key = '$api_key';";
 		

@@ -5,5 +5,5 @@
 	
 	$exclusions = array();
 	
-	define('APBCT_VERSION', '1.1');
-	define('APBCT_AGENT', 'uni-11');
+	define('APBCT_VERSION', '1.2');
+	define('APBCT_AGENT', 'uni-12');
