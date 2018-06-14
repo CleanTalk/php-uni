@@ -46,15 +46,20 @@
 			$index_file = "<?php\n\t\n\t\n?>".$index_file;
 		
 		// Adding ? > to the end if it's not there
-		if($php_open_tags > $php_close_tags)
-			$index_file = $index_file."\n\t\n?>";
+		if($php_open_tags <= $php_close_tags)
+			$index_file = $index_file."\n\n<?php";
 		
 		// Addition to index.php Top
 		$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
 		$index_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $index_file, 1);
 		
 		// Addition to index.php Bottom (JavaScript test)
-		$bottom_code_addition = "\n"."<script>\n\tvar apbct_checkjs_val = '<? echo \$apbct_checkjs_val; ?>';\n</script>"."\n".'<script src="cleantalk/js/js_test.js"></script>';
+		$bottom_code_addition = 
+			"\n\n\t//Cleantalk\n"
+			."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
+				."\t\tdie();\n"
+			."\t}\n"
+			."\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
 		$index_file = $index_file.$bottom_code_addition;
 		
 		$fd = fopen($path_to_index, 'w') or die("Unable to open index.php");
