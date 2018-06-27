@@ -92,7 +92,7 @@
   <head>  	
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1"> 
-    <link rel="shortcut icon" href="img/ct_logo.png"> 
+    <link rel="shortcut icon" href="cleantalk/img/ct_logo.png"> 
     <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 
 	<title>Universal Anti-Spam Plugin by CleanTalk</title>
