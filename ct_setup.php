@@ -163,6 +163,7 @@
         <script src="cleantalk/js/bootstrap.min.js"></script> 
         <script src="cleantalk/js/placeholder-shim.min.js"></script>        
         <script src="cleantalk/js/custom.js"></script>
+        <script src="cleantalk/js/detect_cms.js"></script>
 		<script type='text/javascript'>
 			var security = '<?php echo md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME']) ?>';
 		</script>
