@@ -4,6 +4,9 @@
 	require_once('ct_config.php');
 	// Helper functions
 	require_once('lib/ct_functions.php');
+
+	if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest')
+		die();	
 	
 	if( isset($_SERVER['REQUEST_METHOD'], $_POST['ct_method'], $_POST['ct_action']) && $_SERVER['REQUEST_METHOD'] == 'POST' ){
     	$action = htmlspecialchars($_POST['ct_action']);
@@ -40,3 +43,4 @@
     setcookie('apbct_pointer_data',  '0',                             0, '/');
     setcookie('apbct_ps_timestamp',  '0',                             0, '/');
 	$apbct_checkjs_val = md5($auth_key);
+	echo "<script>var apbct_checkjs_val = '$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>";

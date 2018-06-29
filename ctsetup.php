@@ -1,4 +1,5 @@
 <?php
+	
 	// Validating key
 	if(isset($_POST['action']) && $_POST['action'] == 'key_validate' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
 		require_once('cleantalk/lib/CleantalkHelper.php');
@@ -43,24 +44,11 @@
 		// Adding <?php to the strat if it's not there
 		if($first_php_start !== 0)
 			$index_file = "<?php\n\t\n\t\n?>".$index_file;
-		
-		// Adding ? > to the end if it's not there
-		if($php_open_tags <= $php_close_tags)
-			$index_file = $index_file."\n\n<?php";
-		
+
 		// Addition to index.php Top
 		$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
 		$index_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $index_file, 1);
-		
-		// Addition to index.php Bottom (JavaScript test)
-		$bottom_code_addition = 
-			"\n\n\t//Cleantalk\n"
-			."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
-				."\t\tdie();\n"
-			."\t}\n"
-			."\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
-		$index_file = $index_file.$bottom_code_addition;
-		
+				
 		$fd = fopen($path_to_index, 'w') or die("Unable to open index.php");
 		fwrite($fd, $index_file);
 		fclose($fd);
@@ -120,8 +108,10 @@
 			        	</div> 
 			        	<hr />
 			        	<div class="setup-form">
-			        		  <div class="alert alert-success alert-dismissible fade in" style="display:none" role="alert">
-							    <strong>Success!</strong> <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
+			        		  <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
+							    <strong>Success!</strong> 
+							    <br />
+							    <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
 							    <br />
 								<p>File ctsetup.php was deleted automatically. This page doesn't exists anymore.</p>
 								<br />
@@ -163,7 +153,6 @@
         <script src="cleantalk/js/bootstrap.min.js"></script> 
         <script src="cleantalk/js/placeholder-shim.min.js"></script>        
         <script src="cleantalk/js/custom.js"></script>
-        <script src="cleantalk/js/detect_cms.js"></script>
 		<script type='text/javascript'>
 			var security = '<?php echo md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME']) ?>';
 		</script>

@@ -478,10 +478,9 @@
 	}
 	
 	function apbct_die($comment, $registration = false, $additional_text = null){
-		
 		// File exists?
-		if(file_exists( getcwd() . '/die_page.html')){
-			$die_page = file_get_contents( getcwd() . '/die_page.html');
+		if(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
+			$die_page = file_get_contents( getcwd() . '/cleantalk/lib/die_page.html');
 		}else{
 			die($comment);
 		}

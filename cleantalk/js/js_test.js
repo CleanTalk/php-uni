@@ -14,6 +14,7 @@ var ctStart = function(){
 	ctSetCookie("apbct_ps_timestamp", Math.floor(new Date().getTime()/1000));
 	ctSetCookie("apbct_visible_fields", 0);
 	ctSetCookie("apbct_visible_fields_count", 0);
+
 	setTimeout(function(){
 		
 		for(var i = 0, host = '', action = ''; i < document.forms.length; i++){
@@ -22,7 +23,6 @@ var ctStart = function(){
 			if( typeof(form.action) == 'string' ){
 			
 				action = document.forms[i].action;
-				
 				if( action.indexOf('http://') != -1 || action.indexOf('https://') != -1 ){
 					
 					tmp  = action.split('//');
@@ -31,7 +31,6 @@ var ctStart = function(){
 					last = tmp[tmp.length-1].toLowerCase();
 				
 					if( host != location.hostname.toLowerCase() || (last != 'index.php' && last.indexOf('.php') != -1)){
-						
 						var ct_action = document.createElement("input");
 						ct_action.name='ct_action';
 						ct_action.value=action;

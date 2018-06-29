@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang='en'>
 <head>
+    <title>Blacklisted</title>
     <meta charset='utf-8' />
     <meta name='viewport' content='width=device-width, initial-scale=1' />
 	<meta http-equiv='сache-сontrol' content='no-cache'>
@@ -14,25 +15,52 @@
   <!--[if lt IE 9]>
   <script src='http://html5shiv.googlecode.com/svn/trunk/html5.js'></script>
   <![endif]-->
-<style>
-    html{font-size: 14pt;}
-    h1{text-align:center}
-    h1.main{margin-top: 1em;margin-bottom: 3em;}
-    div.container {text-align:center;}
-    div.container p.js_notice{width: 60%; display: inline-block;}
-    div.footer {color: #666; position: absolute; bottom: 1em; text-align: center; width: 98%;}
-    div.footer a {color: #666; vertical-align:bottom; text-align: center;}
-    @media (max-width: 600px) {}
+<style type="text/css">
+    html {
+        background: #f1f1f1;
+    }
+    body {
+        background: #fff;
+        color: #444;
+        font-family: "Open Sans", sans-serif;
+        margin: 2em auto;
+        padding: 1em 2em;
+        max-width: 700px;
+        -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.13);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.13);
+    }
+    h1 {
+        border-bottom: 1px solid #dadada;
+        clear: both;
+        color: #666;
+        font: 24px "Open Sans", sans-serif;
+        margin: 30px 0 0 0;
+        padding: 0;
+        padding-bottom: 7px;
+    }
+    #error-page {
+        margin-top: 50px;
+    }
+    #error-page p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 25px 0 20px;
+    }
+    a {
+        color: #21759B;
+        text-decoration: none;
+    }
+    a:hover {
+        color: #D54E21;
+    }
+
 </style>
 </head>
-<body>
-    <div class='container'>
-        <h1 class='main'>{BLOCK_REASON}</h1>
-		{GENERATED}
-    </div>
-	
-    <div class='footer'>
-		<a href='https://cleantalk.org' target='_blank'>Anti-spam by CleanTalk (Uni)</a>
-    </div>
-</body>
+<body id="error-page">
+    <p><center><b style="color: #49C73B;">Clean</b><b style="color: #349ebf;">Talk.</b> Spam protection</center><br><br>
+{BLOCK_REASON}
+<br/>
+{GENERATED}
+<script>setTimeout("history.back()", 5000);</script></p>
+<p><a href='javascript:history.back()'>&laquo; Back</a></p></body>
 </html>
