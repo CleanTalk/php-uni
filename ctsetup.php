@@ -1,5 +1,6 @@
 <?php
-	
+define('DS', DIRECTORY_SEPARATOR); 
+
 	// Validating key
 	if(isset($_POST['action']) && $_POST['action'] == 'key_validate' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
 		require_once('cleantalk/lib/CleantalkHelper.php');
@@ -19,7 +20,7 @@
 			
 		// Additions to INDEX.PHP
 		
-		$path_to_index = getcwd() . '/index.php';	
+		$path_to_index = getcwd() . DS . 'index.php';	
 		if(!file_exists($path_to_index)){
 			die(json_encode(array('error' => 'Unable to find index.php in the ROOT directory.')));
 		}
@@ -30,32 +31,42 @@
 		}else{
 			die(json_encode(array('error' => 'Key is bad. Key is "'.$_POST['key'].'"')));
 		}
-		
+		$files_to_mod = array('index.php');		
 		$index_file = file_get_contents($path_to_index);
 		
-		$php_open_tags  = preg_match_all("/(<\?)/", $index_file);
-		$php_close_tags = preg_match_all("/(\?>)/", $index_file);
-		
-		$file_lenght     = strlen($index_file);
-		$first_php_start = strpos($index_file, '<?');
-		$first_php_end   = strpos($index_file, '?>');
-		$last_php_end    = strrpos($index_file, '?>');
-		
-		// Adding <?php to the strat if it's not there
-		if($first_php_start !== 0)
-			$index_file = "<?php\n\t\n\t\n?>".$index_file;
+		//X-Cart 4
+		if (preg_match('/(xcart_4_.*?)/', $index_file))
+			array_push($files_to_mod, "home.php","register.php","add_review.php","help.php");
 
-		// Addition to index.php Top
-		$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
-		$index_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $index_file, 1);
-				
-		$fd = fopen($path_to_index, 'w') or die("Unable to open index.php");
-		fwrite($fd, $index_file);
-		fclose($fd);
+		foreach ($files_to_mod as $file_name)
+		{
+			$mod_file_name = getcwd() . DS . $file_name;
+			$mod_file = file_get_contents($mod_file_name);
+			$php_open_tags  = preg_match_all("/(<\?)/", $mod_file);
+			$php_close_tags = preg_match_all("/(\?>)/", $mod_file);
+			
+			$file_lenght     = strlen($mod_file);
+			$first_php_start = strpos($mod_file, '<?');
+			$first_php_end   = strpos($mod_file, '?>');
+			$last_php_end    = strrpos($mod_file, '?>');
+			
+			// Adding <?php to the strat if it's not there
+			if($first_php_start !== 0)
+				$mod_file = "<?php\n\t\n\t\n?>".$mod_file;
+
+			// Addition to index.php Top
+			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
+			$mod_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $mod_file, 1);
+					
+			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);
+			fwrite($fd, $mod_file);
+			fclose($fd);			
+		}
+
 		
 	// Additions to CT_CONFIG.PHP
 		
-		$path_to_config = getcwd() . '/cleantalk/ct_config.php';
+		$path_to_config = getcwd() . DS . 'cleantalk' . DS . 'ct_config.php';
 		$code_addition  = "//Auth key";
 		$code_addition .= "\n\t\$auth_key = '$api_key';";
 		
@@ -159,3 +170,4 @@
 
     </body>
 </html>
+	
