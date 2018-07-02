@@ -37,6 +37,9 @@ define('DS', DIRECTORY_SEPARATOR);
 		//X-Cart 4
 		if (preg_match('/(xcart_4_.*?)/', $index_file))
 			array_push($files_to_mod, "home.php","register.php","add_review.php","help.php");
+		//osTicket
+		if (preg_match('/osticket/i', $index_file))
+			array_push($files_to_mod, "account.php", "open.php");
 
 		foreach ($files_to_mod as $file_name)
 		{
