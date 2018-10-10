@@ -242,7 +242,7 @@
 			'output_\d+_\w{0,2}',
 			// Contact Form by Web-Settler protection
 			'_formId',
-			'_returnLink'
+			'_returnLink',
 		);
 		
 		// Reset $message if we have a sign-up data
@@ -256,6 +256,8 @@
 				$skip = true;
 		} unset($value);	
 		
+		$reg = false;
+
 		if(count($arr)){
 			foreach($arr as $key => $value){
 				
@@ -271,22 +273,17 @@
 						continue;
 					
 					// Flag for detecting registrations
-					if(strlen($value) > 40 || $not_reg){
+					if(strlen($value) > 40 && $not_reg){
 						$reg = false;
 						$not_reg = true;
 					}else{
 						foreach($registration as $needle){
-							if(stripos($key, $needle) !== false && strlen($key) == strlen($needle)){
-								$reg = true;
-								continue(2);
-							}
-							if(stripos($value, $needle) !== false && strlen($value) == strlen($needle)){
+							if(stripos($key, $needle) !== false){
 								$reg = true;
 								continue(2);
 							}
 						} unset($needle);
 					}
-					
 					
 					// Skipping fields names with strings from (array)skip_fields_with_strings
 					foreach($skip_fields_with_strings as $needle){
@@ -369,7 +366,7 @@
 			}
 			$nickname = $nickname_str;
 		}
-		
+
 		$return_param = array(
 			'email'    => $email,
 			'nickname' => $nickname,

@@ -60,7 +60,14 @@ define('DS', DIRECTORY_SEPARATOR);
 			// Addition to index.php Top
 			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
 			$mod_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $mod_file, 1);
-					
+			// Addition to index.php Bottom (JavaScript test)
+			$bottom_code_addition = 
+				"\n\n\t//Cleantalk\n"
+				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
+					."\t\tdie();\n"
+				."\t}\n"
+				."\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
+			$mod_file = $mod_file.$bottom_code_addition;					
 			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);
 			fwrite($fd, $mod_file);
 			fclose($fd);			
