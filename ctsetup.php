@@ -173,7 +173,7 @@ define('DS', DIRECTORY_SEPARATOR);
         <script>window.jQuery || document.write('<script src="cleantalk/js/jquery-1.9.1.min.js"><\/script>')</script> 
         <script src="cleantalk/js/bootstrap.min.js"></script> 
         <script src="cleantalk/js/placeholder-shim.min.js"></script>        
-        <script src="cleantalk/js/custom.js"></script>
+        <script src="cleantalk/js/custom.js?v=13"></script>
 		<script type='text/javascript'>
 			var security = '<?php echo md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME']) ?>';
 		</script>
