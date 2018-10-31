@@ -2,21 +2,21 @@
 define('DS', DIRECTORY_SEPARATOR); 
 
 	// Validating key
-	if(isset($_POST['action']) && $_POST['action'] == 'key_validate' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
+	if(isset($_POST['action']) && $_POST['action'] == 'key_validate' && $_POST['security'] == md5($_SERVER['SERVER_NAME'])){
 		require_once('cleantalk/lib/CleantalkHelper.php');
 		$result = CleantalkHelper::noticeValidateKey($_POST['key']);
 		die(json_encode($result));
 	}
 	
 	// Gettings key
-	if(isset($_POST['action']) && $_POST['action'] == 'get_key' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
+	if(isset($_POST['action']) && $_POST['action'] == 'get_key' && $_POST['security'] == md5($_SERVER['SERVER_NAME'])){
 		require_once('cleantalk/lib/CleantalkHelper.php');
 		$result = CleantalkHelper::getApiKey($_POST['email'], $_SERVER['SERVER_NAME'], 'php-uni');
 		die(json_encode($result));
 	}
 	
 	// Installation
-	if(isset($_POST['action']) && $_POST['action'] == 'install' && $_POST['security'] == md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME'])){
+	if(isset($_POST['action']) && $_POST['action'] == 'install' && $_POST['security'] == md5($_SERVER['SERVER_NAME'])){
 			
 		// Additions to INDEX.PHP
 		
@@ -175,7 +175,7 @@ define('DS', DIRECTORY_SEPARATOR);
         <script src="cleantalk/js/placeholder-shim.min.js"></script>        
         <script src="cleantalk/js/custom.js?v=13"></script>
 		<script type='text/javascript'>
-			var security = '<?php echo md5($_SERVER['REMOTE_ADDR'].$_SERVER['SERVER_NAME']) ?>';
+			var security = '<?php echo md5($_SERVER['SERVER_NAME']) ?>';
 		</script>
 
     </body>
