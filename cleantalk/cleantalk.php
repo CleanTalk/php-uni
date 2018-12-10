@@ -13,7 +13,7 @@
 		if(empty($_POST['cleantalk_hidden_ajax'])){
 			print "<html><body><form method='$method' action='$action'>";
 			apbct_print_form($_POST, '');
-			print "</form><center>Redirecting to ".$action."... Anti-spam by CleanTalk.</center></body></html>";
+			print "</form></body></html>";
 			print "<script>
 				if(document.forms[0].submit != 'undefined'){
 					var objects = document.getElementsByName('submit');

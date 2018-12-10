@@ -56,6 +56,10 @@ define('DS', DIRECTORY_SEPARATOR);
 			// Adding <?php to the strat if it's not there
 			if($first_php_start !== 0)
 				$mod_file = "<?php\n\t\n\t\n?>".$mod_file;
+			
+			// Adding ? > to the end if it's not there
+			if($php_open_tags <= $php_close_tags)
+				$mod_file = $mod_file."\n\n<?php";			
 
 			// Addition to index.php Top
 			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
