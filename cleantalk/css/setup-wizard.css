@@ -109,7 +109,6 @@ body{
 }
 
 .setup-form input.loading {
-
     background-image: url("/cleantalk/img/preloader.gif");
     background-size: 15px 15px;
     background-position:right 5% bottom 50%;

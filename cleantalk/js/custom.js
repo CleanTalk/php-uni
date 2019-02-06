@@ -4,25 +4,43 @@ var key_check_timer = 0,
 	is_email = false,
 	is_key   = false,
 	do_install = false;
+	advan_config_show = false;
 
 /* Custom JS */
 $(document).ready(function($) {
+$( ".advanced_conf" ).hide();
+	$('.show_more_icon').css('transform','rotate(' + 90 + 'deg)');
 	
 	/*---------- For Placeholder on IE9 and below -------------*/
 	$('input, textarea').placeholder();
 	
 	/*----------- For icon rotation on input box foxus -------------------*/ 	
-	$('.input-field').focus(function() {
+	$('input[name="access_key_field"]').focus(function() {
   		$('.page-icon img').addClass('rotate-icon');
 	});
 	
 	/*----------- For icon rotation on input box blur -------------------*/ 	
-	$('.input-field').blur(function() {
+	$('input[name="access_key_field"]').blur(function() {
   		$('.page-icon img').removeClass('rotate-icon');
 	});
 
+	$('#show_more_btn').click(function(){
+		if (!advan_config_show) {
+	    	$('.show_more_icon').css('transform','rotate(' + 0 + 'deg)');
+	    	advan_config_show = true;	
+	    	$( ".advanced_conf" ).show();			
+		}
+		else {
+			$('.show_more_icon').css('transform','rotate(' + 90 + 'deg)');
+			advan_config_show = false;	
+			$( ".advanced_conf" ).hide();	
+
+		}
+
+    }); 
+
 	// Checking and Highlighting access key onchange
-	$('.input-field').on('input', function(){
+	$('input[name="access_key_field"]').on('input', function(){
 		
 		clearInterval(key_check_timer);
 		
@@ -110,7 +128,8 @@ $(document).ready(function($) {
 			url: location.href,
 			data: {
 				action: 'install',
-				key: $('.input-field').val().trim(),
+				key: $('input[name="access_key_field"]').val().trim(),
+				additional_fields: $('#addition_scripts').val().trim(),
 				security: security,
 			},
 			success: function(result){
@@ -139,14 +158,14 @@ $(document).ready(function($) {
 
 	// Getting access key
 	function get_key(){
-		$('.input-field').addClass('loading');					
+		$('input[name="access_key_field"]').addClass('loading');					
 		
 		$.ajax({
 			type: "POST",
 			url: location.href,
 			data: {
 				action: 'get_key',
-				email: $('.input-field').val().trim(),
+				email: $('input[name="access_key_field"]').val().trim(),
 				security: security,
 			},
 			success: function(result){
@@ -160,10 +179,10 @@ $(document).ready(function($) {
 					$('#error-msg').text("This website already added!");					
 				}else{
 					do_install = true;
-					$('.input-field').val(result.auth_key);
-					$('.input-field').trigger('input');
+					$('input[name="access_key_field"]').val(result.auth_key);
+					$('input[name="access_key_field"]').trigger('input');
 				}
-				$('.input-field').removeClass('loading');				
+				$('input[name="access_key_field"]').removeClass('loading');				
 			},
 			error: function(){
 				$('.alert-danger').show(300);

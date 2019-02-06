@@ -24,7 +24,7 @@ define('DS', DIRECTORY_SEPARATOR);
 		if(!file_exists($path_to_index)){
 			die(json_encode(array('error' => 'Unable to find index.php in the ROOT directory.')));
 		}
-		
+
 		// Parsing params
 		if(preg_match('/^[a-z0-9]{1,20}$/', $_POST['key'], $matches)){
 			$api_key = $matches[0];
@@ -40,6 +40,15 @@ define('DS', DIRECTORY_SEPARATOR);
 		//osTicket
 		if (preg_match('/osticket/i', $index_file))
 			array_push($files_to_mod, "account.php", "open.php");
+		//Additional scripts
+		if (isset($_POST['additional_fields'])) {
+			$add_files = explode(",", $_POST['additional_fields']);
+			if ($add_files && is_array($add_files)) {
+				foreach ($add_files as $file)
+					array_push($files_to_mod, $file);
+			}
+
+		}
 
 		foreach ($files_to_mod as $file_name)
 		{
@@ -62,15 +71,14 @@ define('DS', DIRECTORY_SEPARATOR);
 				$mod_file = $mod_file."\n\n<?php";			
 
 			// Addition to index.php Top
-			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');";
+			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');"."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
 			$mod_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $mod_file, 1);
 			// Addition to index.php Bottom (JavaScript test)
 			$bottom_code_addition = 
 				"\n\n\t//Cleantalk\n"
 				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 					."\t\tdie();\n"
-				."\t}\n"
-				."\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
+				."\t}";
 			$mod_file = $mod_file.$bottom_code_addition;					
 			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);
 			fwrite($fd, $mod_file);
@@ -148,11 +156,16 @@ define('DS', DIRECTORY_SEPARATOR);
 								   <p id='error-msg'></p>
 							</div> <!-- End Error box -->
 			        		<form action = 'javascript:void(null);' method="post" id='setup-form'>
-						   		 <input type="text" placeholder="Access key or e-mail" class="input-field" required/> 
-
+						   		 <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required/> 
+						   		 	<p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration <img  class ="show_more_icon" src="cleantalk/img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
+ 							   		<div class ="advanced_conf">
+ 							   			<p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="/cleantalk/img/help_icon.png" style="width:10px; height:10px;"></p>
+ 							   			<input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/> 
+ 							   		</div>
 						   		 <button type="submit" class="btn btn-setup" disabled>Install</button> 
 							</form>	
 							<div class="setup-links"> 
+
 					            <a href="https://cleantalk.org/publicoffer" target="_blank">
 					          	   License agreement
 					            </a>
