@@ -41,15 +41,14 @@ define('DS', DIRECTORY_SEPARATOR);
 		if (preg_match('/osticket/i', $index_file))
 			array_push($files_to_mod, "account.php", "open.php");
 		//Additional scripts
-		if (isset($_POST['additional_fields'])) {
+		if (!empty($_POST['additional_fields'])) {
 			$add_files = explode(",", $_POST['additional_fields']);
 			if ($add_files && is_array($add_files)) {
 				foreach ($add_files as $file)
 					array_push($files_to_mod, $file);
 			}
-
 		}
-
+		
 		foreach ($files_to_mod as $file_name)
 		{
 			$mod_file_name = getcwd() . DS . $file_name;
@@ -79,7 +78,8 @@ define('DS', DIRECTORY_SEPARATOR);
 				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 					."\t\tdie();\n"
 				."\t}";
-			$mod_file = $mod_file.$bottom_code_addition;					
+			$mod_file = $mod_file.$bottom_code_addition;
+			
 			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);
 			fwrite($fd, $mod_file);
 			fclose($fd);			
