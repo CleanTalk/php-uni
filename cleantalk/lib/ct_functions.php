@@ -6,7 +6,7 @@
 	*/ 	
 	function apbct_spam_test($data){
 		
-		global $auth_key;
+		global $auth_key, $response_lang;
 		
 		// Patch for old PHP versions
 		require_once('ct_phpFix.php');
@@ -25,7 +25,7 @@
 		$message         = ($msg_data['message']  ? $msg_data['message']  : array());
 		
 		// Flags
-		$skip            = ($msg_data['contact']  ? $msg_data['contact']  : false);
+		$skip            = (isset($msg_data['contact']) ? $msg_data['contact']  : false);
 		$registration    = ($msg_data['reg']      ? $msg_data['reg']      : false);
 		
 		// Do check if email is not set
@@ -45,10 +45,13 @@
 			// IPs
 			$possible_ips = apbct_get_possible_ips();
 			$ct_request->sender_ip            = apbct_get_ip();
-			$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
-			$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
-			$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];
-			
+
+			if ($possible_ips) {
+				$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
+				$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
+				$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];				
+			}
+
 			// Misc params
 			$ct_request->js_on                = apbct_js_test();
 			$ct_request->submit_time          = apbct_get_submit_time();
@@ -162,7 +165,7 @@
 			$ip = !$ip ? filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
 			$result_ips['X-Real-Ip'] = !$ip ? '' : $ip;
 		}
-		return $result_ips;
+		return ($result_ips) ? $result_ips : null;
 	}
 	
 	/**
