@@ -3,15 +3,26 @@ define('DS', DIRECTORY_SEPARATOR);
 
 	// Validating key
 	if(isset($_POST['action']) && $_POST['action'] == 'key_validate' && $_POST['security'] == md5($_SERVER['SERVER_NAME'])){
-		require_once('cleantalk/lib/CleantalkHelper.php');
-		$result = CleantalkHelper::noticeValidateKey($_POST['key']);
+		require_once('cleantalk/lib/CleantalkBase/CleantalkAPI.php');
+		require_once('cleantalk/lib/CleantalkAPI.php');
+		$result = CleantalkAPI::method__notice_validate_key(
+			$_POST['key'], 
+			preg_replace('/http[s]?:\/\//', '', $_SERVER['SERVER_NAME'], 1)
+		);
+		error_log(var_export($result, true));
 		die(json_encode($result));
 	}
 	
 	// Gettings key
 	if(isset($_POST['action']) && $_POST['action'] == 'get_key' && $_POST['security'] == md5($_SERVER['SERVER_NAME'])){
-		require_once('cleantalk/lib/CleantalkHelper.php');
-		$result = CleantalkHelper::getApiKey($_POST['email'], $_SERVER['SERVER_NAME'], 'php-uni');
+		require_once('cleantalk/lib/CleantalkBase/CleantalkAPI.php');
+		require_once('cleantalk/lib/CleantalkAPI.php');
+		$result = CleantalkAPI::method__get_api_key(
+			'antispam',
+			$_POST['email'],
+			$_SERVER['SERVER_NAME'],
+			'php-uni'
+		);
 		die(json_encode($result));
 	}
 	
@@ -70,15 +81,26 @@ define('DS', DIRECTORY_SEPARATOR);
 				$mod_file = $mod_file."\n\n<?php";			
 
 			// Addition to index.php Top
-			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');\n";
-			$mod_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $mod_file, 1);
+			$top_code_addition = 
+				"\n//--Cleantalk-start\n"
+				."\trequire_once( getcwd() . '/cleantalk/cleantalk.php');\n"
+				."//--Cleantalk-end\n";
+				
+			$mod_file = preg_replace(
+				'/(<\?php)|(<\?)/',
+				"<?php" . $top_code_addition,
+				$mod_file,
+				1
+			);
 			// Addition to index.php Bottom (JavaScript test)
 			$bottom_code_addition = 
-				"\n\n\t//Cleantalk\n"
-				."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n"
+				"\n//--Cleantalk-start\n"
+				."\tob_end_flush();\n"
 				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 					."\t\tdie();\n"
-				."\t}";
+				."\t}\n"
+				."//--Cleantalk-end\n";
+				
 			$mod_file = $mod_file.$bottom_code_addition;
 			
 			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);

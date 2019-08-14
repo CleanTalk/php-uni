@@ -12,12 +12,14 @@
 		require_once('ct_phpFix.php');
 				
 		// Libs
+		require_once('CleantalkBase\CleantalkHelper.php');
+		require_once('CleantalkHelper.php');
 		require_once('Cleantalk.php');
 		require_once('CleantalkRequest.php');
 		require_once('CleantalkResponse.php');
-				
+		
 		$msg_data = apbct_get_fields_any($data);
-				
+		
 		// Data
 		$sender_email    = isset($msg_data['email'])    ? $msg_data['email']    : '';
 		$sender_nickname = isset($msg_data['nickname']) ? $msg_data['nickname'] : '';
@@ -27,7 +29,7 @@
 		// Flags
 		$skip            = isset($msg_data['contact'])  ? $msg_data['contact']  : false;
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
-		
+				
 		// Do check if email is not set
 		if(!empty($sender_email) && !$skip){
 			
@@ -63,14 +65,14 @@
 			$ct_result = $registration
 				? $ct->isAllowUser($ct_request)
 				: $ct->isAllowMessage($ct_request);
-						
+			
 			if(!empty($ct_result->errno) && !empty($ct_result->errstr)){
 				
 			}elseif($ct_result->allow == 1){
 				
 			}else{
 				apbct_die($ct_result->comment, $registration);
-			}			
+			}
 		}
 	}
 	
@@ -79,7 +81,7 @@
 	 * @return array 
 	 */
 	function apbct_get_sender_info($data)
-	{	
+	{
 		
 		global $auth_key, $response_lang;
 				
@@ -202,6 +204,7 @@
 		$registration = array(
 			'registration',
 			'register',
+			'submitCreate', // PrestaShop
 		);
 		
 		// Fields to replace with ****
@@ -289,6 +292,7 @@
 							}
 						} unset($needle);
 					}
+					
 					
 					// Skipping fields names with strings from (array)skip_fields_with_strings
 					foreach($skip_fields_with_strings as $needle){
