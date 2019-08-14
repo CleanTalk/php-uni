@@ -75,7 +75,7 @@ define('DS', DIRECTORY_SEPARATOR);
 			// Addition to index.php Bottom (JavaScript test)
 			$bottom_code_addition = 
 				"\n\n\t//Cleantalk\n"
-				."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\n"
+				."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n"
 				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 					."\t\tdie();\n"
 				."\t}";
