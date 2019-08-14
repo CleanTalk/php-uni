@@ -70,11 +70,12 @@ define('DS', DIRECTORY_SEPARATOR);
 				$mod_file = $mod_file."\n\n<?php";			
 
 			// Addition to index.php Top
-			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');"."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\";\n";
+			$top_code_addition = "//Cleantalk\n\trequire_once( getcwd() . '/cleantalk/cleantalk.php');\n";
 			$mod_file = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $top_code_addition, $mod_file, 1);
 			// Addition to index.php Bottom (JavaScript test)
 			$bottom_code_addition = 
 				"\n\n\t//Cleantalk\n"
+				."\n\techo \"<script>var apbct_checkjs_val = '\$apbct_checkjs_val';</script><script src='cleantalk/js/js_test.js'></script>\"
 				."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 					."\t\tdie();\n"
 				."\t}";
