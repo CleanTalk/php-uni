@@ -484,9 +484,16 @@
 	}
 	
 	function apbct_die($comment, $registration = false, $additional_text = null){
+		
+		// AJAX
+		if(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
+			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $ct_result->comment,))));
+			
 		// File exists?
-		if(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
+		}elseif(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
 			$die_page = file_get_contents( getcwd() . '/cleantalk/lib/die_page.html');
+		
+		// Default
 		}else{
 			die($comment);
 		}

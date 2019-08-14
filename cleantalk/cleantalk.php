@@ -16,7 +16,10 @@
 			!(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
 			&& preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
 		){
-			$html_addition = '<script>var apbct_checkjs_val = "' . $apbct_checkjs_val . '";</script><script src="cleantalk/js/js_test.js"></script>';
+			$html_addition = 
+				'<script>var apbct_checkjs_val = "' . $apbct_checkjs_val . '";</script>'
+				.'<script src="cleantalk/js/ct_js_test.js"></script>'
+				.'<script src="cleantalk/js/ct_ajax_catch.js"></script>';
 			$buffer = preg_replace(
 				'/<\/body>\s*<\/html>\s*$/i',
 				$html_addition.'</body></html>',
