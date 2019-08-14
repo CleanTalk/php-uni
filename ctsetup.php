@@ -53,8 +53,8 @@ define('DS', DIRECTORY_SEPARATOR);
 		{
 			$mod_file_name = getcwd() . DS . $file_name;
 			$mod_file = file_get_contents($mod_file_name);
-			$php_open_tags  = preg_match_all("/(<\?)/", $mod_file);
-			$php_close_tags = preg_match_all("/(\?>)/", $mod_file);
+			$php_open_tags  = preg_match_all("/(<\?)/", $mod_file, $matches);
+			$php_close_tags = preg_match_all("/(\?>)/", $mod_file, $matches);
 			
 			$file_lenght     = strlen($mod_file);
 			$first_php_start = strpos($mod_file, '<?');

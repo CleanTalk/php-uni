@@ -19,14 +19,14 @@
 		$msg_data = apbct_get_fields_any($data);
 				
 		// Data
-		$sender_email    = ($msg_data['email']    ? $msg_data['email']    : '');
-		$sender_nickname = ($msg_data['nickname'] ? $msg_data['nickname'] : '');
-		$subject         = ($msg_data['subject']  ? $msg_data['subject']  : '');
-		$message         = ($msg_data['message']  ? $msg_data['message']  : array());
+		$sender_email    = isset($msg_data['email'])    ? $msg_data['email']    : '';
+		$sender_nickname = isset($msg_data['nickname']) ? $msg_data['nickname'] : '';
+		$subject         = isset($msg_data['subject'])  ? $msg_data['subject']  : '';
+		$message         = isset($msg_data['message'])  ? $msg_data['message']  : array();
 		
 		// Flags
-		$skip            = ($msg_data['contact']  ? $msg_data['contact']  : false);
-		$registration    = ($msg_data['reg']      ? $msg_data['reg']      : false);
+		$skip            = isset($msg_data['contact'])  ? $msg_data['contact']  : false;
+		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
 		
 		// Do check if email is not set
 		if(!empty($sender_email) && !$skip){
