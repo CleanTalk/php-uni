@@ -55,8 +55,7 @@
 			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
 			$ct_request->all_headers          = function_exists('apache_request_headers') ? json_encode(apache_request_headers()) : json_encode(apbct_apache_request_headers());
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
-			$ct_request->response_lang        = $response_lang;
-						
+			
 			// Making a request
 			$ct = new Cleantalk();
 			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
@@ -134,6 +133,12 @@
 	 */	
 	function apbct_get_possible_ips()
 	{
+		$result_ips = array(
+			'X-Forwarded-For' => null,
+			'X-Forwarded-For-Last' => null,
+			'X-Real-Ip' => null,
+		);
+		
 		$headers = function_exists('apache_request_headers')
 			? apache_request_headers()
 			: apbct_apache_request_headers();
