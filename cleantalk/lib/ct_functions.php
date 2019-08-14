@@ -486,8 +486,8 @@
 	function apbct_die($comment, $registration = false, $additional_text = null){
 		
 		// AJAX
-		if(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
-			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $ct_result->comment,))));
+		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
+			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
 			
 		// File exists?
 		}elseif(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
