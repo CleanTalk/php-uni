@@ -12,7 +12,7 @@
 		require_once('ct_phpFix.php');
 				
 		// Libs
-		require_once('CleantalkBase\CleantalkHelper.php');
+		require_once('CleantalkBase/CleantalkHelper.php');
 		require_once('CleantalkHelper.php');
 		require_once('Cleantalk.php');
 		require_once('CleantalkRequest.php');
