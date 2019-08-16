@@ -112,28 +112,61 @@ define('DS', DIRECTORY_SEPARATOR);
         // @ToDo we have to implement support of X-Cart 4, osTicket and Additional scripts (look above)
         // @ToDo we have to do rmdir() for Cleantalk directory
         $uninstaller = getcwd() . DS . 'ct_uninstall_' . $api_key . '.php';
-        $uninstaller_code = '<?php' . "\n" . '
-$index_file_content = file_get_contents( \'' . $path_to_index . '\' );' . "\n" . '
-$find_code = strpos( $index_file_content, \'' . addslashes($top_code_addition)  . '\' );' . "\n" . '
-if( false === $find_code ) {' . "\n" . '
-    exit( \'There no our code!\' );' . "\n" . '
-}' . "\n" . '
-$index_file_removed_code = str_replace( array(\'' . addslashes($top_code_addition) . '\',\'' . addslashes($bottom_code_addition) . '\'), \'\', $index_file_content );' . "\n" . '
-$modified = file_put_contents( \'C:\OSPanel\domains\prestashop16.test\index.php\', $index_file_removed_code );' . "\n" . '
-if( false !== $modified ) {' . "\n" . '
-?>' . "\n" . '
-CleanTalk Uninstallation complete!
-<?php' . "\n" . '
-}' . "\n" . '
-unlink(\'' . $uninstaller . '\');
-';
+        $uninstaller_code = "<?php\n"
+            ."\trequire_once( getcwd() . '/cleantalk/ct_config.php');\n"
+            ."\$index_file_content = file_get_contents( '$path_to_index' );\n"
+            ."\$find_code = strpos( \$index_file_content, '" . addslashes($top_code_addition)  . "' );\n"
+            ."if( false === \$find_code ) {\n"
+            ."\texit( 'There no our code!' );\n"
+            ."}\n"
+            ."\$index_file_removed_code = str_replace( array(\n"
+            ."\t\t'" . addslashes($top_code_addition) . "',\n"
+            ."\t\t'" . addslashes($bottom_code_addition) . "'\n"
+            ."\t),\n"
+            ."\t'',\n"
+            ."\t\$index_file_content\n"
+            .");\n"
+            ."\$modified = file_put_contents( 'C:\OSPanel\domains\prestashop16.test\index.php', \$index_file_removed_code );\n"
+            ."if( false !== \$modified )\n"
+            ."\techo 'CleanTalk Uninstallation complete!';\n"
+            ."unlink(' . $uninstaller . ');";
+        $uninstaller_code = "<?php\n"
+            ."// Attach config to get info about modified files\n"
+            ."require_once( getcwd() . '/cleantalk/ct_config.php');\n"
+            ."\$overall_result = true;\n"
+            ."echo 'Deleting files from files:<br>';\n"
+            ."// Processing files\n"
+            ."foreach(\$modified_files as &\$file){"
+            ."\t\$index_file_content = file_get_contents( \$file );"
+            ."\t\$find_code = strpos( \$index_file_content, '" . addslashes($top_code_addition)  . "' );\n"
+            ."\tif( false !== \$find_code ) {\n"
+            ."\t\t\$index_file_removed_code = str_replace( array(\n"
+            ."\t\t\t\t'" . addslashes($top_code_addition) . "',\n"
+            ."\t\t\t\t'" . addslashes($bottom_code_addition) . "'\n"
+            ."\t\t\t),\n"
+            ."\t\t\t'',\n"
+            ."\t\t\t\$index_file_content\n"
+            ."\t\t);\n"
+            ."\t\t\$result = (bool)file_put_contents( \$file, \$index_file_removed_code ) ? 'deleted' : 'fail to delete';\n"
+            ."\t}else\n"
+            ."\t\t\$result = 'not found';\n"
+            ."\t\$overall_result = !\$overall_result || in_array(\$result, array('fail to delete', 'not found')) ? false : true;\n"
+            ."\techo \"\$file - \$result<br>\";\n"
+            ."} unset(\$file);\n"
+            ."echo \$overall_result\n"
+            ."\t? 'CleanTalk Uninstallation complete!'\n"
+            ."\t: 'Some problems with installation';\n"
+            ."unlink(__FILE__);";
         file_put_contents( $uninstaller, $uninstaller_code );
 		
 	// Additions to CT_CONFIG.PHP
 		
 		$path_to_config = getcwd() . DS . 'cleantalk' . DS . 'ct_config.php';
-		$code_addition  = "//Auth key";
-		$code_addition .= "\n\t\$auth_key = '$api_key';";
+		
+		$code_addition  = "// Auth key\n";
+		$code_addition .= "\t\$auth_key = '$api_key';\n";
+		$code_addition  .= "\t// Modified scripts\n";
+		$code_addition .= "\t\$modified_files = " . var_export($files_to_mod, true) .";\n";
 		
 		$file_content = file_get_contents($path_to_config);
 		$file_content = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $code_addition, $file_content, 1);
