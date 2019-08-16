@@ -12,21 +12,23 @@
 		require_once('ct_phpFix.php');
 				
 		// Libs
+		require_once('CleantalkBase/CleantalkHelper.php');
+		require_once('CleantalkHelper.php');
 		require_once('Cleantalk.php');
 		require_once('CleantalkRequest.php');
 		require_once('CleantalkResponse.php');
-				
+		
 		$msg_data = apbct_get_fields_any($data);
-				
+		
 		// Data
-		$sender_email    = ($msg_data['email']    ? $msg_data['email']    : '');
-		$sender_nickname = ($msg_data['nickname'] ? $msg_data['nickname'] : '');
-		$subject         = ($msg_data['subject']  ? $msg_data['subject']  : '');
-		$message         = ($msg_data['message']  ? $msg_data['message']  : array());
+		$sender_email    = isset($msg_data['email'])    ? $msg_data['email']    : '';
+		$sender_nickname = isset($msg_data['nickname']) ? $msg_data['nickname'] : '';
+		$subject         = isset($msg_data['subject'])  ? $msg_data['subject']  : '';
+		$message         = isset($msg_data['message'])  ? $msg_data['message']  : array();
 		
 		// Flags
-		$skip            = (isset($msg_data['contact']) ? $msg_data['contact']  : false);
-		$registration    = ($msg_data['reg']      ? $msg_data['reg']      : false);
+		$skip            = isset($msg_data['contact'])  ? $msg_data['contact']  : false;
+		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
 		
 		// Do check if email is not set
 		if(!empty($sender_email) && !$skip){
@@ -58,8 +60,7 @@
 			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
 			$ct_request->all_headers          = function_exists('apache_request_headers') ? json_encode(apache_request_headers()) : json_encode(apbct_apache_request_headers());
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
-			$ct_request->response_lang        = $response_lang;
-						
+			
 			// Making a request
 			$ct = new Cleantalk();
 			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
@@ -67,14 +68,14 @@
 			$ct_result = $registration
 				? $ct->isAllowUser($ct_request)
 				: $ct->isAllowMessage($ct_request);
-						
+			
 			if(!empty($ct_result->errno) && !empty($ct_result->errstr)){
 				
 			}elseif($ct_result->allow == 1){
 				
 			}else{
 				apbct_die($ct_result->comment, $registration);
-			}			
+			}
 		}
 	}
 	
@@ -83,7 +84,7 @@
 	 * @return array 
 	 */
 	function apbct_get_sender_info($data)
-	{	
+	{
 		
 		global $auth_key, $response_lang;
 				
@@ -137,6 +138,12 @@
 	 */	
 	function apbct_get_possible_ips()
 	{
+		$result_ips = array(
+			'X-Forwarded-For' => null,
+			'X-Forwarded-For-Last' => null,
+			'X-Real-Ip' => null,
+		);
+		
 		$headers = function_exists('apache_request_headers')
 			? apache_request_headers()
 			: apbct_apache_request_headers();
@@ -200,6 +207,7 @@
 		$registration = array(
 			'registration',
 			'register',
+			'submitCreate', // PrestaShop
 		);
 		
 		// Fields to replace with ****
@@ -287,6 +295,7 @@
 							}
 						} unset($needle);
 					}
+					
 					
 					// Skipping fields names with strings from (array)skip_fields_with_strings
 					foreach($skip_fields_with_strings as $needle){
@@ -482,9 +491,12 @@
 		// AJAX
 		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
+			
 		// File exists?
 		}elseif(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
 			$die_page = file_get_contents( getcwd() . '/cleantalk/lib/die_page.html');
+		
+		// Default
 		}else{
 			die($comment);
 		}
