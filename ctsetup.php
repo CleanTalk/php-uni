@@ -107,7 +107,27 @@ define('DS', DIRECTORY_SEPARATOR);
 			fwrite($fd, $mod_file);
 			fclose($fd);			
 		}
-
+		
+		// Uninstaller
+        // @ToDo we have to implement support of X-Cart 4, osTicket and Additional scripts (look above)
+        // @ToDo we have to do rmdir() for Cleantalk directory
+        $uninstaller = getcwd() . DS . 'ct_uninstall_' . $api_key . '.php';
+        $uninstaller_code = '<?php' . "\n" . '
+$index_file_content = file_get_contents( \'' . $path_to_index . '\' );' . "\n" . '
+$find_code = strpos( $index_file_content, \'' . addslashes($top_code_addition)  . '\' );' . "\n" . '
+if( false === $find_code ) {' . "\n" . '
+    exit( \'There no our code!\' );' . "\n" . '
+}' . "\n" . '
+$index_file_removed_code = str_replace( array(\'' . addslashes($top_code_addition) . '\',\'' . addslashes($bottom_code_addition) . '\'), \'\', $index_file_content );' . "\n" . '
+$modified = file_put_contents( \'C:\OSPanel\domains\prestashop16.test\index.php\', $index_file_removed_code );' . "\n" . '
+if( false !== $modified ) {' . "\n" . '
+?>' . "\n" . '
+CleanTalk Uninstallation complete!
+<?php' . "\n" . '
+}' . "\n" . '
+unlink(\'' . $uninstaller . '\');
+';
+        file_put_contents( $uninstaller, $uninstaller_code );
 		
 	// Additions to CT_CONFIG.PHP
 		
