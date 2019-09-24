@@ -103,7 +103,7 @@ define('DS', DIRECTORY_SEPARATOR);
 				
 			$mod_file = $mod_file.$bottom_code_addition;
 			
-			$fd = fopen($mod_file_name, 'w') or die("Unable to open ".$file_name);
+			$fd = fopen($mod_file_name, 'w') or die(json_encode(array('error' => 'Unable to open ' . $file_name)));
 			fwrite($fd, $mod_file);
 			fclose($fd);			
 		}
