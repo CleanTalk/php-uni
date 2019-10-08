@@ -185,6 +185,7 @@ define('DS', DIRECTORY_SEPARATOR);
 	}
 	
 ?>
+<!DOCTYPE html>
 <html>
   <head>  	
     <meta charset="utf-8">
