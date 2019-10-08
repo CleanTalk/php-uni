@@ -17,12 +17,20 @@ body{
 	color: #444;
 	text-align: center;
 	font-size:1.5em;
-	 opacity: 0.9;
-
+	opacity: 0.9;
 	font-weight: normal;
  
 }
-
+#admin-block {
+	padding-top: 60px;
+	padding-bottom: 25px;
+	margin-top: 25px;
+	margin-bottom: 25px;
+	background: #F0F8FF;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius:3px;
+}
 .setup-box{
 	position: relative;
 	max-width:480px;	
@@ -30,7 +38,8 @@ body{
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius:3px;
-	padding-bottom: 20px; 
+	padding-bottom: 20px;
+	margin-bottom: 25px;
 	margin-top: 200px; 
 	box-shadow: 0 0 10px rgba(0,0,0,0.5); 
 }
@@ -167,7 +176,7 @@ label.checkbox input{
 	background: none;
 	border: 0;
 }
-#footer-text, #footer-text a{
+.footer-text, .footer-text a{
 	text-align: center;
 	color:#FFF;
 	color: rgba(255, 255, 255, 0.33);

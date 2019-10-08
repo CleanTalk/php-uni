@@ -183,6 +183,8 @@ define('DS', DIRECTORY_SEPARATOR);
 		)));
 		
 	}
+
+	$setup_complete = false;
 	
 ?>
 <!DOCTYPE html>
@@ -204,6 +206,7 @@ define('DS', DIRECTORY_SEPARATOR);
    
   </head>
     <body class="fade-in">
+    <?php if( ! $setup_complete ) : ?>
     	<!-- start setup wizard box -->
     	<div class="container" id="setup-block">
     		<div class="row">
@@ -255,13 +258,76 @@ define('DS', DIRECTORY_SEPARATOR);
 			       </div>			        
 			    </div>
 			</div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <p class="footer-text"><small>Please, check the extension for your CMS on our <a href="https://cleantalk.org/help/install" target="_blank">plugins page</a> before setup</small></p>
+                    <p class="footer-text"><small>It is highly recommended to create a backup before installation</small></p>
+                </div>
+            </div>
     	</div>
-     
       	<!-- End setup-wizard wizard box -->
+    <?php else : ?>
+        <!-- Admin area box -->
+        <div class="container" id="admin-block">
+            <div class="row">
+                <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
+                    <div class="page-icon animated bounceInDown">
+                        <img  src="cleantalk/img/ct_logo.png" alt="Cleantalk logo" />
+                    </div>
+                    <div class="setup-logo">
+                        <h3> - Universal Anti-Spam Plugin - </h3>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                    <p class="text-center">Settings</p>
+                    <hr>
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="check_without_email" class="col-sm-6 control-label">Check data without email</label>
+                            <div class="col-sm-6">
+                                <input type="checkbox" class="form-control" id="check_without_email" name="ct_check_without_email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="check_registrations" class="col-sm-6 control-label">Check registrations</label>
+                            <div class="col-sm-6">
+                                <input type="checkbox" class="form-control" id="check_registrations" name="ct_check_registrations">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sfw_enable" class="col-sm-6 control-label">Enable Spam FireWall</label>
+                            <div class="col-sm-6">
+                                <input type="checkbox" class="form-control" id="sfw_enable" name="ct_sfw_enable">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-6 col-sm-6">
+                                <button type="submit" class="btn btn-default form-control">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                    <p class="text-center">Statistics</p>
+                    <hr>
+                    <p>Check detailed statistics on <a href="//cleantalk.org/my" target="_blank">your Anti-Spam dashboard</a></p>
+                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>
+                    <p>Average request time for past 7 days: 0.399 seconds.</p>
+                    <p>Last time SpamFireWall was triggered for unknown IP at unknown</p>
+                    <p>SpamFireWall was updated Oct 08 2019 06:57:08. Now contains 6526 entries.</p>
+                    <p>SpamFireWall sent unknown events at unknown.</p>
+                    <p>There are no failed connections to server.</p>
+                </div>
+            </div>
+        </div>
+        <!-- End Admin area box -->
+    <?php endif; ?>
+
      	<footer class="container">
-     		<p id="footer-text"><small>Please, check the extension for your CMS on our <a href="https://cleantalk.org/help/install" target="_blank">plugins page</a> before setup</small></p>
-     		<p id="footer-text"><small>It is highly recommended to create a backup before installation</small></p>
-     	</footer>
+
+        </footer>
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="cleantalk/js/jquery-1.9.1.min.js"><\/script>')</script> 
