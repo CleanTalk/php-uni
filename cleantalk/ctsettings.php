@@ -38,7 +38,10 @@ function change_config_file_settings ($filePath, $newSettings) {
     $config = file_get_contents($filePath);
 
     foreach ($newSettings as $key => $value) {
-        $config = preg_replace('/\$'.$key.' = (.*?);/', '\$'.$key.' = '.$value.';', $config);
+        if ($key == 'auth_key')
+            $config = preg_replace('/\$'.$key.' = \'(.*?)\';/', '\$'.$key.' = \''.$value.'\';', $config);
+        else 
+            $config = preg_replace('/\$'.$key.' = (.*?);/', '\$'.$key.' = '.$value.';', $config);
     }
 
     file_put_contents($filePath, $config);
