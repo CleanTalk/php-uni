@@ -27,6 +27,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             );
 
             change_config_file_settings('ct_config.php', $new_settings);
+            if ($new_settings['swf_on'] == 1) {
+                require_once('lib/CleantalkBase/CleantalkAPI.php');
+                $get_sfw_nets = CleantalkBase\CleantalkAPI::method__get_2s_blacklists_db($new_settings['auth_key']);
+                if ($get_sfw_nets)
+                    file_put_contents(getcwd().'/data/sfw_nets.php', "<?php\n\$sfw_nets = ".var_export($get_sfw_nets,true).";");
+            }
             die(json_encode(array(
                 'success' => true
             )));
