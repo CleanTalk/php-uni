@@ -112,14 +112,70 @@ $( ".advanced_conf" ).hide();
 });	
 	// Install button
 	$('.btn-setup').on('click', function(event){
-			
 		if(is_email)
 			get_key();
 		
 		if(!is_email && is_key)
 			install();
 	});
-
+	$('#btn-login').on('click', function(event) {
+		login();
+	});
+	$('#btn-save-settings').on('click', function(event) {
+		save_settings();
+	});	
+	function save_settings() {
+		$.ajax({
+			type: "POST",
+			url: location.href,
+			data: {
+				action: 'save_settings',
+				ct_auth_key: $('input[name="ct_auth_key"]').val().trim(),
+				ct_check_reg: $('input[name="ct_check_reg"]').val(),
+				ct_check_without_email: $('input[name="ct_check_without_email"]').val(),
+				ct_enable_sfw: $('input[name="ct_enable_sfw"]').val(),
+			},
+			success: function(result) {
+				result = $.parseJSON(result);
+				if (result.success) {
+					$("body").overhang({
+					  type: "success",
+					  message: "Settings saved!",
+					  duration: 3,
+					  overlay: true,
+					  closeConfirm: true
+					});
+				}
+			},
+			error: function(){
+				
+			}
+		});		
+	}
+	function login() {
+		$.ajax({
+			type: "POST",
+			url: location.href,
+			data: {
+				action: 'login',
+				login: $('input[name="access_key_field_login"]').val().trim(),
+				password: $('input[name="admin_password_key_field_login"]').val().trim(),
+			},
+			success: function(result) {
+				result = $.parseJSON(result);
+				if (result.passed) {
+					document.location.reload(true);
+				}
+				else {
+					$('.alert-danger').show(300);
+					$('#error-msg').text('Incorrect login or password!');
+				}
+			},
+			error: function(){
+				
+			}
+		});
+	}
 	// Installation
 	function install(){
 		
@@ -130,6 +186,7 @@ $( ".advanced_conf" ).hide();
 				action: 'install',
 				key: $('input[name="access_key_field"]').val().trim(),
 				additional_fields: $('#addition_scripts').val().trim(),
+				admin_password : $('input[name="admin_password"]').val().trim(),
 				security: security,
 			},
 			success: function(result){

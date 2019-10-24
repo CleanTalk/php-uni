@@ -9,7 +9,6 @@ define('DS', DIRECTORY_SEPARATOR);
 			$_POST['key'], 
 			preg_replace('/http[s]?:\/\//', '', $_SERVER['SERVER_NAME'], 1)
 		);
-		error_log(var_export($result, true));
 		die(json_encode($result));
 	}
 	
@@ -167,7 +166,13 @@ define('DS', DIRECTORY_SEPARATOR);
 		$code_addition .= "\t\$auth_key = '$api_key';\n";
 		$code_addition  .= "\t// Modified scripts\n";
 		$code_addition .= "\t\$modified_files = " . var_export($files_to_mod, true) .";\n";
-		
+
+		if (isset($_POST['admin_password'])) {
+			$code_addition .= "\t\$admin_password = '" . hash('sha256',trim($_POST['admin_password'])) . "';\n";
+		}
+
+		$code_addition .= "\t\$is_installed = true;\n";
+				
 		$file_content = file_get_contents($path_to_config);
 		$file_content = preg_replace('/(<\?php)|(<\?)/', "<?php\n\t\n\t" . $code_addition, $file_content, 1);
 		
@@ -239,6 +244,8 @@ define('DS', DIRECTORY_SEPARATOR);
 						   		 <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required/> 
 						   		 	<p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration <img  class ="show_more_icon" src="cleantalk/img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
  							   		<div class ="advanced_conf">
+							   		<p class="text-center">Set admin password</p>
+									<input type="password" name="admin_password" class="input-field" placeholder="Password"> 							   			
  							   			<p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="/cleantalk/img/help_icon.png" style="width:10px; height:10px;"></p>
  							   			<input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/> 
  							   		</div>
