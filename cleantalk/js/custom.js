@@ -131,9 +131,9 @@ $( ".advanced_conf" ).hide();
 			data: {
 				action: 'save_settings',
 				ct_auth_key: $('input[name="ct_auth_key"]').val().trim(),
-				ct_check_reg: $('input[name="ct_check_reg"]').val(),
-				ct_check_without_email: $('input[name="ct_check_without_email"]').val(),
-				ct_enable_sfw: $('input[name="ct_enable_sfw"]').val(),
+				ct_check_reg: $('#check_reg').is(':checked'),
+				ct_check_without_email: $('#check_without_email').is(':checked'),
+				ct_enable_sfw: $('#enable_sfw').is(':checked'),
 			},
 			success: function(result) {
 				result = $.parseJSON(result);

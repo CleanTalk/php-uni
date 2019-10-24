@@ -18,11 +18,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             die(json_encode($result));       
         }
         if ($_POST['action'] == 'save_settings') {
+
             $new_settings = array(
                 'auth_key' => isset($_POST['ct_auth_key']) ? $_POST['ct_auth_key'] : $auth_key,
-                'check_reg' => (isset($_POST['ct_check_reg']) && $_POST['ct_check_reg'] == 'on') ? true : $check_reg,
-                'check_all_post_data' => (isset($_POST['ct_check_without_email']) && $_POST['ct_check_without_email'] == 'on') ? true : $check_all_post_data,
-                'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'on') ? true : $swf_on,
+                'check_reg' => (isset($_POST['ct_check_reg']) && $_POST['ct_check_reg'] == 'true') ? true : false,
+                'check_all_post_data' => (isset($_POST['ct_check_without_email']) && $_POST['ct_check_without_email'] == 'true') ? true : false,
+                'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'true') ? true : false,
             );
             change_config_file_settings('ct_config.php', $new_settings);
             die(json_encode(array(
@@ -34,7 +35,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 function change_config_file_settings ($filePath, $newSettings) {
 
     //TODO update settings
+    $config = file_get_contents($filePath);
 
+    foreach ($newSettings as $key => $value) {
+        $updatedConfig = preg_replace("/\$".$key." = (.*?);/", "\$".$key." = ".$value.";", $config);
+    }
+    file_put_contents($filePath, $updatedConfig);
 }
 ?>
 <!DOCTYPE html>
