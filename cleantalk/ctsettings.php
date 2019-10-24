@@ -21,26 +21,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $new_settings = array(
                 'auth_key' => isset($_POST['ct_auth_key']) ? $_POST['ct_auth_key'] : $auth_key,
-                'check_reg' => (isset($_POST['ct_check_reg']) && $_POST['ct_check_reg'] == 'true') ? true : false,
-                'check_all_post_data' => (isset($_POST['ct_check_without_email']) && $_POST['ct_check_without_email'] == 'true') ? true : false,
-                'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'true') ? true : false,
+                'check_reg' => (isset($_POST['ct_check_reg']) && $_POST['ct_check_reg'] == 'true') ? 1 : 0,
+                'check_all_post_data' => (isset($_POST['ct_check_without_email']) && $_POST['ct_check_without_email'] == 'true') ? 1 : 0,
+                'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'true') ? 1 : 0,
             );
+
             change_config_file_settings('ct_config.php', $new_settings);
             die(json_encode(array(
-            'success' => true
+                'success' => true
             )));
         }        
     }
 }
 function change_config_file_settings ($filePath, $newSettings) {
 
-    //TODO update settings
     $config = file_get_contents($filePath);
 
     foreach ($newSettings as $key => $value) {
-        $updatedConfig = preg_replace("/\$".$key." = (.*?);/", "\$".$key." = ".$value.";", $config);
+        $config = preg_replace('/\$'.$key.' = (.*?);/', '\$'.$key.' = '.$value.';', $config);
     }
-    file_put_contents($filePath, $updatedConfig);
+
+    file_put_contents($filePath, $config);
 }
 ?>
 <!DOCTYPE html>

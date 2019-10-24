@@ -3,9 +3,9 @@
 	// Response language
 	$response_lang = 'en';
 	
-	$check_reg = true;
-	$check_all_post_data = false;
-	$swf_on = false;
+	$check_reg = 1;
+	$check_all_post_data = 0;
+	$swf_on = 0;
 	
 	$exclusions = array();
 	
