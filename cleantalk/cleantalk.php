@@ -4,7 +4,43 @@
 	require_once('ct_config.php');
 	$apbct_checkjs_val = md5($auth_key);
 	global $apbct_checkjs_val;
-	
+	if ($swf_on == 1) {
+		session_start();
+		require_once('lib/CleantalkSFWUni.php');
+		$is_sfw_check  = true;
+		$sfw           = new CleantalkBase\CleantalkSFWUni();
+		$sfw->ip_array = (array) $sfw->ip__get(array('real'), true);
+
+		foreach ($sfw->ip_array as $key => $value)
+		{
+			if (isset($_COOKIE['apbct_sfw_pass_key']) && $_COOKIE['apbct_sfw_pass_key'] == md5($value . $auth_key))
+			{
+				$is_sfw_check = false;
+				if (isset($_COOKIE['apbct_sfw_passed']))
+				{
+					@setcookie('apbct_sfw_passed'); //Deleting cookie
+					$sfw->logs__update($value, 'passed');
+				}
+			}
+		}
+		unset($key, $value);
+		
+		if ($is_sfw_check)
+		{
+			$sfw->ip_check();
+
+			if($sfw->test){
+				$sfw->sfw_die($auth_key, '', '', 'test');
+			}
+
+			if ($sfw->pass === false)
+			{
+				$sfw->logs__update($sfw->blocked_ip, 'blocked');
+				$sfw->sfw_die($auth_key);
+			}
+		}
+		
+	}	
 	// Helper functions
 	require_once('lib/ct_functions.php');
 	

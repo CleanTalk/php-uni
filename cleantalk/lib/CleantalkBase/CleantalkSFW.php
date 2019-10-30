@@ -1,6 +1,8 @@
 <?php
-
 namespace CleantalkBase;
+
+require_once 'CleantalkDB.php';
+require_once 'CleantalkHelper.php';
 
 /**
  * CleanTalk SpamFireWall base class.
