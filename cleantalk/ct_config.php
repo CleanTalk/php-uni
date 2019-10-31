@@ -6,6 +6,9 @@
 	$check_reg = 1;
 	$check_all_post_data = 0;
 	$swf_on = 0;
+
+	$sfw_last_update = 0;
+	$sfw_last_logs_send = 0;
 	
 	$exclusions = array();
 	

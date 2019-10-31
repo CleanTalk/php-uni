@@ -7,6 +7,21 @@ if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
     unset($_SESSION['authenticated']);
     header('location:ctsettings.php');
 }
+if (isset($_GET['uninstall']) && $_GET['uninstall'] == 'true') {
+    //TODO delete
+}
+if ($swf_on == 1) {
+    require_once('lib/CleantalkSFWUni.php');
+    $sfw = new CleantalkSFWUni();
+    if (time() - $sfw_last_logs_send > 3600) {
+        $sfw->logs__send($new_settings['auth_key']);
+        change_config_file_settings(array('sfw_last_logs_send' => time()));
+    }
+    if (time() - $sfw_last_update > 86400) {
+        $sfw->sfw_update($auth_key);
+        change_config_file_settings(array('sfw_last_update' => time()));
+    }
+}
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['action'])) {
         if ($_POST['action'] == 'login') {
@@ -26,22 +41,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'true') ? 1 : 0,
             );
 
-            change_config_file_settings('ct_config.php', $new_settings);
             if ($new_settings['swf_on'] == 1) {
-                require_once('lib/CleantalkBase/CleantalkAPI.php');
-                $get_sfw_nets = CleantalkBase\CleantalkAPI::method__get_2s_blacklists_db($new_settings['auth_key']);
-                if ($get_sfw_nets)
-                    file_put_contents(getcwd().'/data/sfw_nets.php', "<?php\n\$sfw_nets = ".var_export($get_sfw_nets,true).";");
+                require_once('lib/CleantalkSFWUni.php');
+                $sfw = new CleantalkSFWUni();
+                $sfw->sfw_update($new_settings['auth_key']);
+                $sfw->logs__send($new_settings['auth_key']);
+                $new_settings['sfw_last_update'] = time();
+                $new_settings['sfw_last_logs_send'] = time();
             }
+
+            change_config_file_settings($new_settings);
+            
             die(json_encode(array(
                 'success' => true
             )));
         }        
     }
 }
-function change_config_file_settings ($filePath, $newSettings) {
+function change_config_file_settings ($newSettings) {
 
-    $config = file_get_contents($filePath);
+    $config = file_get_contents('ct_config.php');
 
     foreach ($newSettings as $key => $value) {
         if ($key == 'auth_key')
@@ -50,7 +69,7 @@ function change_config_file_settings ($filePath, $newSettings) {
             $config = preg_replace('/\$'.$key.' = (.*?);/', '\$'.$key.' = '.$value.';', $config);
     }
 
-    file_put_contents($filePath, $config);
+    file_put_contents('ct_config.php', $config);
 }
 ?>
 <!DOCTYPE html>
@@ -111,7 +130,8 @@ function change_config_file_settings ($filePath, $newSettings) {
         <!-- End login-wizard wizard box -->
         <!-- Admin area box -->
         <div class="container" id="admin-block" style="margin-top: 65px;">
-        <div align="right" style="margin-top: -50px;"><a href="?logout=true" onclick="return confirm('Are you sure you want to logout?');">Log out </a></div>
+        <div align="left" style="margin-top: -50px;"><a class="text-danger" href="?uninstall=true" onclick="return confirm('Are you sure you want to uninstall plugin?');">Uninstall</a></div>
+        <div align="right" style="margin-top: -20px;"><a href="?logout=true" onclick="return confirm('Are you sure you want to logout?');">Log out </a></div>
             <div class="row" style="margin-top: 50px;">
                 <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
                     <div class="page-icon animated bounceInDown">
@@ -152,8 +172,8 @@ function change_config_file_settings ($filePath, $newSettings) {
                     <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>
                     <p>Average request time for past 7 days: 0.399 seconds.</p>
                     <p>Last time SpamFireWall was triggered for unknown IP at unknown</p>
-                    <p>SpamFireWall was updated Oct 08 2019 06:57:08. Now contains 6526 entries.</p>
-                    <p>SpamFireWall sent unknown events at unknown.</p>
+                    <p>SpamFireWall was updated <?php echo date('M d Y H:i:s', $sfw_last_update);?>. Now contains 6526 entries.</p>
+                    <p>SpamFireWall last logs send at <?php echo date('M d Y H:i:s', $sfw_last_logs_send);?>.</p>
                     <p>There are no failed connections to server.</p>
                 </div>
             </div>

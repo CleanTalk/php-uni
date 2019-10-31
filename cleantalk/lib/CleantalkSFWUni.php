@@ -1,5 +1,5 @@
 <?php
-namespace CleantalkBase;
+
 require_once 'CleantalkBase/CleantalkSFW.php';
 
 
@@ -13,7 +13,7 @@ require_once 'CleantalkBase/CleantalkSFW.php';
  * see https://github.com/CleanTalk/php-antispam
 */
 
-class CleantalkSFWUni extends CleantalkSFW {
+class CleantalkSFWUni extends CleantalkBase\CleantalkSFW {
 
 	public function ip_check() {
 		if (file_exists(dirname(__FILE__) . '/../data/sfw_nets.php')) {
@@ -33,12 +33,12 @@ class CleantalkSFWUni extends CleantalkSFW {
 						$this->blocked_ips[$origin] = array(
 							'ip'      => $current_ip,
 							'network' => long2ip($found_network['network']),
-							'mask'    => CleantalkHelper::ip__mask__long_to_number($found_network['mask']),
+							'mask'    => CleantalkBase\CleantalkHelper::ip__mask__long_to_number($found_network['mask']),
 						);
 						$this->all_ips[$origin] = array(
 							'ip'      => $current_ip,
 							'network' => long2ip($found_network['network']),
-							'mask'    => CleantalkHelper::ip__mask__long_to_number($found_network['mask']),
+							'mask'    => CleantalkBase\CleantalkHelper::ip__mask__long_to_number($found_network['mask']),
 							'status'  => -1,
 						);
 					}else{
@@ -65,13 +65,61 @@ class CleantalkSFWUni extends CleantalkSFW {
 		$time = time();
 		if (file_exists(dirname(__FILE__) . '/../data/sfw_logs/'.session_id().'.log')) {
 			$log_file = file_get_contents(dirname(__FILE__) . '/../data/sfw_logs/'.session_id().'.log');
-			$all_entries = preg_match('/\all_entries = \'(.*?)\';/', $log_file, $match_all_entries);
-			$match_entries = intval($match_all_entries[0]) + 1;
-			file_put_contents(dirname(__FILE__) . '/../data/sfw_logs/'.session_id().'.log', "ip = ".$ip."\nall_entries = ".$match_entries."\nblocked_entries = ".strval($blocked)."\nentries_timestamp = ".intval($time));
+			$all_entries_match = preg_match('/\nall_entries = (.*?)\n/', $log_file, $matches) ? $matches[1] : '';
+			$blocked_entries_match = preg_match('/\nblocked_entries = (.*?)\n/', $log_file, $matches) ? $matches[1] : '';
+			if ($blocked != '') {
+				$blocked_entries_match++;
+			}
+			file_put_contents(dirname(__FILE__) . '/../data/sfw_logs/'.session_id().'.log', "ip = ".$ip."\nall_entries = ".(intval($all_entries_match) + 1)."\nblocked_entries = ".$blocked_entries_match."\nentries_timestamp = ".intval($time));
 		} else {
 			file_put_contents(dirname(__FILE__) . '/../data/sfw_logs/'.session_id().'.log', "ip = ".$ip."\nall_entries = 1\nblocked_entries = 1\nentries_timestamp = ".intval($time));
 		}
 
+	}
+	public function logs__send($ct_key) {
+        $log_files = array_diff(scandir(dirname(__FILE__) . '/../data/sfw_logs'), array('.', '..'));
+
+        if ($log_files && count($log_files) > 0) {
+
+	        //Compile logs
+			$data = array();
+
+	        foreach ($log_files as $log_file) {
+	        	$log_content = file_get_contents(dirname(__FILE__) . '/../data/sfw_logs/'.$log_file);
+	        	$ip_match = preg_match('/ip = (.*?)\n/', $log_content, $matches) ? $matches[1] : '';
+	        	$all_entries_match = preg_match('/\nall_entries = (.*?)\n/', $log_content, $matches) ? $matches[1] : '';
+	        	$blocked_entries_match = preg_match('/\nblocked_entries = (.*?)\n/', $log_content, $matches) ? $matches[1] : '';
+	        	$timestamp_entries_match = preg_match('/\nentries_timestamp = (.*?)$/', $log_content, $matches) ? $matches[1] : '';
+	            $data[] = array(trim($ip_match), $all_entries_match, $all_entries_match-$blocked_entries_match, $timestamp_entries_match);
+	        } 
+	        unset($log_file);
+
+	        $result = CleantalkBase\CleantalkAPI::method__sfw_logs($ct_key, $data);
+
+			//Checking answer and deleting all lines from the table
+			if(empty($result['error'])){
+				if($result['rows'] == count($data)){
+					foreach ($log_files as $log_file) {
+						unlink(dirname(__FILE__) . '/../data/sfw_logs/'.$log_file);
+					}
+					return $result;
+				}
+				return array('error' => 'SENT_AND_RECEIVED_LOGS_COUNT_DOESNT_MACH');
+			}else{
+				return $result;
+			}          	
+        }
+        else{
+			return array('error' => 'NO_LOGS_TO_SEND');
+		}
+      
+	}
+	public function sfw_update($ct_key, $file_url = null, $immediate = false) {
+		//TODO unzip file and remote calls
+		
+        $get_sfw_nets = CleantalkBase\CleantalkAPI::method__get_2s_blacklists_db($ct_key);
+        if ($get_sfw_nets)
+            file_put_contents(dirname(__FILE__) . '/../data/sfw_nets.php', "<?php\n\$sfw_nets = ".var_export($get_sfw_nets,true).";");
 	}
 	public function sfw_die($api_key, $cookie_prefix = '', $cookie_domain = '', $test = false) {
 				

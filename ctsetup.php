@@ -229,6 +229,8 @@ define('DS', DIRECTORY_SEPARATOR);
 							    <br />
 								<p>File ctsetup.php was deleted automatically. This page doesn't exists anymore.</p>
 								<br />
+								<p>You can manage your settings <a class="underlined" href="/cleantalk/ctsettings.php">here</a></p>
+								<br />
 								<p>You can test any form on your website by using special email stop_email@example.com. Every submit with this email will be blocked.</p>
 							  </div>
 			        		<!-- Start Error box -->
