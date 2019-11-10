@@ -667,5 +667,28 @@ if(!class_exists('CleantalkBase\CleantalkHelper'))
 		{
 			return is_string($string) && is_array(json_decode($string, true)) ? true : false;
 		}
+		
+		/**
+		 * Checks if given string is valid regular expression
+		 *
+		 * @param string $regexp
+		 *
+		 * @return bool
+		 */
+		static public function is_regexp($regexp){
+			return @preg_match('/' . $regexp . '/', null) !== false;
+		}
+		
+		/**
+		 * Converts pattern to regExp
+		 *
+		 * @param string $string
+		 *
+		 * @return string
+		 */
+		static public function convert_to_regexp( $string ){
+			//TODO add spacial chars converting
+			return preg_replace( '/\//', '\/', $string );
+		}
 	}
 }
