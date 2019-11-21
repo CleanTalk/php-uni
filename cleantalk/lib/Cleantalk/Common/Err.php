@@ -1,6 +1,6 @@
 <?php
 
-namespace Cleantalk;
+namespace Cleantalk\Common;
 
 /**
  * Class Err
@@ -21,7 +21,7 @@ class Err{
 	/**
 	 * Constructor
 	 */
-	public static function get(){
+	public static function getInstance(){
 		if (!isset(static::$instance)) {
 			static::$instance = new static;
 			static::$instance->init();
@@ -41,22 +41,24 @@ class Err{
 	 *
 	 */
 	public static function add(){
-		self::get()->errors[] = implode(': ', func_get_args());
+		self::getInstance()->errors[] = implode(': ', func_get_args());
 		return self::$instance;
 	}
 	
 	public function prepend( $string ){
-		$this->errors[count($this->errors) - 1 ] = $string . ': ' . end( self::get()->errors );
+		$this->errors[ count( $this->errors ) - 1 ] = $string . ': ' . end( self::getInstance()->errors );
 	}
 	
 	public function append( $string ){
 		$this->string = $string . ': ' . $this->string;
 	}
 	
-	public function get_last( $output_style = 'string' ){
-		$out = $out = end( self::$instance->errors );
+	public static  function get_last( $output_style = 'bool' ){
+		$out = $out = (bool) self::$instance->errors;
 		if($output_style == 'as_json')
 			$out = json_encode( array('error' => end( self::$instance->errors ) ), true );
+		if($output_style == 'string')
+			$out = array('error' => end( self::$instance->errors ) );
 		return $out;
 	}
 	
@@ -67,7 +69,14 @@ class Err{
 		return $out;
 	}
 	
-	public function has_errors(){
+	public static function check(){
 		return (bool)self::$instance->errors;
+	}
+	
+	public static function check_and_output( $output_style = 'string' ){
+		if(self::check())
+			return self::$instance->get_last( $output_style );
+		else
+			return false;
 	}
 }

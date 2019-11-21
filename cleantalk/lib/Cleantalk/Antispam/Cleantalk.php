@@ -1,5 +1,9 @@
 <?php
 
+namespace Cleantalk\Antispam;
+
+use Cleantalk\Common\Helper;
+
 /**
  * Cleantalk class create request
  */
@@ -136,18 +140,18 @@ class Cleantalk {
         switch ($method) {
             case 'check_message':
                 // Convert strings to UTF8
-                $request->message         = CleantalkHelper::toUTF8($request->message,         $this->data_codepage);
-                $request->example         = CleantalkHelper::toUTF8($request->example,         $this->data_codepage);
-                $request->sender_email    = CleantalkHelper::toUTF8($request->sender_email,    $this->data_codepage);
-                $request->sender_nickname = CleantalkHelper::toUTF8($request->sender_nickname, $this->data_codepage);
+                $request->message         = Helper::toUTF8($request->message,         $this->data_codepage);
+                $request->example         = Helper::toUTF8($request->example,         $this->data_codepage);
+                $request->sender_email    = Helper::toUTF8($request->sender_email,    $this->data_codepage);
+                $request->sender_nickname = Helper::toUTF8($request->sender_nickname, $this->data_codepage);
                 $request->message = $this->compressData($request->message);
 				$request->example = $this->compressData($request->example);
                 break;
 
             case 'check_newuser':
                 // Convert strings to UTF8
-                $request->sender_email    = CleantalkHelper::toUTF8($request->sender_email,    $this->data_codepage);
-                $request->sender_nickname = CleantalkHelper::toUTF8($request->sender_nickname, $this->data_codepage);
+                $request->sender_email    = Helper::toUTF8($request->sender_email,    $this->data_codepage);
+                $request->sender_nickname = Helper::toUTF8($request->sender_nickname, $this->data_codepage);
                 break;
 
             case 'send_feedback':
@@ -160,7 +164,7 @@ class Cleantalk {
         // Removing non UTF8 characters from request, because non UTF8 or malformed characters break json_encode().
         foreach ($request as $param => $value) {
             if(is_array($request->$param) || is_string($request->$param))
-				$request->$param = CleantalkHelper::removeNonUTF8($value);
+				$request->$param = Helper::removeNonUTF8($value);
         }
 		
         $request->method_name = $method;
@@ -252,7 +256,7 @@ class Cleantalk {
 			// Loop until find work server
 			foreach ($servers as $server) {
 				
-				$dns = CleantalkHelper::ip__resolve__cleantalks($server['ip']);
+				$dns = Helper::ip__resolve__cleantalks($server['ip']);
 				if(!$dns)
 					continue;
 				
@@ -490,7 +494,7 @@ class Cleantalk {
             }
         }
         
-        if (!$result || !CleantalkHelper::is_json($result)) {
+        if (!$result || !Helper::is_json($result)) {
             $response = null;
             $response['errno'] = 1;
             if ($curl_error) {
@@ -517,7 +521,6 @@ class Cleantalk {
             $response['errstr'] = $errstr;
             $response = json_decode(json_encode($response));
         } 
-        
         
         return $response;
     }

@@ -6,17 +6,10 @@
 	*/ 	
 	function apbct_spam_test($data){
 		
-		global $auth_key, $response_lang;
+		global $apikey, $response_lang;
 		
 		// Patch for old PHP versions
 		require_once('ct_phpFix.php');
-				
-		// Libs
-		require_once('CleantalkBase/CleantalkHelper.php');
-		require_once('CleantalkHelper.php');
-		require_once('Cleantalk.php');
-		require_once('CleantalkRequest.php');
-		require_once('CleantalkResponse.php');
 		
 		$msg_data = apbct_get_fields_any($data);
 		
@@ -33,10 +26,10 @@
 		// Do check if email is not set
 		if(!empty($sender_email) && !$skip){
 			
-			$ct_request = new CleantalkRequest();
+			$ct_request = new \Cleantalk\Antispam\CleantalkRequest();
 			
 			// Service pararams
-			$ct_request->auth_key             = $auth_key;
+			$ct_request->auth_key             = $apikey;
 			$ct_request->agent                = APBCT_AGENT;
 			                                  
 			// Message params                 
@@ -62,7 +55,7 @@
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
 			
 			// Making a request
-			$ct = new Cleantalk();
+			$ct = new \Cleantalk\Antispam\Cleantalk();
 			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
 			
 			$ct_result = $registration
@@ -86,7 +79,7 @@
 	function apbct_get_sender_info($data)
 	{
 		
-		global $auth_key, $response_lang;
+		global $apikey, $response_lang;
 				
 		return $sender_info = array(
 		
@@ -100,7 +93,7 @@
 			'php_session'     => session_id() != '' ? 1 : 0, 
 			'cookies_enabled' => apbct_cookies_test(),
 			'fields_number'   => sizeof($data),
-			'ct_options'      => json_encode(array('auth_key' => $auth_key, 'response_lang' => $response_lang)),
+			'ct_options'      => json_encode(array('auth_key' => $apikey, 'response_lang' => $response_lang)),
 			
 			// PHP cookies                                                                                                                                                 
 			// 'cookies_enabled'        => $cookie_is_ok,                                                                                                                     
@@ -408,9 +401,9 @@
 	 * return null|0|1;
 	 */
 	 function apbct_js_test(){
-		 global $auth_key;
+		 global $apikey;
 		 if(isset($_COOKIE['apbct_checkjs'])){
-			if($_COOKIE['apbct_checkjs'] == md5($auth_key))
+			if($_COOKIE['apbct_checkjs'] == md5($apikey))
 				return 1;
 			else
 				return 0;
@@ -426,9 +419,9 @@
 	 */
 	function apbct_cookies_test()
 	{
-		global $auth_key;
+		global $apikey;
 		if(isset($_COOKIE['apbct_cookies_test'], $_COOKIE['apbct_timestamp'])){			
-			if($_COOKIE['apbct_cookies_test'] == md5($auth_key.$_COOKIE['apbct_timestamp']))
+			if($_COOKIE['apbct_cookies_test'] == md5($apikey.$_COOKIE['apbct_timestamp']))
 				return 1;
 			else
 				return 0;
