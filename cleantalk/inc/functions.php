@@ -6,7 +6,7 @@
 	*/ 	
 	function apbct_spam_test($data){
 		
-		global $apikey, $response_lang;
+		global $apikey, $response_lang, $registrations_test, $general_postdata_test;
 		
 		// Patch for old PHP versions
 		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
@@ -20,11 +20,20 @@
 		$message         = isset($msg_data['message'])  ? $msg_data['message']  : array();
 		
 		// Flags
-		$skip            = isset($msg_data['contact'])  ? $msg_data['contact']  : false;
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
+		$skip            = isset($msg_data['skip'])     ? $msg_data['skip']     : false;
+		
+		// Skip check if
+		if(
+		    $skip || // Skip flag set by apbct_get_fields_any()
+			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
+			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
+		    ( apbct_check_exclusions() ) // Has an exclusions in POST
+		)
+			$skip = true;
 		
 		// Do check if email is not set
-		if(!empty($sender_email) && !$skip){
+		if( ! empty( $sender_email ) && ! empty( $skip ) ){
 			
 			$ct_request = new \Cleantalk\Antispam\CleantalkRequest();
 			
@@ -509,4 +518,15 @@
 		}
 		
 		die($die_page);
+	}
+	
+	function apbct_check_exclusions(){
+		global $exclusions;
+		foreach ($exclusions as $name => $value){
+			if(isset($_POST[$name])){
+				if(empty($value) || ($value && $_POST[$name] === $value))
+					return true;
+			}
+		}
+		return false;
 	}
