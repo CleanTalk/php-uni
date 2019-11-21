@@ -73,6 +73,9 @@ if( empty( $is_installed ) ){
 					case 'soTicket':
 						array_push( $files_to_mod, "account.php", "open.php" );
 						break;
+					case 'PrestaShop':
+						// array_push( $files_to_mod, "account.php", "open.php" );
+						break;
 				}
 				
 				//Additional scripts
@@ -140,52 +143,58 @@ if( empty( $is_installed ) ){
 			        	<hr />
 			        	<div class="setup-form">
 
-                            <!-- Installation form -->
-                            <?php if( empty( $is_installed ) ) : ?>
-			        		  <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
-							    <strong style="text-align: center; display: block;">Success!</strong>
-							    <br />
-							    <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
-							    <br />
-								<p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/cleantalk/settings.php'; ?></a></p>
-								<br />
-								<p>This location will be no longer accessible until the plugin is installed.</p>
-								<br />
-								<p>You can test any form on your website by using special email stop_email@example.com. Every submit with this email will be blocked.</p>
-							  </div>
-			        		<!-- Start Error box -->
-			        		<div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
-								  <button type="button" class="close" > &times;</button>
-								   <p id='error-msg'></p>
-							</div> <!-- End Error box -->
-			        		<form action = 'javascript:void(null);' method="post" id='setup-form'>
-                                <div style="text-align: center">
-						   		    <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
-                                    <img class="preloader" src="img/preloader.gif" style="display: none;">
-                                </div>
-						   		 	<p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration (optional) <img  class ="show_more_icon" src="img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
- 							   		<div class ="advanced_conf">
-							   		<p class="text-center">Set admin password</p>
-									<input type="password" name="admin_password" class="input-field" placeholder="Password"> 							   			
- 							   			<p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="img/help_icon.png" style="width:10px; height:10px;"></p>
- 							   			<input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/> 
- 							   		</div>
-						   		 <button type="submit" class="btn btn-setup" disabled>Install</button> 
-							</form>	
-							<div class="setup-links">
-
-					            <a href="https://cleantalk.org/publicoffer" target="_blank">
-					          	   License agreement
-					            </a>
-					            <br />
-					            <a href="https://cleantalk.org/register?platform=php-uni&website=<?php echo $_SERVER['SERVER_NAME']; ?>" target="_blank">
-					              Don't have an account? <strong>Create here!</strong>
-					            </a>
-							</div>
+                            <!-- Check requirements -->
+					        <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
+                                <h4><p class="text-center">PHP version is <?php echo phpversion(); ?></p></h4>
+                                <h4><p class="text-center">The plugin requires version 5.6 or higher.</p></h4>
+                                <h4><p class="text-center">Please, contact you hosting provider to update it.</p></h4>
                             
                             <!-- Already installed. Settings link -->
-                            <?php else : ?>
+                            <?php elseif( ! empty( $is_installed ) ) : ?>
                                 <h4><p class="text-center">The plugin is already installed. You could enter the settings <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/cleantalk/settings.php">here</a>'; ?> .</p></h4>
+                            
+                            <!-- Installation form -->
+                            <?php else : ?>
+                                <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
+                                    <strong style="text-align: center; display: block;">Success!</strong>
+                                    <br />
+                                    <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
+                                    <br />
+                                    <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/cleantalk/settings.php'; ?></a></p>
+                                    <br />
+                                    <p>This location will be no longer accessible until the plugin is installed.</p>
+                                    <br />
+                                    <p>You can test any form on your website by using special email stop_email@example.com. Every submit with this email will be blocked.</p>
+                                </div>
+                                <!-- Start Error box -->
+                                <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
+                                    <button type="button" class="close" > &times;</button>
+                                    <p id='error-msg'></p>
+                                </div> <!-- End Error box -->
+                                <form action = 'javascript:void(null);' method="post" id='setup-form'>
+                                    <div style="text-align: center">
+                                        <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
+                                        <img class="preloader" src="img/preloader.gif" style="display: none;">
+                                    </div>
+                                    <p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration (optional) <img  class ="show_more_icon" src="img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
+                                    <div class ="advanced_conf">
+                                        <p class="text-center">Set admin password</p>
+                                        <input type="password" name="admin_password" class="input-field" placeholder="Password">
+                                        <p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="img/help_icon.png" style="width:10px; height:10px;"></p>
+                                        <input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/>
+                                    </div>
+                                    <button type="submit" class="btn btn-setup" disabled>Install</button>
+                                </form>
+                                <div class="setup-links">
+
+                                    <a href="https://cleantalk.org/publicoffer" target="_blank">
+                                        License agreement
+                                    </a>
+                                    <br />
+                                    <a href="https://cleantalk.org/register?platform=php-uni&website=<?php echo $_SERVER['SERVER_NAME']; ?>" target="_blank">
+                                        Don't have an account? <strong>Create here!</strong>
+                                    </a>
+                                </div>
                             <?php endif; ?>
                             
 			        	</div> 			        	
