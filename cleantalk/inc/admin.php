@@ -6,7 +6,7 @@ use Cleantalk\Variables\Post;
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
-function install( $files, $api_key, $cms ){
+function install( $files, $api_key, $cms, $exclusions ){
 	
 	foreach ($files as $file){
 		
@@ -60,10 +60,10 @@ function install( $files, $api_key, $cms ){
 	
 	// Install settings in cofig if everything is ok
 	if( ! Err::check() )
-		install_config( $files, $api_key, $cms );
+		install_config( $files, $api_key, $cms, $exclusions );
 }
 
-function install_config( $modified_files, $api_key, $cms ){
+function install_config( $modified_files, $api_key, $cms, $exclusions ){
 	
 	$path_to_config = CLEANTALK_ROOT . 'config.php';
 	$salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
@@ -80,6 +80,8 @@ function install_config( $modified_files, $api_key, $cms ){
 	File::inject__variable( $path_to_config, 'salt', $salt );
 	File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $salt ) );
 	File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
+	if( $exclusions )
+		File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
 	File::inject__variable( $path_to_config, 'apikey', $api_key );
 	File::inject__variable( $path_to_config, 'detected_cms', $cms );
 	File::inject__variable( $path_to_config, 'is_installed', true );
@@ -105,6 +107,7 @@ function uninstall( $files = array() ){
 	File::clean__variable( $path_to_config, 'detected_cms' );
 	File::clean__variable( $path_to_config, 'admin_password' );
 	File::clean__variable( $path_to_config, 'modified_files' );
+	File::clean__variable( $path_to_config, 'exclusions' );
 	File::clean__variable( $path_to_config, 'is_installed' );
 	
 	// Restore deafult settings
@@ -112,7 +115,7 @@ function uninstall( $files = array() ){
 	File::replace__variable( $path_to_config, 'sfw_last_logs_send', 0 );
 	File::replace__variable( $path_to_config, 'sfw_entries', 0 );
 	File::replace__variable( $path_to_config, 'registrations_test', true );
-	File::replace__variable( $path_to_config, 'general_postdata_test', true );
+	File::replace__variable( $path_to_config, 'general_postdata_test', false );
 	File::replace__variable( $path_to_config, 'spam_firewall', true );
 	
 	if(isset($files)){
@@ -136,6 +139,9 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 	//osTicket
 	if (preg_match('/osticket/i', $index_file))
 		$out = 'osTicket';
+	// PrestaShop
+	if (preg_match('/(PrestaShop.*?)/', $index_file))
+		$out = 'PrestaShop';
 	
 	return $out;
 }

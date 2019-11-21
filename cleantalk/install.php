@@ -65,6 +65,8 @@ if( empty( $is_installed ) ){
 				
 				// Determine file to install Cleantalk script
 				$files_to_mod = array( 'index.php' );
+				$exclusions = array();
+				
 				// Adding files to $files_to_mod depends from cms installed
 				switch ( $cms ){
 					case 'X-Cart 4':
@@ -75,6 +77,7 @@ if( empty( $is_installed ) ){
 						break;
 					case 'PrestaShop':
 						// array_push( $files_to_mod, "account.php", "open.php" );
+						$exclusions['submitLogin'] = 1;
 						break;
 				}
 				
@@ -88,7 +91,7 @@ if( empty( $is_installed ) ){
 					}
 				}
 				
-				install( $files_to_mod, $api_key, $cms );
+				install( $files_to_mod, $api_key, $cms, $exclusions );
 				
 			}else{
 				Err::add( 'Unable to find index.php in the ROOT directory.' );
