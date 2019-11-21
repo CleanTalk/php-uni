@@ -2,6 +2,9 @@
 	
 	// Config
 	require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+
+	if( empty( $apikey ) )
+		return;
 	
 	$apbct_checkjs_val = md5($apikey);
 	global $apbct_checkjs_val;
@@ -42,7 +45,7 @@
 		
 	}	
 	// Helper functions
-	require_once('lib/ct_functions.php');
+	require_once( CLEANTALK_ROOT . 'inc' . DS . 'functions.php');
 	
 	// Catching buffer 
 	ob_start('ct_attach_js');

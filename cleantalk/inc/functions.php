@@ -9,7 +9,7 @@
 		global $apikey, $response_lang;
 		
 		// Patch for old PHP versions
-		require_once('ct_phpFix.php');
+		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
 		
 		$msg_data = apbct_get_fields_any($data);
 		
