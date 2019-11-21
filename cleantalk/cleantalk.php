@@ -94,7 +94,6 @@
 	// General spam test
 	if(!empty($_POST)){
 		apbct_spam_test($_POST);
-
 	}
 			
 	// Set Cookies test for cookie test
