@@ -5,6 +5,10 @@ body{
 	font-family: 'Lato', sans-serif;
 
 }
+
+.wrapper{}
+.wrapper__center{ text-align: center }
+
 .alert{
 	margin: 20px auto;
 	width: 70%;
@@ -182,7 +186,14 @@ label.checkbox input{
 	color: rgba(255, 255, 255, 0.33);
 	opacity: 1; 
 }
- 
+
+.preloader{
+    width: 20px;
+    margin-left: 5px;
+    vertical-align: text-top;
+    display: inline;
+}
+
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
 =================================================================== */
 @media only screen and (max-width: 479px) {
