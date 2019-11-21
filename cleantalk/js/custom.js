@@ -244,11 +244,13 @@ jQuery(document).ready(function($) {
 					if (result.success) {
 						$("body").overhang({
 							type: "success",
-							message: "Settings saved!",
+							message: "Settings saved! Page will be updated in 3 seconds.",
+							duration: 3,
 							overlay: true,
-							closeConfirm: true,
+							// closeConfirm: true,
 							easing: 'linear'
 						});
+						setTimeout(function(){ location.reload(); }, 3000 );
 					}
 				},
 				spinner: $('#btn-save-settings+.preloader'),
