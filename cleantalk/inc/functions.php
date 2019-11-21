@@ -118,6 +118,9 @@
 			'page_set_timestamp'     => isset($_COOKIE['apbct_ps_timestamp'])          ? $_COOKIE['apbct_ps_timestamp']         : null,
 			'form_visible_inputs'    => !empty($_COOKIE['apbct_visible_fields_count']) ? $_COOKIE['apbct_visible_fields_count'] : null,
 			'apbct_visible_fields'   => !empty($_COOKIE['apbct_visible_fields'])       ? $_COOKIE['apbct_visible_fields']       : null,
+			
+			// Debug
+			'action' => \Cleantalk\Variables\Post::get('action') ? \Cleantalk\Variables\Post::get('action') : null,
 		);
 	}
 	
