@@ -3,7 +3,8 @@
 	/*
 	* Performs spam test
 	* @return void or exit script
-	*/ 	
+	*/
+	
 	function apbct_spam_test($data){
 		
 		global $apikey, $response_lang, $registrations_test, $general_postdata_test;
@@ -33,7 +34,7 @@
 			$skip = true;
 		
 		// Do check if email is not set
-		if( ! empty( $sender_email ) && ! empty( $skip ) ){
+		if( ! $skip ){
 			
 			$ct_request = new \Cleantalk\Antispam\CleantalkRequest();
 			
