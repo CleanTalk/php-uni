@@ -2,7 +2,7 @@
 
 //Settings
 	$registrations_test = true;
-	$general_postdata_test = true;
+	$general_postdata_test = false;
 	$spam_firewall = true;
 
 // Statistics
