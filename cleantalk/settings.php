@@ -1,137 +1,182 @@
 <?php
-// Config
-require_once('ct_config.php');
+
+use Cleantalk\Common\Err;
+use Cleantalk\Common\File;
+use Cleantalk\Variables\Post;
+use Cleantalk\Variables\Server;
+use Cleantalk\ApbctUni\SFW;
+
+require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
+
 session_start();
-if (isset($_GET['logout']) && $_GET['logout'] == 'true') {
-    session_destroy();
-    unset($_SESSION['authenticated']);
-    header('location:ctsettings.php');
-}
-if (isset($_GET['uninstall']) && $_GET['uninstall'] == 'true') {
-    //TODO delete
-}
-if ($swf_on == 1) {
-    require_once('lib/CleantalkSFWUni.php');
-    $sfw = new CleantalkSFWUni();
-    if (time() - $sfw_last_logs_send > 3600) {
-        $sfw->logs__send($new_settings['auth_key']);
-        change_config_file_settings(array('sfw_last_logs_send' => time()));
-    }
-    if (time() - $sfw_last_update > 86400) {
-        $sfw->sfw_update($auth_key);
-        change_config_file_settings(array('sfw_last_update' => time()));
-    }
-}
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['action'])) {
-        if ($_POST['action'] == 'login') {
-            $result['passed'] = isset($_POST['login']) && $_POST['login'] == $auth_key && isset($_POST['password']) && hash('sha256',trim($_POST['password'])) == $admin_password;
-            if ($result['passed']) {
-                $_SESSION['authenticated'] = 'true';
-            }
 
-            die(json_encode($result));       
-        }
-        if ($_POST['action'] == 'save_settings') {
-
-            $new_settings = array(
-                'auth_key' => isset($_POST['ct_auth_key']) ? $_POST['ct_auth_key'] : $auth_key,
-                'check_reg' => (isset($_POST['ct_check_reg']) && $_POST['ct_check_reg'] == 'true') ? 1 : 0,
-                'check_all_post_data' => (isset($_POST['ct_check_without_email']) && $_POST['ct_check_without_email'] == 'true') ? 1 : 0,
-                'swf_on' => (isset($_POST['ct_enable_sfw']) && $_POST['ct_enable_sfw'] == 'true') ? 1 : 0,
-            );
-
-            if ($new_settings['swf_on'] == 1) {
-                require_once('lib/CleantalkSFWUni.php');
-                $sfw = new CleantalkSFWUni();
-                $sfw->sfw_update($new_settings['auth_key']);
-                $sfw->logs__send($new_settings['auth_key']);
-                $new_settings['sfw_last_update'] = time();
-                $new_settings['sfw_last_logs_send'] = time();
-            }
-
-            change_config_file_settings($new_settings);
+if( Server::is_post() && Post::get( 'action' ) ){
+	
+	// Brute force protection
+	sleep(2);
+    
+    switch (Post::get('action')){
+        
+        case 'login':
             
-            die(json_encode(array(
-                'success' => true
-            )));
-        }        
+            // If password is set in config
+	        if(isset($password)){
+		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ){
+                    $_SESSION['authenticated'] = 'true';
+                }else
+                    Err::add('Incorrect login or password');
+		        
+            // No password is set. Check only login.
+	        }elseif( ( Post::get( 'login' ) == $apikey ) ){
+                $_SESSION['authenticated'] = 'true';
+                
+            // No match
+	        }else
+		        Err::add('Incorrect login');
+	
+	        Err::check() or die(json_encode(array('passed' => true)));
+	        die(Err::check_and_output( 'as_json' ));
+	        
+	        break;
+	
+        case 'logout':
+            session_destroy();
+            unset($_SESSION['authenticated']);
+	        die( json_encode( array( 'success' => true ) ) );
+            break;
+		        
+        case 'save_settings':
+            
+            if( Post::get( 'security' ) === $security ){
+	
+	            $path_to_config = CLEANTALK_ROOT . 'config.php';
+	            
+                File::replace__variable( $path_to_config, 'apikey', Post::get( 'apikey' ) );
+                File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
+                File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
+                File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
+	
+                
+                error_log( var_export( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ), true ));
+                
+                // SFW actions
+	            if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
+		            
+		            $sfw = new SFW();
+		            
+		            // Update SFW
+		            $result = $sfw->sfw_update( Post::get( 'apikey' ) );
+		            if( ! Err::check() ){
+		                File::replace__variable( $path_to_config, 'sfw_last_update', time() );
+		                File::replace__variable( $path_to_config, 'sfw_entries', $result );
+                    }
+		            
+		            // Send SFW logs
+		            $result = $sfw->logs__send( Post::get( 'apikey' ) );
+		            if( empty( $result['error'] ) && ! Err::check() )
+		                File::replace__variable( $path_to_config, 'sfw_last_logs_send', time() );
+	            }
+	
+	            // Err::add('some');
+	            
+	            Err::check() or die(json_encode(array('success' => true)));
+	            die(Err::check_and_output( 'as_json' ));
+	            
+            }else
+	            die(Err::add('Forbidden')->get_last( 'as_json' ));
+	        break;
+	
+	    case 'uninstall':
+		
+		    if( Post::get( 'security' ) === $security ){
+			
+			    session_destroy();
+			    unset($_SESSION['authenticated']);
+		        uninstall();
+			
+			    Err::check() or die(json_encode(array('success' => true)));
+			    die(Err::check_and_output( 'as_json' ));
+			    
+		    }else
+			    die(Err::add('Forbidden')->get_last( 'as_json' ));
+		    break;
+	       
+        default:
+            die(Err::add('Unknown action')->get_last( 'as_json' ));
+            break;
     }
 }
-function change_config_file_settings ($newSettings) {
 
-    $config = file_get_contents('ct_config.php');
-
-    foreach ($newSettings as $key => $value) {
-        if ($key == 'auth_key')
-            $config = preg_replace('/\$'.$key.' = \'(.*?)\';/', '\$'.$key.' = \''.$value.'\';', $config);
-        else 
-            $config = preg_replace('/\$'.$key.' = (.*?);/', '\$'.$key.' = '.$value.';', $config);
-    }
-
-    file_put_contents('ct_config.php', $config);
-}
 ?>
 <!DOCTYPE html>
 <html>
-  <head>    
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"> 
-    <link rel="shortcut icon" href="img/ct_logo.png"> 
-    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-
-    <title>Universal Anti-Spam Plugin by CleanTalk</title>
-    <!-- Bootstrap core CSS -->
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/overhang.min.css" rel="stylesheet">
-
-    <!-- Custom styles -->
-    <link href="css/setup-wizard.css" rel="stylesheet">   
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="img/ct_logo.png">
+        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+        
+        <title>Universal Anti-Spam Plugin by CleanTalk</title>
+        <!-- Bootstrap core CSS -->
+        <link href="css/bootstrap.css" rel="stylesheet">
+        <link href="css/overhang.min.css" rel="stylesheet">
+        
+        <!-- Custom styles -->
+        <link href="css/setup-wizard.css" rel="stylesheet">
+        
+        <link href="css/animate-custom.css" rel="stylesheet">
     
-    <link href="css/animate-custom.css" rel="stylesheet"> 
-   
-  </head>
+    </head>
     <body class="fade-in">
+        
+        <!-- Login -->
         <?php if(empty($_SESSION["authenticated"]) || $_SESSION["authenticated"] != 'true') { ?>
         <!-- start login wizard box -->
         <div class="container" id="setup-block">
             <div class="row">
                 <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-                     
+                   
                    <div class="setup-box clearfix animated flipInY">
                         <div class="page-icon animated bounceInDown">
                             <img  src="img/ct_logo.png" alt="Cleantalk logo" />
                         </div>
                         <div class="setup-logo">
                             <h3> - Universal Anti-Spam Plugin - </h3>
-                        </div> 
+                        </div>
                         <hr />
                         <div class="setup-form">
                             <!-- Start Error box -->
                             <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
                                   <button type="button" class="close" > &times;</button>
                                    <p id='error-msg'></p>
-                            </div> <!-- End Error box -->
-                            <?php if ($is_installed) : ?>
+                            </div>
+                            <!-- End Error box -->
+	                        <?php if( ! empty( $is_installed ) ) : ?>
                             <form action = 'javascript:void(null);' method="post" id='login-form'>
-                                 <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field_login" required/> 
-                                 <input type="password" placeholder="Password" class="input-field" name="admin_password_key_field_login"/> 
-                                 <button type="submit" class="btn btn-setup" id = 'btn-login' >Login</button> 
+                                 <input type="text" placeholder="Access key<?php if( isset( $email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+                                 
+                                 <?php if( ! empty( $password ) ) : ?>
+                                 <input type="password" placeholder="Password" class="input-field" name="password"/>
+                                 <?php endif; ?>
+                                 <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
+                                 <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
                             </form>
                             <?php else : ?>
-                            <h4><p class="text-center">Please, setup plugin first!</p></h4>
-                            <?php endif; ?>             
-                        </div>                      
-                   </div>                   
+                            <h4><p class="text-center">Please, <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/cleantalk/install.php">setup</a>'; ?> plugin first!</p></h4>
+                            <?php endif; ?>
+                        </div>
+                   </div>
                 </div>
             </div>
         </div>
+        <!-- Settings -->
     <?php } else { ?>
         <!-- End login-wizard wizard box -->
         <!-- Admin area box -->
-        <div class="container" id="admin-block" style="margin-top: 65px;">
-        <div align="left" style="margin-top: -50px;"><a class="text-danger" href="?uninstall=true" onclick="return confirm('Are you sure you want to uninstall plugin?');">Uninstall</a></div>
-        <div align="right" style="margin-top: -20px;"><a href="?logout=true" onclick="return confirm('Are you sure you want to logout?');">Log out </a></div>
+        <div class="container" id="admin-block" style="margin-top: 80px;">
+        <div align="left" style="margin-top: -50px;"><a href="#" class="text-danger" id='btn-uninstall' >Uninstall</a></div>
+        <div align="right" style="margin-top: -20px;"><a href="#" id='btn-logout'>Log out </a></div>
             <div class="row" style="margin-top: 50px;">
                 <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
                     <div class="page-icon animated bounceInDown">
@@ -149,35 +194,39 @@ function change_config_file_settings ($newSettings) {
                     <hr>
                     <div class="col-sm-12">
                         <div class="form-group row">
-                            <input class="form-control" type="text" placeholder="Access key" id="auth_key" name = "ct_auth_key" value =<?php if (isset($auth_key)) echo $auth_key; ?>>
-                        </div>                                            
-                        <div class="form-group row">
-                            <label for="ct_check_reg">Check registrations</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_reg" name="ct_check_reg" <?php if (isset($check_reg) && $check_reg == true) echo "checked"; ?>>
-                        </div>                        
-                        <div class="form-group row">
-                            <label for="ct_check_without_email">Check data without email</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_without_email" name="ct_check_without_email" <?php if (isset($check_all_post_data) && $check_all_post_data == true) echo "checked"; ?>>
+                            <input class="form-control" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($apikey)) echo $apikey; ?>>
+                            <p>Account registered for email: <?php echo !empty($account_name_ob) ? $account_name_ob : 'unkonown';  ?></p>
                         </div>
                         <div class="form-group row">
-                            <label for="ct_enable_sfw">Enable SpamFireWall</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="enable_sfw" name="ct_enable_sfw" <?php if (isset($swf_on) && $swf_on == true) echo "checked"; ?>>
-                        </div>                        
+                            <label for="check_reg">Check registrations</label>
+                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_reg" name="registrations_test" <?php if (!empty($registrations_test)) echo "checked"; ?>>
+                        </div>
+                        <div class="form-group row">
+                            <label for="check_all_post_data">Check data without email</label>
+                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_without_email" name="general_postdata_test" <?php if (!empty($general_postdata_test)) echo "checked"; ?>>
+                        </div>
+                        <div class="form-group row">
+                            <label for="swf_on">Enable SpamFireWall</label>
+                            <input type="checkbox" class="checkbox style-2 pull-right" id="enable_sfw" name="spam_firewall" <?php if (!empty($spam_firewall)) echo "checked"; ?>>
+                        </div>
                     </div>
                 </div>
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                     <h4><p class="text-center">Statistics</p></h4>
                     <hr>
-                    <p>Check detailed statistics on <a href="//cleantalk.org/my" target="_blank">your Anti-Spam dashboard</a></p>
-                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>
-                    <p>Average request time for past 7 days: 0.399 seconds.</p>
-                    <p>Last time SpamFireWall was triggered for unknown IP at unknown</p>
-                    <p>SpamFireWall was updated <?php echo date('M d Y H:i:s', $sfw_last_update);?>. Now contains 6526 entries.</p>
-                    <p>SpamFireWall last logs send at <?php echo date('M d Y H:i:s', $sfw_last_logs_send);?>.</p>
-                    <p>There are no failed connections to server.</p>
+                    <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo !empty($user_token) ? '?cp_mode=antispam&user_token='.$user_token : ''; ?>" target="_blank">your Anti-Spam dashboard</a></p>
+                    <p>Presumably CMS: <?php echo $detected_cms; ?></p>
+<!--                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>-->
+<!--                    <p>Average request time for past 7 days: 0.399 seconds.</p>-->
+                    <p>SpamFireWall base contains <?php echo $sfw_entries; ?> entries.</p>
+                    <p>SpamFireWall was updated <?php echo $sfw_last_update ? date('M d Y H:i:s', $sfw_last_update) : 'sometime';?>.</p>
+                    <p>SpamFireWall were sent at <?php echo $sfw_last_logs_send ? date('M d Y H:i:s', $sfw_last_logs_send) : 'sometime';?>.</p>
                 </div>
             </div>
-            <button type="submit" class="btn btn-setup mt-sm-2" id = 'btn-save-settings'>Save</button>
+                <div class="wrapper wrapper__center">
+                    <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>
+                    <img class="preloader" src="img/preloader.gif" style="display: none;">
+                </div>
             </form>
         </div>
     <?php } ?>
@@ -186,16 +235,17 @@ function change_config_file_settings ($newSettings) {
         <footer class="container">
 
         </footer>
+        
+    <script src="js/jquery.js"></script>
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/placeholder-shim.min.js"></script>
+    <script src="js/common.js?v=2.0"></script>
+    <script src="js/custom.js?v=2.0"></script>
+    <script src="js/overhang.min.js"></script>
+    <script type='text/javascript'>
+        var security = '<?php echo $security ?>';
+        var ajax_url = location.href;
+    </script>
 
-       <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
-        <script>window.jQuery || document.write('<script src="js/jquery-1.9.1.min.js"><\/script>')</script> 
-        <script src="js/bootstrap.min.js"></script> 
-        <script src="js/placeholder-shim.min.js"></script>        
-        <script src="js/custom.js?v=13"></script>
-        <script src="js/overhang.min.js"></script>
-        <script type='text/javascript'>
-            var security = '<?php echo md5($_SERVER['SERVER_NAME']) ?>';
-        </script>
-
-    </body>
+</body>

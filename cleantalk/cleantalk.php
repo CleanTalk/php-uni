@@ -1,19 +1,18 @@
 <?php
 	
 	// Config
-	require_once('ct_config.php');
-	$apbct_checkjs_val = md5($auth_key);
+	require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+	
+	$apbct_checkjs_val = md5($apikey);
 	global $apbct_checkjs_val;
-	if ($swf_on == 1) {
-		session_start();
-		require_once('lib/CleantalkSFWUni.php');
+	if ($spam_firewall == 1) {
 		$is_sfw_check  = true;
-		$sfw           = new CleantalkBase\CleantalkSFWUni();
+		$sfw           = new \Cleantalk\ApbctUni\SFW();
 		$sfw->ip_array = (array) $sfw->ip__get(array('real'), true);
 
 		foreach ($sfw->ip_array as $key => $value)
 		{
-			if (isset($_COOKIE['apbct_sfw_pass_key']) && $_COOKIE['apbct_sfw_pass_key'] == md5($value . $auth_key))
+			if (isset($_COOKIE['apbct_sfw_pass_key']) && $_COOKIE['apbct_sfw_pass_key'] == md5($value . $apikey))
 			{
 				$is_sfw_check = false;
 				if (isset($_COOKIE['apbct_sfw_passed']))
@@ -30,13 +29,14 @@
 			$sfw->ip_check();
 
 			if($sfw->test){
-				$sfw->sfw_die($auth_key, '', '', 'test');
+				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+				$sfw->sfw_die($apikey, '', '', 'test');
 			}
 
 			if ($sfw->pass === false)
 			{
-				$sfw->logs__update($sfw->blocked_ip, 'blocked');
-				$sfw->sfw_die($auth_key);
+				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+				$sfw->sfw_die($apikey);
 			}
 		}
 		
@@ -97,7 +97,7 @@
 	// Set Cookies test for cookie test
 	$apbct_timestamp = time();
 	setcookie('apbct_timestamp',     $apbct_timestamp,                0, '/');
-	setcookie('apbct_cookies_test',  md5($auth_key.$apbct_timestamp), 0, '/');
+	setcookie('apbct_cookies_test',  md5($apikey.$apbct_timestamp), 0, '/');
 	setcookie('apbct_timezone',      '0',                             0, '/');
     setcookie('apbct_fkp_timestamp', '0',                             0, '/');
     setcookie('apbct_pointer_data',  '0',                             0, '/');
