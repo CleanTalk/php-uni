@@ -6,9 +6,9 @@
 	$spam_firewall = true;
 
 // Statistics
-	$sfw_last_update = 1574326874;
-	$sfw_entries = 9809;
-	$sfw_last_logs_send = 1574326113;
+	$sfw_last_update = 0;
+	$sfw_entries = 0;
+	$sfw_last_logs_send = 0;
 
 // Response language
 $response_lang = 'en';
