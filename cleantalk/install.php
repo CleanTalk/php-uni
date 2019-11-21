@@ -77,7 +77,7 @@ if( empty( $is_installed ) ){
 						break;
 					case 'PrestaShop':
 						// array_push( $files_to_mod, "account.php", "open.php" );
-						$exclusions['submitLogin'] = 1;
+						$exclusions['submitLogin'] = '1';
 						break;
 				}
 				
@@ -99,9 +99,6 @@ if( empty( $is_installed ) ){
 		}else{
 			Err::add( 'Key is bad. Key is "' . Post::get( 'key' ) . '"' );
 		}
-		
-		// Delete instllation file
-		//unlink(__FILE__);
 		
 		// Check for errors and output result
         $out = Err::check()
