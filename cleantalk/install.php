@@ -143,13 +143,13 @@ if( empty( $is_installed ) ){
                             <!-- Installation form -->
                             <?php if( empty( $is_installed ) ) : ?>
 			        		  <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
-							    <strong>Success!</strong> 
+							    <strong style="text-align: center; display: block;">Success!</strong>
 							    <br />
 							    <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
 							    <br />
-								<p>File ctsetup.php was deleted automatically. This page doesn't exists anymore.</p>
+								<p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/cleantalk/settings.php'; ?></a></p>
 								<br />
-								<p>You can manage your settings <a class="underlined" href="settings.php">here</a></p>
+								<p>This location will be no longer accessible until the plugin is installed.</p>
 								<br />
 								<p>You can test any form on your website by using special email stop_email@example.com. Every submit with this email will be blocked.</p>
 							  </div>
@@ -163,7 +163,7 @@ if( empty( $is_installed ) ){
 						   		    <input type="text" placeholder="Access key or e-mail" class="input-field" name="access_key_field" required style="display: inline;"/>
                                     <img class="preloader" src="img/preloader.gif" style="display: none;">
                                 </div>
-						   		 	<p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration <img  class ="show_more_icon" src="img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
+						   		 	<p><button type="button" class="btn" id="show_more_btn" style="background-color:transparent">Advanced configuration (optional) <img  class ="show_more_icon" src="img/expand_more.png" alt="Show more" style="width:24px; height:24px;"/></button></p>
  							   		<div class ="advanced_conf">
 							   		<p class="text-center">Set admin password</p>
 									<input type="password" name="admin_password" class="input-field" placeholder="Password"> 							   			
