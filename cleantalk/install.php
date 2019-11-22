@@ -5,10 +5,12 @@ use Cleantalk\Common\API;
 use Cleantalk\Variables\Post;
 use Cleantalk\Variables\Server;
 
-require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
-require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
+if(version_compare( phpversion(), '5.6', '>=' )){
+	require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+	require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
+}
 
-if( empty( $is_installed ) ){
+if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 	
 	// Validating key
 	if( Post::get( 'action' ) == 'key_validate' && Post::get( 'security' ) == md5( Server::get( 'SERVER_NAME' ) ) ){
@@ -150,7 +152,7 @@ if( empty( $is_installed ) ){
 					        <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
                                 <h4><p class="text-center">PHP version is <?php echo phpversion(); ?></p></h4>
                                 <h4><p class="text-center">The plugin requires version 5.6 or higher.</p></h4>
-                                <h4><p class="text-center">Please, contact you hosting provider to update it.</p></h4>
+                                <h4><p class="text-center">Please, contact your hosting provider to update it.</p></h4>
                             
                             <!-- Already installed. Settings link -->
                             <?php elseif( ! empty( $is_installed ) ) : ?>
