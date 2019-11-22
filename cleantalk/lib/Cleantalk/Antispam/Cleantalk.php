@@ -423,58 +423,38 @@ class Cleantalk {
 			$url = preg_replace("/^(http)/i", "$1s", $url);
 		}
 		
-		if($this->use_bultin_api){
+		if(function_exists('curl_init')) {
+
+			$ch = curl_init();
 			
-			$args = array(
-				'body' => $data,
-				'timeout' => $server_timeout,
-				'user-agent' => APBCT_AGENT.' '.get_bloginfo( 'url' ),
-			);
+			curl_setopt($ch, CURLOPT_URL, $url);
+			curl_setopt($ch, CURLOPT_TIMEOUT, $server_timeout);
+			curl_setopt($ch, CURLOPT_POST, 1);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // receive server response ...
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); // resolve 'Expect: 100-continue' issue
+			curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); // see http://stackoverflow.com/a/23322368
 
-			$result = wp_remote_post($url, $args);
-
-			if( is_wp_error( $result ) ) {
-				$errors = $result->get_error_message();
-				$result = false;
-			}else{
-				 $result = wp_remote_retrieve_body($result);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disabling CA cert verivication and
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);     // Disabling common name verification
+			
+			if ($this->ssl_on && $this->ssl_path != '') {
+				curl_setopt($ch, CURLOPT_CAINFO, $this->ssl_path);
 			}
+
+			$result = curl_exec($ch);
 			
-		}else{
-			
-			if(function_exists('curl_init')) {
-
-				$ch = curl_init();
-
-				curl_setopt($ch, CURLOPT_URL, $url);
-				curl_setopt($ch, CURLOPT_TIMEOUT, $server_timeout);
-				curl_setopt($ch, CURLOPT_POST, 1);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // receive server response ...
-				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); // resolve 'Expect: 100-continue' issue
-				curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); // see http://stackoverflow.com/a/23322368
-
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disabling CA cert verivication and 
-				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);     // Disabling common name verification
-
-				if ($this->ssl_on && $this->ssl_path != '') {
-					curl_setopt($ch, CURLOPT_CAINFO, $this->ssl_path);
+			if (!$result) {
+				$curl_error = curl_error($ch);
+				// Use SSL next time, if error occurs.
+				if(!$this->ssl_on){
+					$this->ssl_on = true;
+					$args = func_get_args();
+					return $this->sendRequest($args[0], $args[1], $server_timeout);
 				}
-
-				$result = curl_exec($ch);
-				
-				if (!$result) {
-					$curl_error = curl_error($ch);
-					// Use SSL next time, if error occurs.
-					if(!$this->ssl_on){
-						$this->ssl_on = true;
-						$args = func_get_args();
-						return $this->sendRequest($args[0], $args[1], $server_timeout);
-					}
-				}
-
-				curl_close($ch); 
 			}
+
+			curl_close($ch);
 		}
 
         if (!$result) {
@@ -494,17 +474,18 @@ class Cleantalk {
             }
         }
         
-        if (!$result || !Helper::is_json($result)) {
-            $response = null;
-            $response['errno'] = 1;
-            if ($curl_error) {
-                $response['errstr'] = sprintf("CURL error: '%s'", $curl_error); 
-            } else {
-                $response['errstr'] = 'No CURL support compiled in'; 
-            }
-            $response['errstr'] .= ' or disabled allow_url_fopen in php.ini.'; 
-            $response = json_decode(json_encode($response));
-            
+        if (!$result) {
+	        $response          = null;
+	        $response['errno'] = 2;
+	        if( ! Helper::is_json($result) ){
+		        $response['errstr'] = 'Wrong server response format: ' . substr( $result, 100 );
+	        }else{
+		        $response['errstr'] = $curl_error
+			        ? sprintf( "CURL error: '%s'", $curl_error )
+			        : 'No CURL support compiled in';
+		        $response['errstr'] .= ' or disabled allow_url_fopen in php.ini.';
+	        }
+	        $response = json_decode( json_encode( $response ) );
             return $response;
         }
         
