@@ -142,6 +142,9 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 	// PrestaShop
 	if (preg_match('/(PrestaShop.*?)/', $index_file))
 		$out = 'PrestaShop';
+	// Question2Answer
+	if (preg_match('/(Question2Answer.*?)/', $index_file))
+		$out = 'Question2Answer';
 	
 	return $out;
 }

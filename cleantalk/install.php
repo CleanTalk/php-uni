@@ -79,6 +79,9 @@ if( empty( $is_installed ) ){
 						// array_push( $files_to_mod, "account.php", "open.php" );
 						$exclusions['submitLogin'] = '1';
 						break;
+                    case 'Question2Answer':
+						$exclusions['dologin'] = '1';
+						break;
 				}
 				
 				//Additional scripts
