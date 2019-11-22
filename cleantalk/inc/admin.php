@@ -131,6 +131,8 @@ function uninstall( $files = array() ){
 	// Deleting cron tasks
 	File::replace__variable( CLEANTALK_CRON_FILE, 'tasks', array() );
 	
+	// Deleting SFW nets
+	File::clean__variable( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets' );
 	
 	if(isset($files)){
 		foreach ( $files as $file ){
