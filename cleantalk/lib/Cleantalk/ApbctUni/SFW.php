@@ -146,6 +146,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
         $result = $this->api()->method__get_2s_blacklists_db($ct_key);
 		if( empty( $result['error'] ) ){
 			if( ! is_dir( CLEANTALK_ROOT . 'data' ) ) mkdir( CLEANTALK_ROOT . 'data' );
+			File::clean__variable ( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets' );
 			File::inject__variable( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets', $result, 'yes');
 			$out = count( $result );
 		}else{
