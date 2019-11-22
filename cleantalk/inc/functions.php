@@ -66,7 +66,7 @@
 			
 			// Making a request
 			$ct = new \Cleantalk\Antispam\Cleantalk();
-			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
+			$ct->server_url = 'http://moderate.cleantalk.org';
 			
 			$ct_result = $registration
 				? $ct->isAllowUser($ct_request)
@@ -526,10 +526,13 @@
 	
 	function apbct_check_exclusions(){
 		global $exclusions;
-		foreach ($exclusions as $name => $value){
-			if(isset($_POST[$name])){
-				if(empty($value) || ($value && $_POST[$name] === $value))
-					return true;
+		if( ! empty ( $exclusions ) ){
+			foreach ( $exclusions as $name => $value ){
+				if( isset( $_POST[ $name ] ) ){
+					if( empty( $value ) || ( $value && $_POST[ $name ] === $value ) ){
+						return true;
+					}
+				}
 			}
 		}
 		return false;
