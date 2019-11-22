@@ -258,8 +258,6 @@ class API{
 			'timestamp'   => time()
 		);
 		
-		error_log( var_export( $request, true ));
-		
 		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'sfw_logs') : $result;
 		

@@ -56,9 +56,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
-	
-                
-                error_log( var_export( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ), true ));
                 
                 // SFW actions
 	            if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
@@ -77,8 +74,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
 		            if( empty( $result['error'] ) && ! Err::check() )
 		                File::replace__variable( $path_to_config, 'sfw_last_logs_send', time() );
 	            }
-	
-	            // Err::add('some');
 	            
 	            Err::check() or die(json_encode(array('success' => true)));
 	            die(Err::check_and_output( 'as_json' ));
