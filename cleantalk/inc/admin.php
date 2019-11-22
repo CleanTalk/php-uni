@@ -3,6 +3,7 @@
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Variables\Post;
+use Cleantalk\ApbctUni\Cron;
 
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
@@ -61,6 +62,10 @@ function install( $files, $api_key, $cms, $exclusions ){
 	// Install settings in cofig if everything is ok
 	if( ! Err::check() )
 		install_config( $files, $api_key, $cms, $exclusions );
+	
+	// Set cron tasks
+	if( ! Err::check() )
+		install_cron();
 }
 
 function install_config( $modified_files, $api_key, $cms, $exclusions ){
@@ -85,6 +90,11 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
 	File::inject__variable( $path_to_config, 'apikey', $api_key );
 	File::inject__variable( $path_to_config, 'detected_cms', $cms );
 	File::inject__variable( $path_to_config, 'is_installed', true );
+}
+
+function install_cron(){
+	Cron::addTask( 'sfw_update', 'apbct_sfw_update', 86400, time() + 60 );
+	Cron::addTask( 'sfw_send_logs', 'apbct_sfw_send_logs', 3600 );
 }
 
 function uninstall( $files = array() ){
@@ -117,6 +127,10 @@ function uninstall( $files = array() ){
 	File::replace__variable( $path_to_config, 'registrations_test', true );
 	File::replace__variable( $path_to_config, 'general_postdata_test', false );
 	File::replace__variable( $path_to_config, 'spam_firewall', true );
+	
+	// Deleting cron tasks
+	File::replace__variable( CLEANTALK_CRON_FILE, 'tasks', array() );
+	
 	
 	if(isset($files)){
 		foreach ( $files as $file ){
