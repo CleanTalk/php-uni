@@ -214,8 +214,8 @@ if( Server::is_post() && Post::get( 'action' ) ){
 <!--                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>-->
 <!--                    <p>Average request time for past 7 days: 0.399 seconds.</p>-->
                     <p>SpamFireWall base contains <?php echo $sfw_entries; ?> entries.</p>
-                    <p>SpamFireWall was updated <?php echo $sfw_last_update ? date('M d Y H:i:s', $sfw_last_update) : 'sometime';?>.</p>
-                    <p>SpamFireWall were sent at <?php echo $sfw_last_logs_send ? date('M d Y H:i:s', $sfw_last_logs_send) : 'sometime';?>.</p>
+                    <p>SpamFireWall was updated: <?php echo $sfw_last_update ? date('M d Y H:i:s', $sfw_last_update) : 'never';?>.</p>
+                    <p>SpamFireWall logs were sent: <?php echo $sfw_last_logs_send ? date('M d Y H:i:s', $sfw_last_logs_send) : 'never';?>.</p>
                 </div>
             </div>
                 <div class="wrapper wrapper__center">

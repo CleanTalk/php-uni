@@ -163,13 +163,13 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                 <div class="alert alert-success alert-dismissible fade in" style="display:none; word-wrap: break-word;" role="alert">
                                     <strong style="text-align: center; display: block;">Success!</strong>
                                     <br />
-                                    <p>Enter to your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
+                                    <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
                                     <br />
                                     <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/cleantalk/settings.php'; ?></a></p>
                                     <br />
                                     <p>This location will be no longer accessible until the plugin is installed.</p>
                                     <br />
-                                    <p>You can test any form on your website by using special email stop_email@example.com. Every submit with this email will be blocked.</p>
+                                    <p>You can test any form on your website by using special email stop_email@example.com. Any submit with this email will be blocked.</p>
                                 </div>
                                 <!-- Start Error box -->
                                 <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
