@@ -339,7 +339,7 @@
 						elseif(count($match_nickname) > 1)
 							$nickname['nick'] = $value;
 						else
-							$message[$prev_key.$key] = $value;
+                            $nickname[$prev_key.$key] = $value;
 					
 					// Subject
 					}elseif ($subject === null && preg_match("/subject/i", $key)){
