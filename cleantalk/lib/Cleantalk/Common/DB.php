@@ -1,6 +1,6 @@
 <?php
 
-namespace CleantalkBase;
+namespace Cleantalk\Common;
 
 /**
  * CleanTalk abstract Data Base driver.
@@ -14,10 +14,9 @@ namespace CleantalkBase;
  * @see https://github.com/CleanTalk/php-antispam
 */
 
-class CleantalkDB
+class DB
 {
-	
-	private static $instance;
+	use \Cleantalk\Templates\Singleton;
 	
 	/**
 	 * @var string Query string
@@ -39,26 +38,14 @@ class CleantalkDB
 	 */
 	public $prefix = '';
 	
-	public function __construct() {	}
-	public function __clone() { }
-	public function __wakeup() 	{ }
-	
-	public static function getInstance()
-	{
-		if (!isset(static::$instance)) {
-			static::$instance = new static;
-			static::$instance->init();
-		}
-		
-		return static::$instance;
-	}
-	
 	/**
 	 * Alternative constructor.
 	 * Initilize Database object and write it to property.
 	 * Set tables prefix.
 	 */
-	private function init(){ }
+	private function init(){
+	
+	}
 	
 	/**
 	 * Set $this->query string for next uses

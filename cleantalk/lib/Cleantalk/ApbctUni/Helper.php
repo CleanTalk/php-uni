@@ -1,4 +1,7 @@
 <?php
+
+namespace Cleantalk\ApbctUni;
+
 /**
  * Cleantalk's hepler class
  * 
@@ -14,4 +17,6 @@
  *
  */
 
-class CleantalkHelper extends CleantalkBase\CleantalkHelper{}
+class Helper extends \Cleantalk\Common\Helper{
+
+}
