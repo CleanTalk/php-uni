@@ -201,7 +201,9 @@
 	* @return array
 	*/ 
 	function apbct_get_fields_any($arr, $message=array(), $email = null, $nickname = array('nick' => '', 'first' => '', 'last' => ''), $subject = null, $skip = false, $reg = false, $not_reg=false, $prev_key = '')
-	{	
+	{
+        global $detected_cms;
+
 		// Skip request if fields exists
 		$skip_params = array( 
 			'ipn_track_id', 	// PayPal IPN #
@@ -326,7 +328,10 @@
 						$email = $value;
 						
 					// Names
-					}elseif (preg_match("/name/i", $key)){
+					} elseif (
+                        preg_match( "/name/i", $key ) ||
+                        ( $detected_cms == 'Question2Answer' && preg_match( "/^handle$/i", $key ) )
+                    ){
 						
 						preg_match("/(first.?name)?(name.?first)?(forename)?/", $key, $match_forename);
 						preg_match("/(last.?name)?(family.?name)?(second.?name)?(surname)?/", $key, $match_surname);
