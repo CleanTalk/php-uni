@@ -204,7 +204,7 @@ class API{
 		
 		if($date) $request['date'] = $date;
 		
-		$result = static::send_request($request, self::URL, 10);
+		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'spam_check_cms') : $result;
 		
 		return $result;
@@ -231,7 +231,7 @@ class API{
 		
 		if($date) $request['date'] = $date;
 		
-		$result = static::send_request($request, self::URL, 10);
+		$result = static::send_request($request);
 		$result = $do_check ? static::check_response($result, 'spam_check') : $result;
 		
 		return $result;
@@ -606,94 +606,22 @@ class API{
 	 *
 	 * @return array|bool
 	 */
-	static public function send_request($data, $url = self::URL, $timeout = 5, $ssl = false, $ssl_path = '')
+	static public function send_request($data, $url = self::URL, $ssl = false)
 	{
-		// Possibility to switch agent vaersion
-		$data['agent'] = !empty($data['agent'])
-			? $data['agent']
-			: (defined('CLEANTALK_AGENT') ? CLEANTALK_AGENT : self::AGENT);
+		// Default preset is 'api'
+		$presets = array( 'api' );
 		
-		// Make URL string
-		$data_string = http_build_query($data);
-		$data_string = str_replace("&amp;", "&", $data_string);
+		// Add ssl to 'presets' if enabled
+		if( $ssl )
+			array_push( $presets, 'ssl' );
 		
-		// For debug purposes
-		if(defined('CLEANTALK_DEBUG') && CLEANTALK_DEBUG){
-			global $apbct_debug;
-			$apbct_debug['sent_data']      = $data;
-			$apbct_debug['request_string'] = $data_string;
-		}
+		$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data,  $presets );
 		
-		// Possibility to switch API url
-		$url = defined('CLEANTALK_API_URL') ? CLEANTALK_API_URL : $url;
+		// Retry with SSL enabled if failed
+		if( ! empty ( $result['error'] ) && $ssl === false )
+			$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, 'api ssl' );
 		
-		if(function_exists('curl_init')){
-			
-			$ch = curl_init();
-			
-			// Set diff options
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
-			
-			$ssl_path = $ssl_path
-				? $ssl_path
-				: (defined('CLEANTALK_CASERT_PATH') ? CLEANTALK_CASERT_PATH : '');
-			
-			// Switch on/off SSL
-			if($ssl && $ssl_path){
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-				curl_setopt($ch, CURLOPT_CAINFO, $ssl_path);
-			}else{
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-			}
-			
-			// Make a request
-			$result = curl_exec($ch);
-			$errors = curl_error($ch);
-			curl_close($ch);
-			
-			// Retry with SSL enabled if failed
-			if($result === false){
-				if($ssl === false){
-					return self::send_request($data, $url, $timeout, true, $ssl_path);
-				}
-			}
-			
-		}else{
-			$errors = 'CURL_NOT_INSTALLED';
-		}
-		
-		// Trying to use file_get_contents() to make a API call
-		if(!empty($errors)){
-			if(ini_get('allow_url_fopen')){
-				$opts = array(
-					'http' => array(
-						'method' => "POST",
-						'timeout' => $timeout,
-						'content' => $data_string,
-					),
-				);
-				$context = stream_context_create($opts);
-				$result = @file_get_contents($url, 0, $context);
-				
-				$errors = $result === false
-					? $errors . '_FAILED_TO_USE_FILE_GET_CONTENTS'
-					: false;
-				
-			}else{
-				$errors .= '_AND_ALLOW_URL_FOPEN_IS_DISABLED';
-			}
-		}
-		
-		return empty($result) || !empty($errors)
-			? array('error' => $errors)
-			: $result;
+		return $result;
 	}
 	
 	/**

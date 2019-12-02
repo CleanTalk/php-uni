@@ -23,7 +23,7 @@ class Helper{
 	/**
 	 * Default user agent for HTTP requests
 	 */
-	const AGENT = 'Cleatalk-Helper/3.2';
+	const AGENT = 'Cleatalk-Helper/4.0';
 	
 	/**
 	 * @var array Set of private networks IPv4 and IPv6
@@ -444,37 +444,52 @@ class Helper{
 	 */
 	static public function http__request($url, $data = array(), $presets = null, $opts = array())
 	{
+		// For debug purposes
+		if( defined( 'CLEANTALK_DEBUG' ) && CLEANTALK_DEBUG ){
+			global $apbct_debug;
+			$apbct_debug['data'] = $data;
+		}
+		
+		// Preparing presets
+		$presets = is_array($presets) ? $presets : explode(' ', $presets);
+		$curl_only = in_array( 'async', $presets ) ||
+		             in_array( 'dont_follow_redirects', $presets ) ||
+		             in_array( 'ssl', $presets ) ||
+		             in_array( 'split_to_array', $presets )
+			? true : false;
+		
 		if(function_exists('curl_init')){
 			
 			$ch = curl_init();
 			
+			// Set data if it's not empty
 			if(!empty($data)){
 				// If $data scalar converting it to array
-				$data = is_string($data) || is_int($data) ? array($data => 1) : $data;
-				// Build query
-				$opts[CURLOPT_POSTFIELDS] = $data;
+				$opts[CURLOPT_POSTFIELDS] = is_scalar($data)
+					? array($data => 1)
+					: $data;
 			}
 			
 			// Merging OBLIGATORY options with GIVEN options
-			$opts = self::array_merge__save_numeric_keys(
+			// Using POST method by default
+			$opts = static::array_merge__save_numeric_keys(
 				array(
 					CURLOPT_URL => $url,
-					CURLOPT_RETURNTRANSFER => true,
-					CURLOPT_CONNECTTIMEOUT_MS => 3000,
+					CURLOPT_TIMEOUT => 5,
 					CURLOPT_FORBID_REUSE => true,
-					CURLOPT_USERAGENT => self::AGENT . '; ' . (!empty(Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST'),
 					CURLOPT_POST => true,
 					CURLOPT_SSL_VERIFYPEER => false,
 					CURLOPT_SSL_VERIFYHOST => 0,
-					CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
 					CURLOPT_FOLLOWLOCATION => true,
 					CURLOPT_MAXREDIRS => 5,
+					CURLOPT_USERAGENT => static::AGENT . '; ' . ( ! empty( Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST' ),
+					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0, // see http://stackoverflow.com/a/23322368
+					CURLOPT_RETURNTRANSFER => true, // receive server response ...
+					CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
 				),
 				$opts
 			);
 			
-			// Use presets
-			$presets = is_array($presets) ? $presets : explode(' ', $presets);
 			foreach($presets as $preset){
 				
 				switch($preset){
@@ -498,7 +513,7 @@ class Helper{
 						break;
 					
 					case 'get':
-						$opts[CURLOPT_URL] .= $data ? '?' . str_replace("&amp;", "&", http_build_query($data)) : '';
+						$opts[ CURLOPT_URL ] .= $data ? '?' . str_replace( "&amp;", "&", http_build_query( $data ) ) : '';
 						$opts[CURLOPT_POST] = false;
 						$opts[CURLOPT_POSTFIELDS] = null;
 						break;
@@ -514,9 +529,7 @@ class Helper{
 						
 						break;
 				}
-				
 			}
-			unset($preset);
 			
 			curl_setopt_array($ch, $opts);
 			$result = curl_exec($ch);
@@ -527,7 +540,8 @@ class Helper{
 			
 			if($result){
 				
-				if(strpos($result, PHP_EOL) !== false && !in_array('dont_split_to_array', $presets))
+				// Split to array by lines if such preset given
+				if( strpos( $result, PHP_EOL ) !== false && in_array( 'split_to_array', $presets ) )
 					$result = explode(PHP_EOL, $result);
 				
 				// Get code crossPHP method
@@ -535,22 +549,41 @@ class Helper{
 					$curl_info = curl_getinfo($ch);
 					$result = $curl_info['http_code'];
 				}
-				curl_close($ch);
+				
 				$out = $result;
+				
 			}else
 				$out = array('error' => curl_error($ch));
+			
+			curl_close($ch);
+			
+		// Curl not installed. Trying file_get_contents()
+		}elseif( ini_get( 'allow_url_fopen' ) && ! $curl_only ){
+			
+			// Trying to get code via get_headers()
+			if( in_array( 'get_code', $presets ) ){
+				$headers = get_headers( $url );
+				$result  = (int) preg_replace( '/.*(\d{3}).*/', '$1', $headers[0] );
+				
+			// Making common request
+			}else{
+				$opts    = array(
+					'http' => array(
+						'method'  => in_array( 'get', $presets ) ? 'GET' : 'POST',
+						'timeout' => 5,
+						'content' => str_replace( "&amp;", "&", http_build_query( $data ) ),
+					),
+				);
+				$context = stream_context_create( $opts );
+				$result  = @file_get_contents( $url, 0, $context );
+			}
+			
+			$out = $result === false
+				? 'FAILED_TO_USE_FILE_GET_CONTENTS'
+				: $result;
+			
 		}else
-			$out = array('error' => 'CURL_NOT_INSTALLED');
-		
-		/**
-		 * Getting HTTP-response code without cURL
-		 */
-		if($presets && ($presets == 'get_code' || (is_array($presets) && in_array('get_code', $presets)))
-			&& isset($out['error']) && $out['error'] == 'CURL_NOT_INSTALLED'
-		){
-			$headers = get_headers($url);
-			$out = (int)preg_replace('/.*(\d{3}).*/', '$1', $headers[0]);
-		}
+			$out = array('error' => 'CURL not installed and allow_url_fopen is disabled');
 		
 		return $out;
 	}
