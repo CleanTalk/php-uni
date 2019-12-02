@@ -13,5 +13,5 @@
 // Response language
 $response_lang = 'en';
 
-define('APBCT_VERSION', '2.0');
-define('APBCT_AGENT', 'uni-20');
+define('APBCT_VERSION', '2.1');
+define('APBCT_AGENT', 'uni-21');
