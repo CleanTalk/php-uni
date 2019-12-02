@@ -3,20 +3,14 @@
 	/*
 	* Performs spam test
 	* @return void or exit script
-	*/ 	
+	*/
+	
 	function apbct_spam_test($data){
 		
-		global $auth_key;
+		global $apikey, $response_lang, $registrations_test, $general_postdata_test;
 		
 		// Patch for old PHP versions
-		require_once('ct_phpFix.php');
-				
-		// Libs
-		require_once('CleantalkBase/CleantalkHelper.php');
-		require_once('CleantalkHelper.php');
-		require_once('Cleantalk.php');
-		require_once('CleantalkRequest.php');
-		require_once('CleantalkResponse.php');
+		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
 		
 		$msg_data = apbct_get_fields_any($data);
 		
@@ -27,16 +21,25 @@
 		$message         = isset($msg_data['message'])  ? $msg_data['message']  : array();
 		
 		// Flags
-		$skip            = isset($msg_data['contact'])  ? $msg_data['contact']  : false;
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
-				
+		$skip            = isset($msg_data['skip'])     ? $msg_data['skip']     : false;
+		
+		// Skip check if
+		if(
+		    $skip || // Skip flag set by apbct_get_fields_any()
+			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
+			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
+		    ( apbct_check_exclusions() ) // Has an exclusions in POST
+		)
+			$skip = true;
+		
 		// Do check if email is not set
-		if(!empty($sender_email) && !$skip){
+		if( ! $skip ){
 			
-			$ct_request = new CleantalkRequest();
+			$ct_request = new \Cleantalk\Antispam\CleantalkRequest();
 			
 			// Service pararams
-			$ct_request->auth_key             = $auth_key;
+			$ct_request->auth_key             = $apikey;
 			$ct_request->agent                = APBCT_AGENT;
 			                                  
 			// Message params                 
@@ -47,10 +50,13 @@
 			// IPs
 			$possible_ips = apbct_get_possible_ips();
 			$ct_request->sender_ip            = apbct_get_ip();
-			$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
-			$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
-			$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];
-			
+
+			if ($possible_ips) {
+				$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
+				$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
+				$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];				
+			}
+
 			// Misc params
 			$ct_request->js_on                = apbct_js_test();
 			$ct_request->submit_time          = apbct_get_submit_time();
@@ -59,8 +65,8 @@
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
 			
 			// Making a request
-			$ct = new Cleantalk();
-			$ct->server_url = 'http://moderate.cleantalk.org/api2.0/';
+			$ct = new \Cleantalk\Antispam\Cleantalk();
+			$ct->server_url = 'http://moderate.cleantalk.org';
 			
 			$ct_result = $registration
 				? $ct->isAllowUser($ct_request)
@@ -83,7 +89,7 @@
 	function apbct_get_sender_info($data)
 	{
 		
-		global $auth_key, $response_lang;
+		global $apikey, $response_lang;
 				
 		return $sender_info = array(
 		
@@ -97,7 +103,7 @@
 			'php_session'     => session_id() != '' ? 1 : 0, 
 			'cookies_enabled' => apbct_cookies_test(),
 			'fields_number'   => sizeof($data),
-			'ct_options'      => json_encode(array('auth_key' => $auth_key, 'response_lang' => $response_lang)),
+			'ct_options'      => json_encode(array('auth_key' => $apikey, 'response_lang' => $response_lang)),
 			
 			// PHP cookies                                                                                                                                                 
 			// 'cookies_enabled'        => $cookie_is_ok,                                                                                                                     
@@ -112,6 +118,9 @@
 			'page_set_timestamp'     => isset($_COOKIE['apbct_ps_timestamp'])          ? $_COOKIE['apbct_ps_timestamp']         : null,
 			'form_visible_inputs'    => !empty($_COOKIE['apbct_visible_fields_count']) ? $_COOKIE['apbct_visible_fields_count'] : null,
 			'apbct_visible_fields'   => !empty($_COOKIE['apbct_visible_fields'])       ? $_COOKIE['apbct_visible_fields']       : null,
+			
+			// Debug
+			'action' => \Cleantalk\Variables\Post::get('action') ? \Cleantalk\Variables\Post::get('action') : null,
 		);
 	}
 	
@@ -169,7 +178,7 @@
 			$ip = !$ip ? filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
 			$result_ips['X-Real-Ip'] = !$ip ? '' : $ip;
 		}
-		return $result_ips;
+		return ($result_ips) ? $result_ips : null;
 	}
 	
 	/**
@@ -192,7 +201,9 @@
 	* @return array
 	*/ 
 	function apbct_get_fields_any($arr, $message=array(), $email = null, $nickname = array('nick' => '', 'first' => '', 'last' => ''), $subject = null, $skip = false, $reg = false, $not_reg=false, $prev_key = '')
-	{	
+	{
+        global $detected_cms;
+
 		// Skip request if fields exists
 		$skip_params = array( 
 			'ipn_track_id', 	// PayPal IPN #
@@ -317,7 +328,10 @@
 						$email = $value;
 						
 					// Names
-					}elseif (preg_match("/name/i", $key)){
+					} elseif (
+                        preg_match( "/name/i", $key ) ||
+                        ( $detected_cms == 'Question2Answer' && preg_match( "/^handle$/i", $key ) )
+                    ){
 						
 						preg_match("/(first.?name)?(name.?first)?(forename)?/", $key, $match_forename);
 						preg_match("/(last.?name)?(family.?name)?(second.?name)?(surname)?/", $key, $match_surname);
@@ -330,7 +344,7 @@
 						elseif(count($match_nickname) > 1)
 							$nickname['nick'] = $value;
 						else
-							$message[$prev_key.$key] = $value;
+                            $nickname[$prev_key.$key] = $value;
 					
 					// Subject
 					}elseif ($subject === null && preg_match("/subject/i", $key)){
@@ -405,9 +419,9 @@
 	 * return null|0|1;
 	 */
 	 function apbct_js_test(){
-		 global $auth_key;
+		 global $apikey;
 		 if(isset($_COOKIE['apbct_checkjs'])){
-			if($_COOKIE['apbct_checkjs'] == md5($auth_key))
+			if($_COOKIE['apbct_checkjs'] == md5($apikey))
 				return 1;
 			else
 				return 0;
@@ -423,9 +437,9 @@
 	 */
 	function apbct_cookies_test()
 	{
-		global $auth_key;
+		global $apikey;
 		if(isset($_COOKIE['apbct_cookies_test'], $_COOKIE['apbct_timestamp'])){			
-			if($_COOKIE['apbct_cookies_test'] == md5($auth_key.$_COOKIE['apbct_timestamp']))
+			if($_COOKIE['apbct_cookies_test'] == md5($apikey.$_COOKIE['apbct_timestamp']))
 				return 1;
 			else
 				return 0;
@@ -513,4 +527,18 @@
 		}
 		
 		die($die_page);
+	}
+	
+	function apbct_check_exclusions(){
+		global $exclusions;
+		if( ! empty ( $exclusions ) ){
+			foreach ( $exclusions as $name => $value ){
+				if( isset( $_POST[ $name ] ) ){
+					if( empty( $value ) || ( $value && $_POST[ $name ] === $value ) ){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}

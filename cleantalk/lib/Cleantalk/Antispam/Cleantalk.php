@@ -1,5 +1,9 @@
 <?php
 
+namespace Cleantalk\Antispam;
+
+use Cleantalk\Common\Helper;
+
 /**
  * Cleantalk class create request
  */
@@ -118,7 +122,7 @@ class Cleantalk {
      * Function sends the results of manual moderation
      *
      * @param CleantalkRequest $request
-     * @return type
+     * @return CleantalkResponse
      */
     public function sendFeedback(CleantalkRequest $request) {
         $msg = $this->createMsg('send_feedback', $request);
@@ -132,22 +136,24 @@ class Cleantalk {
      * @return \xmlrpcmsg
      */
     private function createMsg($method, CleantalkRequest $request) {
-		
+	
+	    $request->method_name = $method;
+    	
         switch ($method) {
             case 'check_message':
                 // Convert strings to UTF8
-                $request->message         = CleantalkHelper::toUTF8($request->message,         $this->data_codepage);
-                $request->example         = CleantalkHelper::toUTF8($request->example,         $this->data_codepage);
-                $request->sender_email    = CleantalkHelper::toUTF8($request->sender_email,    $this->data_codepage);
-                $request->sender_nickname = CleantalkHelper::toUTF8($request->sender_nickname, $this->data_codepage);
+                $request->message         = Helper::toUTF8($request->message,         $this->data_codepage);
+                $request->example         = Helper::toUTF8($request->example,         $this->data_codepage);
+                $request->sender_email    = Helper::toUTF8($request->sender_email,    $this->data_codepage);
+                $request->sender_nickname = Helper::toUTF8($request->sender_nickname, $this->data_codepage);
                 $request->message = $this->compressData($request->message);
 				$request->example = $this->compressData($request->example);
                 break;
 
             case 'check_newuser':
                 // Convert strings to UTF8
-                $request->sender_email    = CleantalkHelper::toUTF8($request->sender_email,    $this->data_codepage);
-                $request->sender_nickname = CleantalkHelper::toUTF8($request->sender_nickname, $this->data_codepage);
+                $request->sender_email    = Helper::toUTF8($request->sender_email,    $this->data_codepage);
+                $request->sender_nickname = Helper::toUTF8($request->sender_nickname, $this->data_codepage);
                 break;
 
             case 'send_feedback':
@@ -156,15 +162,20 @@ class Cleantalk {
                 }
                 break;
         }
-		
+        
         // Removing non UTF8 characters from request, because non UTF8 or malformed characters break json_encode().
         foreach ($request as $param => $value) {
             if(is_array($request->$param) || is_string($request->$param))
-				$request->$param = CleantalkHelper::removeNonUTF8($value);
+				$request->$param = Helper::removeNonUTF8($value);
         }
-		
-        $request->method_name = $method;
-		$request->message = is_array($request->message) ? json_encode($request->message) : $request->message;
+        
+        // Conver $request->message to array
+        $request->message = is_scalar( $request->message ) ? array($request->message) : $request->message;
+        
+        // Cleaning from null values
+	    array_filter( $request->message, function( $var ){
+		    return ! is_null( $var );
+	    } );
 		
 		// Wiping cleantalk's headers but, not for send_feedback
 		if($request->method_name != 'send_feedback'){
@@ -228,13 +239,13 @@ class Cleantalk {
     /**
      * httpRequest 
      * @param $msg
-     * @return boolean|\CleantalkResponse
+     * @return boolean|CleantalkResponse
      */
     private function httpRequest($msg) {
 		
 		// Using current server without changing it
         $result = !empty($this->work_url) && ($this->server_changed + $this->server_ttl > time())
-	        ? $this->sendRequest($msg, $this->work_url, $this->server_timeout)
+	        ? $this->sendRequest($this->work_url, $msg, $this->server_timeout)
 			: false;
 
 		// Changing server
@@ -252,14 +263,14 @@ class Cleantalk {
 			// Loop until find work server
 			foreach ($servers as $server) {
 				
-				$dns = CleantalkHelper::ip__resolve__cleantalks($server['ip']);
+				$dns = Helper::ip__resolve__cleantalks($server['ip']);
 				if(!$dns)
 					continue;
 				
 				$this->work_url = $url_protocol.$dns.$url_suffix;
 				$this->server_ttl = $server['ttl'];
 
-				$result = $this->sendRequest($msg, $this->work_url, $this->server_timeout);
+				$result = $this->sendRequest($this->work_url, $msg, $this->server_timeout);
 
 				if ($result !== false && $result->errno === 0) {
 					$this->server_change = true;
@@ -357,8 +368,48 @@ class Cleantalk {
 
         return empty($response) ? null : $response;
     }
-    
-    /**
+	
+	/**
+	 * Send JSON request to servers
+	 * @param $msg
+	 * @return boolean|\CleantalkResponse
+	 */
+	private function sendRequest($url, $data, $server_timeout = 3)
+	{
+		// Convert to JSON
+		$data = json_encode($data);
+		
+		// Adding API version
+		if( isset( $this->api_version ) && strpos( $url, $this->api_version ) === false ) {
+			$url .= $this->api_version;
+		}
+		
+		// Default preset is 'api'
+		$presets = array( 'moderate_api' );
+		
+		// Add ssl to 'presets' if enabled
+		if($this->ssl_on){
+			array_push( $presets, 'ssl' );
+			$url = ! preg_match( "/^https:/", $url ) ? preg_replace( "/^(http)/i", "$1s", $url ) : $url;
+		}
+		
+		$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, $presets);
+		
+		// Retry with SSL enabled if failed
+		if( ! empty ( $result['error'] ) && ! $this->ssl_on ){
+			array_push( $presets, 'ssl' );
+			$url = ! preg_match( "/^https:/", $url ) ? preg_replace( "/^(http)/i", "$1s", $url ) : $url;
+			$result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, $presets );
+		}
+		
+		// Check if the answer is JSON
+		if( empty ( $result['error'] ) && ! Helper::is_json($result)){
+			$response['error'] = 'Wrong server response format: ' . substr( $result, 100 );
+		}
+		return $result;
+	}
+	
+	/**
     * Function to check response time
     * param string
     * @return int
@@ -366,7 +417,7 @@ class Cleantalk {
     function httpPing($host){
 
         // Skip localhost ping cause it raise error at fsockopen.
-        // And return minimun value 
+        // And return minimun value
         if ($host == 'localhost')
             return 0.001;
 
@@ -383,142 +434,5 @@ class Cleantalk {
         }
         
         return $status;
-    }
-	
-	/**
-     * Send JSON request to servers 
-     * @param $msg
-     * @return boolean|\CleantalkResponse
-     */
-    private function sendRequest($data = null, $url, $server_timeout = 3)
-	{
-        // Convert to array
-        $data = (array)json_decode(json_encode($data), true);
-		
-		//Cleaning from 'null' values
-		$tmp_data = array();
-		foreach($data as $key => $value){
-			if($value !== null)
-				$tmp_data[$key] = $value;
-		}
-		$data = $tmp_data;
-		unset($key, $value, $tmp_data);
-		
-		// Convert to JSON
-		$data = json_encode($data);
-		
-        if (isset($this->api_version)) {
-            $url = $url . $this->api_version;
-        }
-        
-        $result = false;
-        $curl_error = null;
-		
-		// Switching to secure connection
-		if ($this->ssl_on && !preg_match("/^https:/", $url)){
-			$url = preg_replace("/^(http)/i", "$1s", $url);
-		}
-		
-		if($this->use_bultin_api){
-			
-			$args = array(
-				'body' => $data,
-				'timeout' => $server_timeout,
-				'user-agent' => APBCT_AGENT.' '.get_bloginfo( 'url' ),
-			);
-
-			$result = wp_remote_post($url, $args);
-
-			if( is_wp_error( $result ) ) {
-				$errors = $result->get_error_message();
-				$result = false;
-			}else{
-				 $result = wp_remote_retrieve_body($result);
-			}
-			
-		}else{
-			
-			if(function_exists('curl_init')) {
-
-				$ch = curl_init();
-
-				curl_setopt($ch, CURLOPT_URL, $url);
-				curl_setopt($ch, CURLOPT_TIMEOUT, $server_timeout);
-				curl_setopt($ch, CURLOPT_POST, 1);
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // receive server response ...
-				curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:')); // resolve 'Expect: 100-continue' issue
-				curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_0); // see http://stackoverflow.com/a/23322368
-
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Disabling CA cert verivication and 
-				curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);     // Disabling common name verification
-
-				if ($this->ssl_on && $this->ssl_path != '') {
-					curl_setopt($ch, CURLOPT_CAINFO, $this->ssl_path);
-				}
-
-				$result = curl_exec($ch);
-				
-				if (!$result) {
-					$curl_error = curl_error($ch);
-					// Use SSL next time, if error occurs.
-					if(!$this->ssl_on){
-						$this->ssl_on = true;
-						$args = func_get_args();
-						return $this->sendRequest($args[0], $args[1], $server_timeout);
-					}
-				}
-
-				curl_close($ch); 
-			}
-		}
-
-        if (!$result) {
-            $allow_url_fopen = ini_get('allow_url_fopen');
-            if (function_exists('file_get_contents') && isset($allow_url_fopen) && $allow_url_fopen == '1') {
-                $opts = array('http' =>
-                  array(
-                    'method'  => 'POST',
-                    'header'  => "Content-Type: text/html\r\n",
-                    'content' => $data,
-                    'timeout' => $server_timeout
-                  )
-                );
-
-                $context  = stream_context_create($opts);
-                $result = @file_get_contents($url, false, $context);
-            }
-        }
-        
-        if (!$result || !CleantalkHelper::is_json($result)) {
-            $response = null;
-            $response['errno'] = 1;
-            if ($curl_error) {
-                $response['errstr'] = sprintf("CURL error: '%s'", $curl_error); 
-            } else {
-                $response['errstr'] = 'No CURL support compiled in'; 
-            }
-            $response['errstr'] .= ' or disabled allow_url_fopen in php.ini.'; 
-            $response = json_decode(json_encode($response));
-            
-            return $response;
-        }
-        
-        $errstr = null;
-        $response = json_decode($result);
-        if ($result !== false && is_object($response)) {
-            $response->errno = 0;
-            $response->errstr = $errstr;
-        } else {
-            $errstr = 'Unknown response from ' . $url . '.' . ' ' . $result;
-            
-            $response = null;
-            $response['errno'] = 1;
-            $response['errstr'] = $errstr;
-            $response = json_decode(json_encode($response));
-        } 
-        
-        
-        return $response;
     }
 }
