@@ -15,7 +15,7 @@ class Request extends SuperGlobalVariables{
 	static $instance;
 	
 	/**
-	 * Gets given $_REQUEST variable and seva it to memory
+	 * Gets given $_REQUEST variable and save it to memory
 	 * @param $name
 	 *
 	 * @return mixed|string
