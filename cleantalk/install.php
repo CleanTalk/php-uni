@@ -107,7 +107,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 		
 		// Check for errors and output result
         $out = Err::check()
-            ? Err::get_last()
+            ? Err::get_last('as_json')
 	        : array( 'success' => true );
 		
 		die( json_encode( $out ) );
