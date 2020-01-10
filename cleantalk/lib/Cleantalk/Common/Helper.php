@@ -23,7 +23,7 @@ class Helper{
 	/**
 	 * Default user agent for HTTP requests
 	 */
-	const AGENT = 'Cleatalk-Helper/4.0';
+	const DEFAULT_USER_AGENT = 'Cleantalk-Helper/3.2';
 	
 	/**
 	 * @var array Set of private networks IPv4 and IPv6
@@ -426,6 +426,10 @@ class Helper{
 		
 	}
 	
+	static public function http__user_agent(){
+		return defined( 'CLEANTALK_USER_AGENT' ) ? CLEANTALK_USER_AGENT : static::DEFAULT_USER_AGENT;
+	}
+	
 	/**
 	 * Function sends raw http request
 	 *
@@ -482,7 +486,7 @@ class Helper{
 					CURLOPT_SSL_VERIFYHOST => 0,
 					CURLOPT_FOLLOWLOCATION => true,
 					CURLOPT_MAXREDIRS => 5,
-					CURLOPT_USERAGENT => static::AGENT . '; ' . ( ! empty( Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST' ),
+					CURLOPT_USERAGENT => static::http__user_agent() . '; ' . ( ! empty( Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST' ),
 					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0, // see http://stackoverflow.com/a/23322368
 					CURLOPT_RETURNTRANSFER => true, // receive server response ...
 					CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
