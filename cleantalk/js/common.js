@@ -24,9 +24,6 @@ function sendAJAX(data, params, obj){
 		data: data,
 		success: function(result){
 
-			console.log(result);
-			console.log(button);
-
 			if(button){ button.removeAttr('disabled'); button.css('cursor', 'pointer'); }         // Enable button
 			if(spinner && typeof spinner == 'function') spinner();                                // Hide spinner
 			if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none'); // Hide spinner
