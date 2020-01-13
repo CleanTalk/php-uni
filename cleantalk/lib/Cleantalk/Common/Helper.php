@@ -469,9 +469,7 @@ class Helper{
 			// Set data if it's not empty
 			if(!empty($data)){
 				// If $data scalar converting it to array
-				$opts[CURLOPT_POSTFIELDS] = is_scalar($data)
-					? array($data => 1)
-					: $data;
+				$opts[CURLOPT_POSTFIELDS] = $data;
 			}
 			
 			// Merging OBLIGATORY options with GIVEN options

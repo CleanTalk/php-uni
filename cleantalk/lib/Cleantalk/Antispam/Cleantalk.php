@@ -406,7 +406,7 @@ class Cleantalk {
 		if( empty ( $result['error'] ) && ! Helper::is_json($result)){
 			$response['error'] = 'Wrong server response format: ' . substr( $result, 100 );
 		}
-		return $result;
+		return json_decode($result);
 	}
 	
 	/**
