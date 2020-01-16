@@ -11,7 +11,6 @@ function install( $files, $api_key, $cms, $exclusions ){
 	
 	foreach ($files as $file){
 		
-		$file = CLEANTALK_SERVER_ROOT . $file;
 		$file_content = file_get_contents( $file );
 		$php_open_tags  = preg_match_all("/(<\?)/", $file_content);
 		$php_close_tags = preg_match_all("/(\?>)/", $file_content);
@@ -136,8 +135,8 @@ function uninstall( $files = array() ){
 	
 	if(isset($files)){
 		foreach ( $files as $file ){
-			File::clean__tag( CLEANTALK_SERVER_ROOT . $file, 'top_code' );
-			File::clean__tag( CLEANTALK_SERVER_ROOT . $file, 'bottom_code' );
+			File::clean__tag( $file, 'top_code' );
+			File::clean__tag( $file, 'bottom_code' );
 		}
 	}
 	
@@ -164,7 +163,7 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 		if (preg_match('/(Question2Answer.*?)/', $index_file))
 			$out = 'Question2Answer';
 		// FormTools
-		if (preg_match('/(use/sFormTools.*?)/', $index_file))
+		if (preg_match('/(use\sFormTools.*?)/', $index_file))
 			$out = 'FormTools';
 		// SimplaCMS
 		if (preg_match('/(Simpla CMS.*?)/', $index_file))

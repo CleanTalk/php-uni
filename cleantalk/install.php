@@ -58,15 +58,32 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 		// Parsing key
 		if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
 			
-			$api_key       = $matches[0];
-			$path_to_index = CLEANTALK_SERVER_ROOT . 'index.php';
-			// Check if index.php exists
-			if( file_exists( $path_to_index ) ){
-				
-				$cms = detect_cms( $path_to_index );
-				
+			$api_key = $matches[0];
+            $cms     = detect_cms( CLEANTALK_SERVER_ROOT . 'index.php' );
+			
+			// Add index.php to files for modification if exists
+			$files_to_mod = array( 'index.php' );
+			
+			//Additional scripts to modify
+			if( Post::get( 'additional_fields' ) ){
+				// Merging
+				$additional_files = explode( ",", Post::get( 'additional_fields' ) );
+				$files_to_mod     = array_unique( array_merge( $files_to_mod, $additional_files ) );
+			}
+
+            if( $files_to_mod ){
+                $tmp = array();
+                foreach ( $files_to_mod as $file_to_mod ){
+                    $file = CLEANTALK_SERVER_ROOT . trim( $file_to_mod );
+                    if( file_exists($file))
+                        $tmp[] = $file;
+                }
+                $files_to_mod = $tmp;
+            }
+			
+			if( !empty($files_to_mod) ){
+			 
 				// Determine file to install Cleantalk script
-				$files_to_mod = array( 'index.php' );
 				$exclusions = array();
 				
 				// Adding files to $files_to_mod depends from cms installed
@@ -86,20 +103,10 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 						break;
 				}
 				
-				//Additional scripts
-				if( Post::get( 'additional_fields' ) ){
-					$additional_files = explode( ",", Post::get( 'additional_fields' ) );
-					if( $additional_files && is_array( $additional_files ) ){
-						foreach ( $additional_files as $additional_file ){
-							$files_to_mod[] = trim( $additional_file );
-						}
-					}
-				}
-				
 				install( $files_to_mod, $api_key, $cms, $exclusions );
 				
 			}else{
-				Err::add( 'Unable to find index.php in the ROOT directory.' );
+				Err::add( 'All files for script paths are unavailable' );
 			}
 		}else{
 			Err::add( 'Key is bad. Key is "' . Post::get( 'key' ) . '"' );
@@ -107,7 +114,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 		
 		// Check for errors and output result
         $out = Err::check()
-            ? Err::get_last('as_json')
+            ? Err::get_last( 'string' )
 	        : array( 'success' => true );
 		
 		die( json_encode( $out ) );
