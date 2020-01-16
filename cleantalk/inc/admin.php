@@ -161,9 +161,12 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 	// Question2Answer
 	if (preg_match('/(Question2Answer.*?)/', $index_file))
 		$out = 'Question2Answer';
-	// Question2Answer
+	// FormTools
 	if (preg_match('/(use/sFormTools.*?)/', $index_file))
 		$out = 'FormTools';
+	// SimplaCMS
+	if (preg_match('/(Simpla CMS.*?)/', $index_file))
+		$out = 'Simpla CMS';
 	
 	return $out;
 }
