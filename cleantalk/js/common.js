@@ -1,4 +1,4 @@
-function sendAJAX(data, params, obj){
+function ct_AJAX(data, params, obj){
 
 	// Default params
 	var button        = params.button        || null;
@@ -6,7 +6,7 @@ function sendAJAX(data, params, obj){
 	var spinner       = params.spinner       || null;
 	var progressbar   = params.progressbar   || null;
 	var callback      = params.callback      || null;
-	var error_handler = params.error_handler || null;
+	var error_handler = params.error_handler || ct_AJAX__error_handler;
 	var notJson       = params.notJson       || null;
 	var timeout       = params.timeout       || 15000;
 	obj               = obj                  || null;
@@ -28,20 +28,14 @@ function sendAJAX(data, params, obj){
 			if(spinner && typeof spinner == 'function') spinner();                                // Hide spinner
 			if(spinner && typeof spinner == 'object') 	jQuery(spinner).css('display', 'none'); // Hide spinner
 			if(!notJson) result = JSON.parse(result);                                             // Parse answer
-			if(!notJson && result.error){                                                         // Show error
+			if(!!result.error){                                                         // Show error
 
 				setTimeout(function(){
 						if(progressbar) progressbar.fadeOut('slow');
 					}, 1000
 				);
 
-				let error = error_handler
-					? error_handler(result, data, params, obj)
-					: function(){
-						jQuery('.alert-danger').show(300);
-						jQuery('#error-msg').text(result.error);
-					};
-				error();
+				error_handler(result, data, params, obj);
 
 			}else{
 				if(callback)
@@ -61,4 +55,12 @@ function sendAJAX(data, params, obj){
 		},
 		timeout: timeout,
 	});
+}
+
+function ct_AJAX__error_handler(result, data, params, obj){
+	jQuery('.alert-danger').show(300);
+	jQuery('#error-msg').text(result.error);
+	console.log(data);
+	console.log(params);
+	console.log(obj);
 }
