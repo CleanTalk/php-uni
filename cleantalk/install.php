@@ -74,7 +74,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 					case 'X-Cart 4':
 						array_push( $files_to_mod, "home.php", "register.php", "add_review.php", "help.php" );
 						break;
-					case 'soTicket':
+					case 'osTicket':
 						array_push( $files_to_mod, "account.php", "open.php" );
 						break;
 					case 'PrestaShop':
