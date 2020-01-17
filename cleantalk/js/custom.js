@@ -111,7 +111,7 @@ jQuery(document).ready(function($) {
 
 		let field = $('input[name="access_key_field"]');
 
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'get_key',
 				email: field.val().trim(),
@@ -135,7 +135,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function key_validate( value, field ){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'key_validate',
 				key: value,
@@ -171,7 +171,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function install(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'install',
 				key: $('input[name="access_key_field"]').val().trim(),
@@ -200,7 +200,7 @@ jQuery(document).ready(function($) {
 		var password = $('input[name="password"]').length
 			? $('input[name="password"]').val().trim()
 			: null;
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'login',
  				login: login.val().trim(),
@@ -217,7 +217,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function logout() {
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'logout',
 			},
@@ -231,7 +231,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function save_settings(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'save_settings',
 				apikey: $('input[name="apikey"]').val().trim(),
@@ -270,7 +270,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function uninstall(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'uninstall',
 			},
