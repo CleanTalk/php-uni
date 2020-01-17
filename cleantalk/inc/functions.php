@@ -262,6 +262,8 @@
 			// Contact Form by Web-Settler protection
 			'_formId',
 			'_returnLink',
+			'CSRFName',
+			'CSRFToken',
 		);
 		
 		// Reset $message if we have a sign-up data
