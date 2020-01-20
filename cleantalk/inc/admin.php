@@ -5,7 +5,7 @@ use Cleantalk\Common\File;
 use Cleantalk\Variables\Post;
 use Cleantalk\ApbctUni\Cron;
 
-require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+require_once 'common.php';
 
 function install( $files, $api_key, $cms, $exclusions ){
 	
@@ -31,7 +31,7 @@ function install( $files, $api_key, $cms, $exclusions ){
 				// Addition to the top of the script
 				File::inject__code(
 					$file,
-					"\trequire_once( getcwd() . '/cleantalk/cleantalk.php');",
+					"\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
 					'(<\?php)|(<\?)',
 					'top_code'
 				);

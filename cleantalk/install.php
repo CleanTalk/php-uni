@@ -57,12 +57,15 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 		
 		// Parsing key
 		if( preg_match( '/^[a-z0-9]{1,20}$/', Post::get( 'key' ), $matches ) ){
-			
+		 
 			$api_key = $matches[0];
-            $cms     = detect_cms( CLEANTALK_SERVER_ROOT . 'index.php' );
+            $cms     = detect_cms( CLEANTALK_SITE_ROOT . 'index.php' );
 			
 			// Add index.php to files for modification if exists
-			$files_to_mod = array( 'index.php' );
+			$files_to_mod = array();
+			
+			if( Post::get( 'modify_index' ) )
+			    $files_to_mod[] = 'index.php';
 			
 			//Additional scripts to modify
 			if( Post::get( 'additional_fields' ) ){
@@ -74,13 +77,33 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
             if( $files_to_mod ){
                 $tmp = array();
                 foreach ( $files_to_mod as $file_to_mod ){
-                    $file = CLEANTALK_SERVER_ROOT . trim( $file_to_mod );
-                    if( file_exists($file))
+                    
+                    // Check for absolute paths
+                    if(
+	                    preg_match( '/^[\/\\\\].*/', $file_to_mod) || // Root for *nix systems
+	                    preg_match( '/^[A-Za-z]:\/.*/', $file_to_mod)     // Root for windows systems
+                    ){
+	                    Err::add( 'File paths should be relative' );
+	                    break;
+                    }
+                    
+                    // Check for .. upper directory access
+                    if(
+                        preg_match( '/^\.\.[\/\\\\].*/', $file_to_mod) // Access to upper levels
+                    ){
+	                    Err::add( 'Script for modification should be in the current folder or lower. You can not access upper leveled folders.' );
+	                    break;
+                    }
+                    
+                    $file = CLEANTALK_SITE_ROOT . trim( $file_to_mod );
+                    if( file_exists($file) )
                         $tmp[] = $file;
                 }
                 $files_to_mod = $tmp;
             }
 			
+			Err::check() && die( Err::get_last( 'as_json' ) );
+   
 			if( !empty($files_to_mod) ){
 			 
 				// Determine file to install Cleantalk script
@@ -105,12 +128,10 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 				
 				install( $files_to_mod, $api_key, $cms, $exclusions );
 				
-			}else{
+			}else
 				Err::add( 'All files for script paths are unavailable' );
-			}
-		}else{
+		}else
 			Err::add( 'Key is bad. Key is "' . Post::get( 'key' ) . '"' );
-		}
 		
 		// Check for errors and output result
         $out = Err::check()
@@ -194,6 +215,9 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                         <input type="password" name="admin_password" class="input-field" placeholder="Password">
                                         <p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="img/help_icon.png" style="width:10px; height:10px;"></p>
                                         <input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/>
+                                        <p><small><label for="input__modify_index" style="font-weight: normal;">Modify "index.php" script?</label></small>
+                                            <img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If you don't want to modify it, uncheck this." src="img/help_icon.png" style="width:10px; height:10px;"></p></p>
+                                        <input type="checkbox" name="modify_index" checked class="" id="input__modify_index">
                                     </div>
                                     <button type="submit" class="btn btn-setup" disabled>Install</button>
                                 </form>
