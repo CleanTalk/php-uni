@@ -170,7 +170,7 @@ class Cleantalk {
         }
         
         // Conver $request->message to array
-        $request->message = is_scalar( $request->message ) ? array($request->message) : $request->message;
+        $request->message = is_array($request->message) ? json_encode($request->message) : $request->message;
         
         // Cleaning from null values
         array_filter( $request->message, function( $var ){
