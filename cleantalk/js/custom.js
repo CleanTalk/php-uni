@@ -184,6 +184,7 @@ jQuery(document).ready(function($) {
 			{
 				callback: function(result, data, params, obj) {
 					if(result.success){
+						jQuery('.alert-danger').hide(300);
 						$('.alert-success').show(300);
 						$('#setup-form').hide();
 						$('.setup-links').hide();
