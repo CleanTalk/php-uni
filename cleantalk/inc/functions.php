@@ -264,6 +264,8 @@
 			'_returnLink',
 			'CSRFName',
 			'CSRFToken',
+			'page',
+			'id',
 		);
 		
 		// Reset $message if we have a sign-up data
