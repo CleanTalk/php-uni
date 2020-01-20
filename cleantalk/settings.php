@@ -216,6 +216,10 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     <p>SpamFireWall base contains <?php echo $sfw_entries; ?> entries.</p>
                     <p>SpamFireWall was updated: <?php echo $sfw_last_update ? date('M d Y H:i:s', $sfw_last_update) : 'never';?>.</p>
                     <p>SpamFireWall logs were sent: <?php echo $sfw_last_logs_send ? date('M d Y H:i:s', $sfw_last_logs_send) : 'never';?>.</p>
+                    <p>Modified files:</p>
+	                <?php foreach($modified_files as $file){;?>
+                        <p>&nbsp; - <?php echo $file; ?></p>
+                    <?php } ?>
                 </div>
             </div>
                 <div class="wrapper wrapper__center">
