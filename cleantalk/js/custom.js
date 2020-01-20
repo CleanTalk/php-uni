@@ -176,6 +176,7 @@ jQuery(document).ready(function($) {
 				action: 'install',
 				key: $('input[name="access_key_field"]').val().trim(),
 				additional_fields: $('#addition_scripts').val().trim(),
+				modify_index: +$('#input__modify_index').prop('checked'),
 				admin_password : $('input[name="admin_password"]').val().trim(),
 				email: email,
 				user_token: user_token,

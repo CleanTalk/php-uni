@@ -217,7 +217,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                         <input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/>
                                         <p><small><label for="input__modify_index" style="font-weight: normal;">Modify "index.php" script?</label></small>
                                             <img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If you don't want to modify it, uncheck this." src="img/help_icon.png" style="width:10px; height:10px;"></p></p>
-                                        <input type="checkbox" name="modify_index" checked class="" id="input__modify_index">
+                                        <input type="checkbox" name="modify_index" value="1" checked class="" id="input__modify_index">
                                     </div>
                                     <button type="submit" class="btn btn-setup" disabled>Install</button>
                                 </form>
