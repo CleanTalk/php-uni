@@ -168,14 +168,14 @@ class Cleantalk {
             if(is_array($request->$param) || is_string($request->$param))
                 $request->$param = Helper::removeNonUTF8($value);
         }
-        
-        // Conver $request->message to array
-        $request->message = is_array($request->message) ? json_encode($request->message) : $request->message;
-        
-        // Cleaning from null values
-        array_filter( $request->message, function( $var ){
-            return ! is_null( $var );
-        } );
+
+        if (is_array($request->message)) {
+            // Cleaning from null values
+            array_filter( $request->message, function( $var ){
+                return ! is_null( $var );
+            } );  
+            $request->message = json_encode($request->message);          
+        }
         
         // Wiping cleantalk's headers but, not for send_feedback
         if($request->method_name != 'send_feedback'){
