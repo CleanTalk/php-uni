@@ -68,9 +68,9 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 			    $files_to_mod[] = 'index.php';
 			
 			//Additional scripts to modify
-			if( Post::get( 'addition_scripts' ) ){
+			if( Post::get( 'additional_fields' ) ){
 				// Merging
-				$additional_files = explode( ",", Post::get( 'addition_scripts' ) );
+				$additional_files = explode( ",", Post::get( 'additional_fields' ) );
 				$files_to_mod     = array_unique( array_merge( $files_to_mod, $additional_files ) );
 			}
 
@@ -214,7 +214,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                         <p class="text-center">Set admin password</p>
                                         <input type="password" name="admin_password" class="input-field" placeholder="Password">
                                         <p><small>Additional scripts</small>&nbsp;<img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If your contact or registration contact forms are located in different files/scripts, list them here separated by commas. Example: register.php, contact.php" src="img/help_icon.png" style="width:10px; height:10px;"></p>
-                                        <input type="text" class="input-field" name="addition_scripts" style="height:25px; width:50%"/>
+                                        <input type="text" class="input-field" id="addition_scripts" style="height:25px; width:50%"/>
                                         <p><small><label for="input__modify_index" style="font-weight: normal;">Modify "index.php" script?</label></small>
                                             <img data-toggle="tooltip" data-placement="top" title="Universal Anti-Spam plugin will write protection code to index.php file by default. If you don't want to modify it, uncheck this." src="img/help_icon.png" style="width:10px; height:10px;"></p></p>
                                         <input type="checkbox" name="modify_index" value="1" checked class="" id="input__modify_index">
