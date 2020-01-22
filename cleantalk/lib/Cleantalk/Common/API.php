@@ -7,7 +7,7 @@ namespace Cleantalk\Common;
  * Mostly contains wrappers for API methods. Check and send mehods.
  * Compatible with any CMS.
  *
- * @version       3.2
+ * @version       3.2.1
  * @author        Cleantalk team (welcome@cleantalk.org)
  * @copyright (C) 2014 CleanTalk team (http://cleantalk.org)
  * @license       GNU/GPL: http://www.gnu.org/copyleft/gpl.html
@@ -19,7 +19,7 @@ class API{
 	
 	/* Default params  */
 	const URL = 'https://api.cleantalk.org';
-	const AGENT = 'ct-api-3.2';
+	const DEFAULT_AGENT = 'cleantalk-api-321';
 	
 	/**
 	 * Wrapper for 2s_blacklists_db API method.
@@ -596,6 +596,10 @@ class API{
 		return $result;
 	}
 	
+	static public function get_agent(){
+		return defined( 'CLEANTALK_AGENT' ) ? CLEANTALK_AGENT : static::DEFAULT_AGENT;
+	}
+	
 	/**
 	 * Function sends raw request to API server
 	 *
@@ -610,6 +614,8 @@ class API{
 	{
 		// Default preset is 'api'
 		$presets = array( 'api' );
+		
+		$data['agent'] = static::get_agent();
 		
 		// Add ssl to 'presets' if enabled
 		if( $ssl )

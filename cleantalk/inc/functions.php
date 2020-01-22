@@ -262,6 +262,10 @@
 			// Contact Form by Web-Settler protection
 			'_formId',
 			'_returnLink',
+			'CSRFName',
+			'CSRFToken',
+			'page',
+			'id',
 		);
 		
 		// Reset $message if we have a sign-up data
@@ -297,7 +301,9 @@
 						$not_reg = true;
 					}else{
 						foreach($registration as $needle){
-							if(stripos($key, $needle) !== false){
+							if(stripos($key, $needle) !== false || 
+								($key == 'page' && $value == 'register') //OsClass
+							){
 								$reg = true;
 								continue(2);
 							}

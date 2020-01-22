@@ -54,7 +54,7 @@ class Err{
 	}
 	
 	public static  function get_last( $output_style = 'bool' ){
-		$out = $out = (bool) self::$instance->errors;
+		$out = (bool) self::$instance->errors;
 		if($output_style == 'as_json')
 			$out = json_encode( array('error' => end( self::$instance->errors ) ), true );
 		if($output_style == 'string')

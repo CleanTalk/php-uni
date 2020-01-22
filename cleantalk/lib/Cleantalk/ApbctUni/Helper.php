@@ -18,5 +18,9 @@ namespace Cleantalk\ApbctUni;
  */
 
 class Helper extends \Cleantalk\Common\Helper{
-
+	
+	static public function http__user_agent(){
+		return defined( 'APBCT_USER_AGENT' ) ? APBCT_USER_AGENT : static::DEFAULT_USER_AGENT;
+	}
+	
 }

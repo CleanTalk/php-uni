@@ -111,7 +111,7 @@ jQuery(document).ready(function($) {
 
 		let field = $('input[name="access_key_field"]');
 
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'get_key',
 				email: field.val().trim(),
@@ -135,7 +135,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function key_validate( value, field ){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'key_validate',
 				key: value,
@@ -171,11 +171,12 @@ jQuery(document).ready(function($) {
 	}
 
 	function install(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'install',
 				key: $('input[name="access_key_field"]').val().trim(),
 				additional_fields: $('#addition_scripts').val().trim(),
+				modify_index: +$('#input__modify_index').is( ":checked" ),
 				admin_password : $('input[name="admin_password"]').val().trim(),
 				email: email,
 				user_token: user_token,
@@ -184,6 +185,7 @@ jQuery(document).ready(function($) {
 			{
 				callback: function(result, data, params, obj) {
 					if(result.success){
+						jQuery('.alert-danger').hide(300);
 						$('.alert-success').show(300);
 						$('#setup-form').hide();
 						$('.setup-links').hide();
@@ -200,7 +202,7 @@ jQuery(document).ready(function($) {
 		var password = $('input[name="password"]').length
 			? $('input[name="password"]').val().trim()
 			: null;
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'login',
  				login: login.val().trim(),
@@ -217,7 +219,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function logout() {
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'logout',
 			},
@@ -231,7 +233,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function save_settings(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'save_settings',
 				apikey: $('input[name="apikey"]').val().trim(),
@@ -270,7 +272,7 @@ jQuery(document).ready(function($) {
 	}
 
 	function uninstall(){
-		sendAJAX(
+		ct_AJAX(
 			{
 				action: 'uninstall',
 			},

@@ -15,5 +15,9 @@ namespace Cleantalk\ApbctUni;
  * @see           https://github.com/CleanTalk/wordpress-antispam
  */
 class API extends \Cleantalk\Common\API{
-
+	
+	static public function get_agent(){
+		return defined( 'APBCT_AGENT' ) ? APBCT_AGENT : static::DEFAULT_AGENT;
+	}
+	
 }

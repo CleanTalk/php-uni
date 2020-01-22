@@ -5,13 +5,12 @@ use Cleantalk\Common\File;
 use Cleantalk\Variables\Post;
 use Cleantalk\ApbctUni\Cron;
 
-require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
+require_once 'common.php';
 
 function install( $files, $api_key, $cms, $exclusions ){
 	
 	foreach ($files as $file){
 		
-		$file = CLEANTALK_SERVER_ROOT . $file;
 		$file_content = file_get_contents( $file );
 		$php_open_tags  = preg_match_all("/(<\?)/", $file_content);
 		$php_close_tags = preg_match_all("/(\?>)/", $file_content);
@@ -32,7 +31,7 @@ function install( $files, $api_key, $cms, $exclusions ){
 				// Addition to the top of the script
 				File::inject__code(
 					$file,
-					"\trequire_once( getcwd() . '/cleantalk/cleantalk.php');",
+					"\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
 					'(<\?php)|(<\?)',
 					'top_code'
 				);
@@ -136,8 +135,8 @@ function uninstall( $files = array() ){
 	
 	if(isset($files)){
 		foreach ( $files as $file ){
-			File::clean__tag( CLEANTALK_SERVER_ROOT . $file, 'top_code' );
-			File::clean__tag( CLEANTALK_SERVER_ROOT . $file, 'bottom_code' );
+			File::clean__tag( $file, 'top_code' );
+			File::clean__tag( $file, 'bottom_code' );
 		}
 	}
 	
@@ -146,21 +145,31 @@ function uninstall( $files = array() ){
 
 function detect_cms( $path_to_index, $out = 'Unknown' ){
 	
-	// Detecting CMS
-	$index_file = file_get_contents( $path_to_index );
+	if( is_file($path_to_index) ){
 	
-	//X-Cart 4
-	if (preg_match('/(xcart_4_.*?)/', $index_file))
-		$out = 'X-Cart 4';
-	//osTicket
-	if (preg_match('/osticket/i', $index_file))
-		$out = 'osTicket';
-	// PrestaShop
-	if (preg_match('/(PrestaShop.*?)/', $index_file))
-		$out = 'PrestaShop';
-	// Question2Answer
-	if (preg_match('/(Question2Answer.*?)/', $index_file))
-		$out = 'Question2Answer';
+		// Detecting CMS
+		$index_file = file_get_contents( $path_to_index );
+		
+		//X-Cart 4
+		if (preg_match('/(xcart_4_.*?)/', $index_file))
+			$out = 'X-Cart 4';
+		//osTicket
+		if (preg_match('/osticket/i', $index_file))
+			$out = 'osTicket';
+		// PrestaShop
+		if (preg_match('/(PrestaShop.*?)/', $index_file))
+			$out = 'PrestaShop';
+		// Question2Answer
+		if (preg_match('/(Question2Answer.*?)/', $index_file))
+			$out = 'Question2Answer';
+		// FormTools
+		if (preg_match('/(use\sFormTools.*?)/', $index_file))
+			$out = 'FormTools';
+		// SimplaCMS
+		if (preg_match('/(Simpla CMS.*?)/', $index_file))
+			$out = 'Simpla CMS';
+		
+	}
 	
 	return $out;
 }

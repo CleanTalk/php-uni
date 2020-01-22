@@ -15,7 +15,7 @@ class Get extends SuperGlobalVariables{
 	static $instance;
 	
 	/**
-	 * Gets given $_GET variable and seva it to memory
+	 * Gets given $_GET variable and save it to memory
 	 * @param $name
 	 *
 	 * @return mixed|string

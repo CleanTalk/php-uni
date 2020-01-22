@@ -15,7 +15,7 @@ class Server extends SuperGlobalVariables{
 	static $instance;
 	
 	/**
-	 * Gets given $_SERVER variable and seva it to memory
+	 * Gets given $_SERVER variable and save it to memory
 	 *
 	 * @param string $name
 	 *

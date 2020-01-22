@@ -15,7 +15,7 @@ class Post extends SuperGlobalVariables{
 	static $instance;
 	
 	/**
-	 * Gets given $_POST variable and seva it to memory
+	 * Gets given $_POST variable and save it to memory
 	 * @param $name
 	 *
 	 * @return mixed|string
