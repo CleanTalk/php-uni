@@ -10,6 +10,8 @@ if(version_compare( phpversion(), '5.6', '>=' )){
 	require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 }
 
+define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
+
 if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 	
 	// Validating key
@@ -184,7 +186,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                             
                             <!-- Already installed. Settings link -->
                             <?php elseif( ! empty( $is_installed ) ) : ?>
-                                <h4><p class="text-center">The plugin is already installed. You could enter the settings <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/cleantalk/settings.php">here</a>'; ?> .</p></h4>
+                                <h4><p class="text-center">The plugin is already installed. You could enter the settings <?php echo '<a href="' . CLEANTALK_URI . 'settings.php">here</a>'; ?> .</p></h4>
                             
                             <!-- Installation form -->
                             <?php else : ?>
@@ -193,7 +195,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                     <br />
                                     <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
                                     <br />
-                                    <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . '/cleantalk/settings.php'; ?></a></p>
+                                    <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . CLEANTALK_URI . 'settings.php'; ?></a></p>
                                     <br />
                                     <p>This location will be no longer accessible until the plugin is installed.</p>
                                     <br />

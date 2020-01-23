@@ -9,6 +9,8 @@ use Cleantalk\ApbctUni\SFW;
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 
+define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
+
 session_start();
 
 if( Server::is_post() && Post::get( 'action' ) ){
@@ -158,7 +160,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                                  <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
                             </form>
                             <?php else : ?>
-                            <h4><p class="text-center">Please, <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/cleantalk/install.php">setup</a>'; ?> plugin first!</p></h4>
+                            <h4><p class="text-center">Please, <?php echo '<a href="' . CLEANTALK_URI . 'install.php">setup</a>'; ?> plugin first!</p></h4>
                             <?php endif; ?>
                         </div>
                    </div>
