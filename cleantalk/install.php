@@ -1,5 +1,7 @@
 <?php
 
+require_once 'check_requirements.php';
+
 use Cleantalk\Common\Err;
 use Cleantalk\Common\API;
 use Cleantalk\Variables\Post;
@@ -178,15 +180,9 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 			        	<hr />
 			        	<div class="setup-form">
 
-                            <!-- Check requirements -->
-					        <?php if( version_compare( phpversion(), '5.6', '<' ) ) : ?>
-                                <h4><p class="text-center">PHP version is <?php echo phpversion(); ?></p></h4>
-                                <h4><p class="text-center">The plugin requires version 5.6 or higher.</p></h4>
-                                <h4><p class="text-center">Please, contact your hosting provider to update it.</p></h4>
-                            
                             <!-- Already installed. Settings link -->
-                            <?php elseif( ! empty( $is_installed ) ) : ?>
-                                <h4><p class="text-center">The plugin is already installed. You could enter the settings <?php echo '<a href="' . CLEANTALK_URI . 'settings.php">here</a>'; ?> .</p></h4>
+                            <?php if( ! empty( $is_installed ) ) : ?>
+                                <h4><p class="text-center">The plugin is already installed. You could enter the settings <?php echo '<a href="' . Server::get( 'HOST_NAME' ) . '/cleantalk/settings.php">here</a>'; ?> .</p></h4>
                             
                             <!-- Installation form -->
                             <?php else : ?>
@@ -195,7 +191,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                                     <br />
                                     <p>Enter your <a class="underlined" href="https://cleantalk.org/my/">CleanTalk dashboard</a> to view statistics.</p>
                                     <br />
-                                    <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo Server::get( 'REQUEST_SCHEME' ) . '://' . Server::get( 'HTTP_HOST' ) . CLEANTALK_URI . 'settings.php'; ?></a></p>
+                                    <p>You can manage settings here: <a class="underlined" href="settings.php"><?php echo CLEANTALK_URI . 'settings.php'; ?></a></p>
                                     <br />
                                     <p>This location will be no longer accessible until the plugin is installed.</p>
                                     <br />

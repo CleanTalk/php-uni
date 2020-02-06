@@ -1,5 +1,7 @@
 <?php
 
+require_once 'check_requirements.php';
+
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Variables\Post;
