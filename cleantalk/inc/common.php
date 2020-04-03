@@ -8,6 +8,7 @@ define( 'CLEANTALK_INC', CLEANTALK_ROOT . 'inc' . DS );
 define( 'CLEANTALK_CONFIG_FILE', CLEANTALK_ROOT . 'config.php' );
 define( 'CLEANTALK_CRON_FILE', CLEANTALK_ROOT . 'data' . DS . 'cron_data.php' );
 
+require_once CLEANTALK_LIB . 'ct_phpFix.php';
 require_once CLEANTALK_LIB . 'autoloader.php';
 require_once CLEANTALK_ROOT . 'config.php';
 
