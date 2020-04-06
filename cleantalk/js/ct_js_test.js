@@ -23,7 +23,9 @@ var ctStart = function(){
 			if( typeof(form.action) == 'string' ){
 			
 				action = document.forms[i].action;
-				if( action.indexOf('http://') != -1 || action.indexOf('https://') != -1 ){
+
+				// No home URL in address and http or https is in address
+				if( action.indexOf(location.host) === -1 && ( action.indexOf('http://') !== -1 || action.indexOf('https://') !== -1 ) ){
 					
 					tmp  = action.split('//');
 					tmp  = tmp[1].split('/');
