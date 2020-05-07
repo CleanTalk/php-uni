@@ -402,17 +402,14 @@ class Cleantalk {
             $result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, $presets );
         }
 
-        if (!$result) {
+        if (isset($result['error'])) {
             $response = null;
             $response['errno'] = 2;
             if (!Helper::is_json($result)) {
                 $response['errstr'] = 'Wrong server response format: ' . substr( $result, 100 );
             }
             else {
-                $response['errstr'] = $curl_error
-                    ? sprintf( "CURL error: '%s'", $curl_error )
-                    : 'No CURL support compiled in';
-                $response['errstr'] .= ' or disabled allow_url_fopen in php.ini.';
+                $response['errstr'] = $result['error'];
             }
             $response = json_decode( json_encode( $response ) );
             

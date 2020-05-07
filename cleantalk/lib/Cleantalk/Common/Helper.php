@@ -581,7 +581,7 @@ class Helper{
 			}
 			
 			$out = $result === false
-				? 'FAILED_TO_USE_FILE_GET_CONTENTS'
+				? array('error' => 'FAILED_TO_USE_FILE_GET_CONTENTS')
 				: $result;
 			
 		}else
