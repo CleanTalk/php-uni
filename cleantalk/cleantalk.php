@@ -3,8 +3,10 @@
 	// Config
 	require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
-	if( empty( $apikey ) )
+	if( empty( $apikey ) ){
+		apbct_restore_include_path();
 		return;
+	}
 	
 	$apbct_checkjs_val = md5($apikey);
 	global $apbct_checkjs_val;
@@ -43,7 +45,8 @@
 			}
 		}
 		
-	}	
+	}
+	
 	// Helper functions
 	require_once( CLEANTALK_ROOT . 'inc' . DS . 'functions.php');
 	
@@ -66,6 +69,9 @@
 				1
 			);
 		}
+		
+		apbct_restore_include_path();
+		
 		return $buffer;
 	}
 	
@@ -104,3 +110,5 @@
     setcookie('apbct_fkp_timestamp', '0',                             0, '/');
     setcookie('apbct_pointer_data',  '0',                             0, '/');
     setcookie('apbct_ps_timestamp',  '0',                             0, '/');
+
+	apbct_restore_include_path();
