@@ -156,6 +156,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 <html>
   <head>  	
     <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1"> 
     <link rel="shortcut icon" href="img/ct_logo.png">
     <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
