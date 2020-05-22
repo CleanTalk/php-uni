@@ -197,16 +197,16 @@ if( Server::is_post() && Post::get( 'action' ) ){
                             <p>Account registered for email: <?php echo !empty($account_name_ob) ? $account_name_ob : 'unkonown';  ?></p>
                         </div>
                         <div class="form-group row">
-                            <label for="check_reg">Check registrations</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_reg" name="registrations_test" <?php if (!empty($registrations_test)) echo "checked"; ?>>
+                            <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="check_reg" name="registrations_test" <?php if (!empty($registrations_test)) echo "checked"; ?>>
+                            <label for="check_reg" class="apbct_setting-checkbox--label">Check registrations</label>
                         </div>
                         <div class="form-group row">
-                            <label for="check_all_post_data">Check data without email</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="check_without_email" name="general_postdata_test" <?php if (!empty($general_postdata_test)) echo "checked"; ?>>
+                            <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="check_without_email" name="general_postdata_test" <?php if (!empty($general_postdata_test)) echo "checked"; ?>>
+                            <label for="check_all_post_data" class="apbct_setting-checkbox--label">Check data without email</label>
                         </div>
                         <div class="form-group row">
-                            <label for="swf_on">Enable SpamFireWall</label>
-                            <input type="checkbox" class="checkbox style-2 pull-right" id="enable_sfw" name="spam_firewall" <?php if (!empty($spam_firewall)) echo "checked"; ?>>
+                            <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="enable_sfw" name="spam_firewall" <?php if (!empty($spam_firewall)) echo "checked"; ?>>
+                            <label for="swf_on" class="apbct_setting-checkbox--label">Enable SpamFireWall</label>
                         </div>
                     </div>
                 </div>

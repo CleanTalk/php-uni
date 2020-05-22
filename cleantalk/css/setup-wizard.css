@@ -1,13 +1,17 @@
- 
 body{
 	background:#3487C9;
 	color: #444;
 	font-family: 'Lato', sans-serif;
-
 }
 
-.wrapper{}
-.wrapper__center{ text-align: center }
+.apbct_setting-checkbox{
+	display: inline-block;
+	margin: 0 10px 0 10px !important;
+}
+
+.apbct_setting-checkbox--label{
+
+}
 
 .alert{
 	margin: 20px auto;
@@ -90,7 +94,6 @@ body{
 	transition: all .5s ease-in-out;
 	width:100%;
 	height:100%;
-	 
 }
 .rotate-icon{
 	 -moz-transform:rotate(45deg);
@@ -133,7 +136,7 @@ body{
 	display:block;
 	margin: 20px auto 20px;
 	color: white;
-	text-transform:uppercase ;	 
+	text-transform: uppercase;
 	background: #59ACEE; 
 	-webkit-transition: all .5s ease-in-out;
 	-moz-transition: all .5s ease-in-out;
@@ -142,10 +145,10 @@ body{
 	
 }
 
-.btn.btn-setup:hover {	 
+.btn.btn-setup:hover {
 	border:1px solid #FFF;
 	opacity: 0.8;
-} 
+}
 .btn.btn-reset{
 	width: 180px;
 }
@@ -164,8 +167,8 @@ body{
 	opacity: 0.7;
 }
 .setup-links a:hover{
-	 opacity: 1;
-	 text-decoration: none;
+	opacity: 1;
+	text-decoration: none;
 }
 
 label.checkbox {
