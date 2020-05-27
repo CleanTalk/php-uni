@@ -29,7 +29,8 @@
 		    $skip || // Skip flag set by apbct_get_fields_any()
 			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
 			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
-		    ( apbct_check_exclusions() ) // Has an exclusions in POST
+		    ( apbct_check__exclusions() ) || // Has an exclusions in POST
+		    ( apbct_check__url_exclusions() ) // Has an exclusions in URL
 		)
 			$skip = true;
 		
@@ -535,17 +536,42 @@
 		
 		die($die_page);
 	}
-	
-	function apbct_check_exclusions(){
-		global $exclusions;
-		if( ! empty ( $exclusions ) ){
-			foreach ( $exclusions as $name => $value ){
-				if( isset( $_POST[ $name ] ) ){
-					if( empty( $value ) || ( $value && $_POST[ $name ] === $value ) ){
-						return true;
-					}
-				}
+
+
+	/**
+	 * Check POST parameters for exclusions
+	 *
+	 * @param array $exclusions Associative array
+	 *
+	 * @return bool
+	 */
+	function apbct_check__exclusions( $exclusions = array() ){
+		
+		foreach ( $exclusions as $name => $exclusion ){
+			if( \Cleantalk\Variables\Post::equal( $name, $exclusion ) ){
+				return true;
 			}
 		}
+		
+		return false;
+	}
+
+	/**
+	 * Check URI string for exclusions
+	 *
+	 * @param array $exclusions
+	 *
+	 * @return bool
+	 */
+	function apbct_check__url_exclusions( $exclusions = array() ){
+		
+		$exclusions[] = 'login';
+		
+		foreach ( $exclusions as $name => $exclusion ){
+			if( \Cleantalk\Variables\Server::has_string('REQUEST_URI', $exclusion ) ){
+				return true;
+			}
+		}
+		
 		return false;
 	}
