@@ -252,8 +252,8 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
         <script src="js/jquery-ui.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
         <script src="js/placeholder-shim.min.js"></script>
-        <script src="js/common.js?v=2.0"></script>
-        <script src="js/custom.js?v=2.0"></script>
+        <script src="js/common.js?v=<?php echo APBCT_VERSION; ?>>"></script>
+        <script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
 		<script type='text/javascript'>
 			var security = '<?php echo md5( Server::get( 'SERVER_NAME' ) ) ?>';
 			var ajax_url = location.href;

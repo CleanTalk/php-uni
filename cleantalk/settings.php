@@ -243,8 +243,8 @@ if( Server::is_post() && Post::get( 'action' ) ){
     <script src="js/jquery-ui.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/placeholder-shim.min.js"></script>
-    <script src="js/common.js?v=2.0"></script>
-    <script src="js/custom.js?v=2.0"></script>
+    <script src="js/common.js?v=<?php echo APBCT_VERSION; ?>"></script>
+    <script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
     <script src="js/overhang.min.js"></script>
     <script type='text/javascript'>
         var security = '<?php echo $security ?>';
