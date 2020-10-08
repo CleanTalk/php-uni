@@ -8,9 +8,9 @@ Module for any CMS
 ## Installation
 * Download archive and drop a contained files to thewebsites's  ROOT directory.
 * !Backup your website and database!
-* Proceed to address: <YOUR_WEBSITE.DOMAIN>/ctsetup.php
+* Proceed to address: <YOUR_WEBSITE.DOMAIN>/cleantalk/install.php
 * Follow the instructions.
 
 ## Unistallation
-* Proceed to address <YOUR_WEBSITE.DOMAIN>/ct_uninstall_<YOUR_KEY>.php
+* Proceed to address: <YOUR_WEBSITE.DOMAIN>/cleantalk/settings.php, log in and click "Uninstall"
 * Done!
