@@ -39,30 +39,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-sm-12">
-				<p class="footer-text"><small>Please, check the extension for your CMS on our <a href="https://cleantalk.org/help/install" target="_blank" style="text-decoration: underline;">plugins page</a> before setup</small></p>
-				<p class="footer-text"><small>It is highly recommended to create a backup before installation</small></p>
-			</div>
-		</div>
 	</div>
-	<!-- End setup-wizard wizard box -->
-
-	<footer class="container">
-
-	</footer>
-
-	<script src="js/jquery.min.js"></script>
-	<script src="js/jquery-ui.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
-	<script src="js/placeholder-shim.min.js"></script>
-	<script src="js/common.js?v=2.0"></script>
-	<script src="js/custom.js?v=2.0"></script>
-	<script type='text/javascript'>
-        var security = '<?php echo md5( Server::get( 'SERVER_NAME' ) ) ?>';
-        var ajax_url = location.href;
-	</script>
-
 </body>
 </html>
 <?php
