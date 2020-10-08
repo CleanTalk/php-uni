@@ -96,7 +96,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 		
 		if( is_dir( $log_dir_path ) ){
 			
-			$log_files = array_diff( scandir( $log_dir_path ), array( '.', '..' ) );
+			$log_files = array_diff( scandir( $log_dir_path ), array( '.', '..', 'index.php' ) );
 			
 			if( ! empty( $log_files ) ){
 				
