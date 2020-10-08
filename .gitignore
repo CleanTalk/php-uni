@@ -1,1 +1,4 @@
 .idea
+*
+!cleantalk/
+cleantalk/data/sfw_logs/
