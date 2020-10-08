@@ -67,6 +67,11 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 			
 			// Add index.php to files for modification if exists
 			$files_to_mod = array();
+
+			if( 'phpBB' == $cms ) {
+                $files_to_mod[] = 'ucp.php';
+                $files_to_mod[] = 'posting.php';
+            }
 			
 			if( Post::get( 'modify_index' ) )
 			    $files_to_mod[] = 'index.php';

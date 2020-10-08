@@ -168,6 +168,9 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 		// SimplaCMS
 		if (preg_match('/(Simpla CMS.*?)/', $index_file))
 			$out = 'Simpla CMS';
+        // phpBB
+        if (preg_match('/(phpBB.*?)/', $index_file))
+            $out = 'phpBB';
 		
 	}
 	
