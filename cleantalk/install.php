@@ -71,6 +71,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 			if( 'phpBB' == $cms ) {
                 $files_to_mod[] = 'ucp.php';
                 $files_to_mod[] = 'posting.php';
+                $files_to_mod[] = 'memberlist.php';
             }
 			
 			if( Post::get( 'modify_index' ) )
