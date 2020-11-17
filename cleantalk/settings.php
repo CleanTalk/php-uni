@@ -118,14 +118,19 @@ if( Server::is_post() && Post::get( 'action' ) ){
         <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
         
         <title>Universal Anti-Spam Plugin by CleanTalk</title>
-        <!-- Bootstrap core CSS -->
-        <link href="css/bootstrap.css" rel="stylesheet">
-        <link href="css/overhang.min.css" rel="stylesheet">
-        
-        <!-- Custom styles -->
-        <link href="css/setup-wizard.css" rel="stylesheet">
-        
-        <link href="css/animate-custom.css" rel="stylesheet">
+
+	    <!-- CSS -->
+	    <!-- Bootstrap core CSS -->
+	    <link href="css/bootstrap.css" rel="stylesheet">
+
+	    <!-- Plugins-->
+	    <link href="css/overhang.min.css" rel="stylesheet">
+
+	    <!-- Custom styles -->
+	    <link href="css/setup-wizard.css" rel="stylesheet">
+
+	    <!-- Animation -->
+	    <link href="css/animate-custom.css" rel="stylesheet">
     
     </head>
     <body class="fade-in">
@@ -175,18 +180,20 @@ if( Server::is_post() && Post::get( 'action' ) ){
         <!-- End login-wizard wizard box -->
         <!-- Admin area box -->
         <div class="container" id="admin-block" style="margin-top: 80px;">
-        <div align="left" style="margin-top: -50px;"><a href="#" class="text-danger" id='btn-uninstall' >Uninstall</a></div>
-        <div align="right" style="margin-top: -20px;"><a href="#" id='btn-logout'>Log out </a></div>
-            <div class="row" style="margin-top: 50px;">
-                <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-                    <div class="page-icon animated bounceInDown">
-                        <img  src="img/ct_logo.png" alt="Cleantalk logo" />
-                    </div>
-                    <div class="setup-logo">
-                        <h3> - Universal Anti-Spam Plugin - </h3>
-                    </div>
-                </div>
+
+            <!-- Uninstall Logout buttons -->
+            <div class="settings-links">
+                <a style="float: right" href="#" id='btn-logout'>Log out </a>
             </div>
+
+            <!-- Icon and title -->
+            <div class="page-icon animated bounceInDown">
+                <img  src="img/ct_logo.png" alt="Cleantalk logo" />
+            </div>
+            <div class="setup-logo">
+                <h3> - Universal Anti-Spam Plugin - </h3>
+            </div>
+
             <form action='javascript:void(null);' class="form-horizontal" role="form">
             <div class="row">
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
@@ -203,11 +210,11 @@ if( Server::is_post() && Post::get( 'action' ) ){
                         </div>
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="check_without_email" name="general_postdata_test" <?php if (!empty($general_postdata_test)) echo "checked"; ?>>
-                            <label for="check_all_post_data" class="apbct_setting-checkbox--label">Check data without email</label>
+                            <label for="check_without_email" class="apbct_setting-checkbox--label">Check data without email</label>
                         </div>
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="enable_sfw" name="spam_firewall" <?php if (!empty($spam_firewall)) echo "checked"; ?>>
-                            <label for="swf_on" class="apbct_setting-checkbox--label">Enable SpamFireWall</label>
+                            <label for="enable_sfw" class="apbct_setting-checkbox--label">Enable SpamFireWall</label>
                         </div>
                     </div>
                 </div>
@@ -227,7 +234,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     <?php } ?>
                 </div>
             </div>
-                <div class="wrapper wrapper__center">
+                <div class="text-center">
                     <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>
                     <img class="preloader" src="img/preloader.gif" style="display: none;">
                 </div>
@@ -237,7 +244,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
         <!-- End Admin area box -->
 
         <footer class="container">
-
+            <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
         </footer>
         
     <script src="js/jquery.min.js"></script>
