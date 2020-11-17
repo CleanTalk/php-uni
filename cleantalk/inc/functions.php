@@ -62,7 +62,7 @@
 			$ct_request->js_on                = apbct_js_test();
 			$ct_request->submit_time          = apbct_get_submit_time();
 			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
-			$ct_request->all_headers          = function_exists('apache_request_headers') ? json_encode(apache_request_headers()) : json_encode(apbct_apache_request_headers());
+			$ct_request->all_headers          = json_encode( \Cleantalk\ApbctUni\Helper::http__get_headers() );
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
 			
 			// Making a request
@@ -151,9 +151,7 @@
 			'X-Real-Ip' => null,
 		);
 		
-		$headers = function_exists('apache_request_headers')
-			? apache_request_headers()
-			: apbct_apache_request_headers();
+		$headers = \Cleantalk\ApbctUni\Helper::http__get_headers();
 		
 		// X-Forwarded-For
 		if(array_key_exists( 'X-Forwarded-For', $headers )){
@@ -453,34 +451,6 @@
 				return 0;
 		}else			
 			return null;
-	}
-	
-	/* 
-	 * Gets every HTTP_ headers from $_SERVER
-	 * 
-	 * If Apache web server is missing then making
-	 * Patch for apache_request_headers()
-	 * 
-	 * returns array
-	 */
-	function apbct_apache_request_headers(){
-		
-		$headers = array();	
-		foreach($_SERVER as $key => $val){
-			if(preg_match('/\AHTTP_/', $key)){
-				$server_key = preg_replace('/\AHTTP_/', '', $key);
-				$key_parts = explode('_', $server_key);
-				if(count($key_parts) > 0 and strlen($server_key) > 2){
-					foreach($key_parts as $part_index => $part){
-						$key_parts[$part_index] = function_exists('mb_strtolower') ? mb_strtolower($part) : strtolower($part);
-						$key_parts[$part_index][0] = strtoupper($key_parts[$part_index][0]);					
-					}
-					$server_key = implode('-', $key_parts);
-				}
-				$headers[$server_key] = $val;
-			}
-		}
-		return $headers;
 	}
 	
 	function apbct_print_form( $arr, $k ){
