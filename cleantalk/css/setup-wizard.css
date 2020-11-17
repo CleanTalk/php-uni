@@ -17,7 +17,7 @@ body{
 	margin: 20px auto;
 	width: 70%;
 }
-#setup-block{	 
+#setup-block{
 	padding-top: 50px;
 	padding-bottom: 25px;
 }
@@ -30,7 +30,7 @@ body{
  
 }
 #admin-block {
-	padding-top: 60px;
+	padding-top: 10px;
 	padding-bottom: 25px;
 	margin-top: 25px;
 	margin-bottom: 25px;
@@ -41,15 +41,15 @@ body{
 }
 .setup-box{
 	position: relative;
-	max-width:480px;	
+	max-width:480px;
 	background: #F0F8FF;
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius:3px;
 	padding-bottom: 20px;
 	margin-bottom: 25px;
-	margin-top: 200px; 
-	box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+	margin-top: 80px;
+	box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .setup-logo{
@@ -66,7 +66,7 @@ body{
 	margin: 5px auto 10px;
 	text-align: center;
 }
- 
+
 
 .setup-box hr{
 	margin:10px auto 20px;
@@ -83,10 +83,10 @@ body{
 	border-radius: 100px;
 	text-align: center; 
 	margin: -60px auto 0;
-	
+
 }
 .page-icon img{
-	vertical-align: middle; 
+	vertical-align: middle;
 	-moz-transition: all .5s ease-in-out;
 	-webkit-transition: all .5s ease-in-out;
 	-o-transition: all .5s ease-in-out;
@@ -121,7 +121,7 @@ body{
 	text-align: center;
 	box-shadow: 0 0 0.5px rgba(0,0,0,0.5);
 
-	
+
 }
 
 .setup-form input.loading {
@@ -142,7 +142,7 @@ body{
 	-moz-transition: all .5s ease-in-out;
 	-o-transition: all .5s ease-in-out;
 	transition: all .5s ease-in-out;
-	
+
 }
 
 .btn.btn-setup:hover {
@@ -187,7 +187,7 @@ label.checkbox input{
 	text-align: center;
 	color:#FFF;
 	color: rgba(255, 255, 255, 0.33);
-	opacity: 1; 
+	opacity: 1;
 }
 
 .preloader{
@@ -200,21 +200,21 @@ label.checkbox input{
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
 =================================================================== */
 @media only screen and (max-width: 479px) {
-	#setup-block{	 
+	#setup-block{
 		padding-top: 10px;
 		padding-bottom: 25px;
 	}
-	
+
 }
 
 /* Tablet Portrait Size to Tablet Landscape Size (devices and browsers)
 =================================================================== */
 @media only screen and (min-width: 480px) and (max-width: 767px){
-	#setup-block {	 
+	#setup-block {
 		margin: 0 auto;
 		width: 420px;
 	}
-	
+
 }
 
 
