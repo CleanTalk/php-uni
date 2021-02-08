@@ -25,7 +25,7 @@ function apbct_sfw_update(){
 	return ! Err::check() ? true : false;
 }
 
-function apbct_sfw_logs_send(){
+function apbct_sfw_send_logs(){
 	
 	global $apikey, $spam_firewall;
 	
