@@ -58,12 +58,18 @@
 				$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];				
 			}
 
+			$comment_type = 'feedback';
+
+			if (strpos($_SERVER['HTTP_REFERER'], 'checkout') !== false) {
+				$comment_type = 'order';
+			}
+
 			// Misc params
 			$ct_request->js_on                = apbct_js_test();
 			$ct_request->submit_time          = apbct_get_submit_time();
 			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
 			$ct_request->all_headers          = json_encode( \Cleantalk\ApbctUni\Helper::http__get_headers() );
-			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => 'feedback'));
+			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => $comment_type));
 			
 			// Making a request
 			$ct = new \Cleantalk\Antispam\Cleantalk();
