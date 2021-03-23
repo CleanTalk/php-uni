@@ -26,7 +26,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
             
             // If password is set in config
 	        if(isset($password)){
-		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) == $password ){
+		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
                     $_SESSION['authenticated'] = 'true';
                 }else
                     Err::add('Incorrect login or password');
