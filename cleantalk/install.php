@@ -139,7 +139,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 				install( $files_to_mod, $api_key, $cms, $exclusions );
 				
 			}else
-				Err::add( 'All files for script paths are unavailable' );
+				Err::add( 'No files to modify or all files for script paths are unavailable' );
 		}else
 			Err::add( 'Key is bad. Key is "' . Post::get( 'key' ) . '"' );
 		
