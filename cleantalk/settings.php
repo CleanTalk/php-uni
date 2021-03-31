@@ -13,8 +13,6 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 
 define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
 
-session_start();
-
 if( Server::is_post() && Post::get( 'action' ) ){
 	
 	// Brute force protection
@@ -27,13 +25,13 @@ if( Server::is_post() && Post::get( 'action' ) ){
             // If password is set in config
 	        if(isset($password)){
 		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
-                    $_SESSION['authenticated'] = 'true';
+                    setcookie('authenticated', $security, 86400 * 30, '/', null, false, true);
                 }else
                     Err::add('Incorrect login or password');
 		        
             // No password is set. Check only login.
 	        }elseif( ( Post::get( 'login' ) == $apikey ) ){
-                $_SESSION['authenticated'] = 'true';
+                setcookie('authenticated', $security, 86400 * 30, '/', null, false, true);
                 
             // No match
 	        }else
@@ -45,8 +43,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 	        break;
 	
         case 'logout':
-            session_destroy();
-            unset($_SESSION['authenticated']);
+            setcookie('authenticated', 0, time()-86400, '/', null, false, true);
 	        die( json_encode( array( 'success' => true ) ) );
             break;
 		        
@@ -89,9 +86,8 @@ if( Server::is_post() && Post::get( 'action' ) ){
 	    case 'uninstall':
 		
 		    if( Post::get( 'security' ) === $security ){
-			
-			    session_destroy();
-			    unset($_SESSION['authenticated']);
+		        
+                setcookie('authenticated', 0, time()-86400, '/', null, false, true);
 		        uninstall();
 			
 			    Err::check() or die(json_encode(array('success' => true)));
@@ -136,7 +132,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
     <body class="fade-in">
         
         <!-- Login -->
-        <?php if(empty($_SESSION["authenticated"]) || $_SESSION["authenticated"] != 'true') { ?>
+        <?php if( \Cleantalk\Variables\Cookie::get( 'authenticated' ) !== $security ) { ?>
         <!-- start login wizard box -->
         <div class="container" id="setup-block">
             <div class="row">
