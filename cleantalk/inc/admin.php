@@ -171,8 +171,10 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
         // phpBB
         if (preg_match('/(phpBB.*?)/', $index_file))
             $out = 'phpBB';
-		
-	}
+        if ( strpos( $index_file, '/wa-config/' ) && strpos( $index_file, 'waSystem::getInstance' ) )
+            $out = 'ShopScript';
+
+    }
 	
 	return $out;
 }

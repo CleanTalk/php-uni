@@ -7,11 +7,20 @@
 	
 	function apbct_spam_test($data){
 		
-		global $apikey, $response_lang, $registrations_test, $general_postdata_test;
+		global $apikey, $response_lang, $registrations_test, $general_postdata_test, $detected_cms;
 		
 		// Patch for old PHP versions
 		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
-		
+
+        // ShopScript integration: test only reviews and order requests
+        if(
+            $detected_cms === 'ShopScript' &&
+            ( isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest' ) &&
+            ( ! ( isset( $_POST['name'], $_POST['email'], $_POST['rate'] ) ) )
+        ) {
+            return;
+        }
+
 		$msg_data = apbct_get_fields_any($data);
 		
 		// Data
@@ -482,9 +491,23 @@
 	}
 	
 	function apbct_die($comment, $registration = false, $additional_text = null){
-		
-		// AJAX
-		if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){
+
+        global $detected_cms;
+
+        // AJAX
+        if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest'){
+
+            // ShopScript integration
+            if( $detected_cms === 'ShopScript' ) {
+                if( ! headers_sent() ) {
+                    header('Content-Type:application/json' );
+                }
+                if( isset( $_POST['name'], $_POST['email'], $_POST['rate'] ) ) {
+                    die(json_encode(array('status' =>'fail', 'errors' => array('email' => $comment))));
+                }
+                die(json_encode(array('status' =>'ok', 'data' => array('errors' => $comment))));
+            }
+
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
 			
 		// File exists?
