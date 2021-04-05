@@ -170,10 +170,10 @@ class File{
 	}
 	
 	public static function tag__php__start( $tag ){
-		return "//Cleantalk/$tag/start";
+		return "\n//Cleantalk/$tag/start";
 	}
 	
 	public static function tag__php__end( $tag ){
-		return "//Cleantalk/$tag/end";
+		return "\n//Cleantalk/$tag/end";
 	}
 }
