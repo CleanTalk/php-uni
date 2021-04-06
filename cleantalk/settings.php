@@ -25,13 +25,13 @@ if( Server::is_post() && Post::get( 'action' ) ){
             // If password is set in config
 	        if(isset($password)){
 		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
-                    setcookie('authenticated', $security, 86400 * 30, '/', null, false, true);
+                    setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
                 }else
                     Err::add('Incorrect login or password');
 		        
             // No password is set. Check only login.
 	        }elseif( ( Post::get( 'login' ) == $apikey ) ){
-                setcookie('authenticated', $security, 86400 * 30, '/', null, false, true);
+                setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
                 
             // No match
 	        }else
