@@ -68,27 +68,65 @@ function install( $files, $api_key, $cms, $exclusions ){
 }
 
 function install_config( $modified_files, $api_key, $cms, $exclusions ){
-	
-	$path_to_config = CLEANTALK_ROOT . 'config.php';
-	$salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
-	// Attention. Backwards order because inserting it step by step
-	
-	if( Post::get( 'admin_password' ) )
-		File::inject__variable( $path_to_config, 'password', hash( 'sha256', trim( Post::get( 'admin_password' ) ) ) );
-	if( Post::get( 'email' ) )
-		File::inject__variable( $path_to_config, 'email', trim( Post::get( 'email' ) ) );
-	if( Post::get( 'user_token' ) )
-		File::inject__variable( $path_to_config, 'user_token', trim( Post::get( 'user_token' ) ) );
-	if( Post::get( 'account_name_ob' ) )
-		File::inject__variable( $path_to_config, 'account_name_ob', trim( Post::get( 'account_name_ob' ) ) );
-	File::inject__variable( $path_to_config, 'salt', $salt );
-	File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $salt ) );
-	File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
-	if( $exclusions )
-		File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
-	File::inject__variable( $path_to_config, 'apikey', $api_key );
-	File::inject__variable( $path_to_config, 'detected_cms', $cms );
-	File::inject__variable( $path_to_config, 'is_installed', true );
+
+    $path_to_config = CLEANTALK_ROOT . 'config.php';
+    $salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
+    // Attention. Backwards order because inserting it step by step
+
+    $pass = 'NO PASS';
+    $email = '';
+
+    if( Post::get( 'admin_password' ) ) {
+        $pass = trim( Post::get( 'admin_password' ) );
+        File::inject__variable( $path_to_config, 'password', hash( 'sha256', trim( Post::get( 'admin_password' ) ) ) );
+    }
+
+    if( Post::get( 'email' ) ) {
+        $email = trim( Post::get( 'email' ) );
+        File::inject__variable( $path_to_config, 'email', trim( Post::get( 'email' ) ) );
+    }
+
+    if( Post::get( 'user_token' ) )
+        File::inject__variable( $path_to_config, 'user_token', trim( Post::get( 'user_token' ) ) );
+    if( Post::get( 'account_name_ob' ) )
+        File::inject__variable( $path_to_config, 'account_name_ob', trim( Post::get( 'account_name_ob' ) ) );
+
+    if($email) {
+        $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
+        $to = $email;
+        $login = $email;
+        $subject = 'Universal Anti-Spam Plugin settings for ' . $host;
+        $message = "Hi,<br><br>
+                Your credentials to get access to settings of Universal Anti-Spam Plugin by CleanTalk are bellow,<br><br>
+                Login: $login<br>
+                Access key: $api_key <br>
+                Password: $pass <br>
+                Settings URL: https://$host/cleantalk/settings.php <br>
+                Dashboard: https://cleantalk.org/my/?cp_mode=antispam <br><br>
+                --<br>
+                With regards,<br>
+                CleanTalk team.";
+
+        $headers  = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+        // Sending email
+        mail(
+            $to,
+            $subject,
+            $message,
+            $headers
+        );
+    }
+
+    File::inject__variable( $path_to_config, 'salt', $salt );
+    File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $salt ) );
+    File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
+    if( $exclusions )
+        File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
+    File::inject__variable( $path_to_config, 'apikey', $api_key );
+    File::inject__variable( $path_to_config, 'detected_cms', $cms );
+    File::inject__variable( $path_to_config, 'is_installed', true );
 }
 
 function install_cron(){
