@@ -132,6 +132,7 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
 function install_cron(){
 	Cron::addTask( 'sfw_update', 'apbct_sfw_update', 86400, time() + 60 );
 	Cron::addTask( 'sfw_send_logs', 'apbct_sfw_send_logs', 3600 );
+    Cron::addTask( 'plugin_get_latest_version', 'apbct__plugin_get_latest_version', 86400 );
 }
 
 function uninstall( $files = array() ){
