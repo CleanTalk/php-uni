@@ -101,13 +101,12 @@ if( Server::is_post() && Post::get( 'action' ) ){
             global $security;
             global $latest_version;
 
-            $updater = new \Cleantalk\USP\Updater\Updater( CLEANTALK_ROOT );
+            $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
             $result = $updater->update(APBCT_VERSION, $latest_version);
-//				if( empty( $result['error'] ) ){
-//					State::getInstance()->plugin_meta->previous_version = State::getInstance()->plugin_meta->version;
-//					State::getInstance()->plugin_meta->version          = State::getInstance()->plugin_meta->latest_version;
-//					State::getInstance()->plugin_meta->save();
-//				}
+				if( empty( $result['error'] ) ){
+				    File::clean__variable(CLEANTALK_ROOT, 'latest_version');
+				    File::inject__variable(CLEANTALK_ROOT, 'latest_version', $latest_version);
+				}
             die(json_encode( $result, true ));
             break;
 	       
