@@ -46,3 +46,15 @@ function apbct_sfw_send_logs(){
 	
 	return ! Err::check() ? true : false;
 }
+
+/**
+ * Update latest version of plugin in config.php
+ */
+function apbct__plugin_get_latest_version() {
+    $path_to_config = CLEANTALK_ROOT . 'config.php';
+
+    $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
+    $latest_version = $updater->getLatestVersion();
+    File::clean__variable($path_to_config, 'latest_version');
+    File::inject__variable($path_to_config, 'latest_version', $latest_version);
+}

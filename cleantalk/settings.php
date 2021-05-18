@@ -96,6 +96,20 @@ if( Server::is_post() && Post::get( 'action' ) ){
 		    }else
 			    die(Err::add('Forbidden')->get_last( 'as_json' ));
 		    break;
+
+        case 'update':
+            global $security;
+            global $latest_version;
+
+            $updater = new \Cleantalk\USP\Updater\Updater( CLEANTALK_ROOT );
+            $result = $updater->update(APBCT_VERSION, $latest_version);
+//				if( empty( $result['error'] ) ){
+//					State::getInstance()->plugin_meta->previous_version = State::getInstance()->plugin_meta->version;
+//					State::getInstance()->plugin_meta->version          = State::getInstance()->plugin_meta->latest_version;
+//					State::getInstance()->plugin_meta->save();
+//				}
+            die(json_encode( $result, true ));
+            break;
 	       
         default:
             die(Err::add('Unknown action')->get_last( 'as_json' ));
@@ -235,6 +249,14 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     <img class="preloader" src="img/preloader.gif" style="display: none;">
                 </div>
             </form>
+
+            <?php
+            /**
+             * Plugin version section
+             */
+            apbct__plugin_update_message();
+            ?>
+
         </div>
     <?php } ?>
         <!-- End Admin area box -->
@@ -247,6 +269,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
     <script src="js/jquery-ui.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/placeholder-shim.min.js"></script>
+    <script src="js/ct_ajax.js?v=<?php echo APBCT_VERSION; ?>"></script>
     <script src="js/common.js?v=<?php echo APBCT_VERSION; ?>"></script>
     <script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
     <script src="js/overhang.min.js"></script>

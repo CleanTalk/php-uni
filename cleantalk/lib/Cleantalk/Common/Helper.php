@@ -526,6 +526,13 @@ class Helper{
 						if(defined('CLEANTALK_CASERT_PATH') && CLEANTALK_CASERT_PATH)
 							$opts[CURLOPT_CAINFO] = CLEANTALK_CASERT_PATH;
 						break;
+
+                    case 'get_file':
+                        $opts[CURLOPT_CUSTOMREQUEST] = 'GET';
+                        $opts[CURLOPT_POST] = false;
+                        $opts[CURLOPT_POSTFIELDS] = null;
+                        $opts[CURLOPT_HEADER] = false;
+                        break;
 					
 					default:
 						
@@ -589,6 +596,18 @@ class Helper{
 		
 		return $out;
 	}
+
+    /**
+     * Wrapper for http_request
+     * Requesting data via HTTP request with GET method
+     *
+     * @param string $url
+     *
+     * @return array|mixed|string
+     */
+    static public function http__request__get_content( $url ){
+        return static::http__request( $url, array(), 'get dont_split_to_array');
+    }
 	
 	/**
 	 * Gets every HTTP_ headers from $_SERVER
@@ -775,4 +794,36 @@ class Helper{
 		$string = preg_replace( '/\//', '\/', $string );
 		return $string;
 	}
+
+    /**
+     * Wrapper for http_request
+     * Requesting HTTP response code for $url
+     *
+     * @param string $url
+     *
+     * @return array|mixed|string
+     */
+    static public function http__request__get_response_code( $url ){
+        return static::http__request( $url, array(), 'get_code');
+    }
+
+    public static function http__download_remote_file( $url, $tmp_folder ){
+
+        $result = self::http__request( $url, array(), 'get_file' );
+
+        if( empty( $result['error'] ) ){
+
+            $file_name = basename( $url );
+
+            if( ! is_dir( $tmp_folder ) )
+                mkdir( $tmp_folder );
+
+            if( ! file_exists( $tmp_folder . $file_name ) ){
+                file_put_contents( $tmp_folder . $file_name, $result );
+                return $tmp_folder . $file_name;
+            }else
+                return array( 'error' => 'File already downloaded');
+        }else
+            return $result;
+    }
 }

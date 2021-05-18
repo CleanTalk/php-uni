@@ -197,6 +197,13 @@ label.checkbox input{
     display: inline;
 }
 
+.ajax-preloader {
+	width: 20px;
+	margin-left: 5px;
+	vertical-align: text-top;
+	display: none;
+}
+
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers)
 =================================================================== */
 @media only screen and (max-width: 479px) {

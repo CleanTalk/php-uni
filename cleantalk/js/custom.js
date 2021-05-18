@@ -102,6 +102,11 @@ jQuery(document).ready(function($) {
 			uninstall();
 	});
 
+	// click for update plugin
+	$("#btn-update").on('click', function(event){
+		update();
+	});
+
 	// Close alert
 	$(".close").on('click', function(event){
 	    $(".alert-danger").hide(300);
@@ -285,6 +290,35 @@ jQuery(document).ready(function($) {
 			}
 		);
 
+	}
+
+	function update(){
+		ctAJAX({
+			data: { action: 'update'},
+			button: $('#btn-update'),
+			spinner: $('#btn-update+.ajax-preloader'),
+			successCallback: function(result, data, params, obj) {
+				if (result.success) {
+					$("body").overhang({
+						type: "success",
+						message: "Update was successful",
+						duration: 3,
+						overlay: true,
+						easing: 'linear'
+					});
+				}
+			},
+			errorOutput: function( msg ) {
+				$("body").overhang({
+					type: "error",
+					message: 'Error during update: ' + msg,
+					duration: 43200,
+					overlay: true,
+					closeConfirm: true,
+					easing: 'linear'
+				})
+			},
+		});
 	}
 
 });
