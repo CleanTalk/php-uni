@@ -1,6 +1,10 @@
 <?php
 
 define( 'CLEANTALK_INITIAL_INCLUDE_PATH', get_include_path() );
+define('APBCT_PLUGIN', 'uni');
+define('APBCT_VERSION', '2.4.0');
+define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
+define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
 
 function apbct_set_include_path(){
 	set_include_path( CLEANTALK_ROOT );
