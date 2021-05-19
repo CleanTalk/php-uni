@@ -104,8 +104,8 @@ if( Server::is_post() && Post::get( 'action' ) ){
             $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
             $result = $updater->update(APBCT_VERSION, $latest_version);
 				if( empty( $result['error'] ) ){
-				    File::clean__variable(CLEANTALK_ROOT, 'latest_version');
-				    File::inject__variable(CLEANTALK_ROOT, 'latest_version', $latest_version);
+				    File::clean__variable(CLEANTALK_CONFIG_FILE, 'latest_version');
+				    File::inject__variable(CLEANTALK_CONFIG_FILE, 'latest_version', $latest_version);
 				}
             die(json_encode( $result, true ));
             break;
