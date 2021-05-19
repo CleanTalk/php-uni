@@ -193,7 +193,7 @@ class File{
 
         if( is_dir( $from ) ){
 
-            if( ! mkdir( $to ) && ! is_dir( $to ) ){
+            if( ! is_dir( $to ) && ! mkdir( $to ) ){
                 error_log( var_export( $to, true ) );
                 return false;
             }
