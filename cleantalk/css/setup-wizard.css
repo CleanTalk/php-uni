@@ -27,7 +27,7 @@ body{
 	font-size:1.5em;
 	opacity: 0.9;
 	font-weight: normal;
- 
+
 }
 #admin-block {
 	padding-top: 10px;
@@ -53,8 +53,8 @@ body{
 }
 
 .setup-logo{
-	 text-align: center;
-	 padding: 15px 0 10px;
+	text-align: center;
+	padding: 15px 0 10px;
 }
 
 .setup-logo img{
@@ -81,7 +81,7 @@ body{
 	-webkit-border-radius: 100px;
 	-moz-border-radius: 100px;
 	border-radius: 100px;
-	text-align: center; 
+	text-align: center;
 	margin: -60px auto 0;
 
 }
@@ -96,7 +96,7 @@ body{
 	height:100%;
 }
 .rotate-icon{
-	 -moz-transform:rotate(45deg);
+	-moz-transform:rotate(45deg);
 	-webkit-transform:rotate(45deg);
 	-o-transform:rotate(45deg);
 	-ms-transform:rotate(45deg);
@@ -125,10 +125,10 @@ body{
 }
 
 .setup-form input.loading {
-    background-image: url("/cleantalk/img/preloader.gif");
-    background-size: 15px 15px;
-    background-position:right 5% bottom 50%;
-    background-repeat: no-repeat;
+	background-image: url("/cleantalk/img/preloader.gif");
+	background-size: 15px 15px;
+	background-position:right 5% bottom 50%;
+	background-repeat: no-repeat;
 }
 /* setup Button */
 .btn.btn-setup {
@@ -137,7 +137,7 @@ body{
 	margin: 20px auto 20px;
 	color: white;
 	text-transform: uppercase;
-	background: #59ACEE; 
+	background: #59ACEE;
 	-webkit-transition: all .5s ease-in-out;
 	-moz-transition: all .5s ease-in-out;
 	-o-transition: all .5s ease-in-out;
@@ -156,9 +156,9 @@ body{
 	text-align: center;
 }
 .setup-links a{
-	color: #444; 
+	color: #444;
 	display:inline-block;
-	padding:5px; 
+	padding:5px;
 	-webkit-transition: all .5s ease;
 	-moz-transition: all .5s ease;
 	-ms-transition: all .5s ease;
@@ -191,16 +191,20 @@ label.checkbox input{
 }
 
 .preloader{
-    width: 20px;
-    margin-left: 5px;
-    vertical-align: text-top;
-    display: inline;
+	width: 20px;
+	margin-left: 5px;
+	vertical-align: text-top;
+	display: inline;
 }
 
 .ajax-preloader {
 	width: 20px;
 	margin-left: 5px;
 	vertical-align: text-top;
+	display: none;
+}
+
+.--hide {
 	display: none;
 }
 

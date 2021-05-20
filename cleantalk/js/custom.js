@@ -5,6 +5,7 @@ var key_check_timer = 0,
 	is_key   = false,
 	key_valid = false,
 	do_install = false;
+is_password       = false,
 	advan_config_show = false,
 	email = null,
 	user_token = null,
@@ -15,71 +16,87 @@ jQuery(document).ready(function($) {
 
 	$( ".advanced_conf" ).hide();
 	$('.show_more_icon').css('transform','rotate(' + 90 + 'deg)');
-	
+
 	/*---------- For Placeholder on IE9 and below -------------*/
 	$('input, textarea').placeholder();
-	
-	/*----------- For icon rotation on input box foxus -------------------*/ 	
+
+	/*----------- For icon rotation on input box foxus -------------------*/
 	$('input[name="access_key_field"]').focus(function() {
-  		$('.page-icon img').addClass('rotate-icon');
+		$('.page-icon img').addClass('rotate-icon');
 	});
-	
-	/*----------- For icon rotation on input box blur -------------------*/ 	
+
+	/*----------- For icon rotation on input box blur -------------------*/
 	$('input[name="access_key_field"]').blur(function() {
-  		$('.page-icon img').removeClass('rotate-icon');
+		$('.page-icon img').removeClass('rotate-icon');
 	});
 
 	$('#show_more_btn').click(function(){
 		if (!advan_config_show) {
-	    	$('.show_more_icon').css('transform','rotate(' + 0 + 'deg)');
-	    	advan_config_show = true;	
-	    	$( ".advanced_conf" ).show();			
+			$('.show_more_icon').css('transform','rotate(' + 0 + 'deg)');
+			advan_config_show = true;
+			$( ".advanced_conf" ).show();
 		}
 		else {
 			$('.show_more_icon').css('transform','rotate(' + 90 + 'deg)');
-			advan_config_show = false;	
-			$( ".advanced_conf" ).hide();	
+			advan_config_show = false;
+			$( ".advanced_conf" ).hide();
 
 		}
 
-    }); 
+	});
 
 	// Checking and Highlighting access key onchange
 	$('input[name="access_key_field"]').on('input', function(){
-		
-		clearInterval(key_check_timer);
-		
+
+		clearTimeout(key_check_timer);
+
 		var field = $(this);
-		
-		value = field.val().trim(),
-		is_empty = value == '' ? true : false,
-		is_email = value.search(/^\S+@\S+\.\S+$/) == 0 ? true : false,
-		is_key   = value.search(/^[0-9a-zA-Z]*$/) == 0 ? true : false;
-		if(is_empty){
-			$('.btn-setup').prop('disabled', true);
-			return;
-		}
-		if(!is_key && !is_email){
-			$('.btn-setup').prop('disabled', true);
-			return;
-		}
-		if(is_email){
-			$('.btn-setup').prop('disabled', false);
-			return;
-		}
+		var value = field.val().trim();
+
+		is_key   = value.search(/^[0-9a-zA-Z]*$/) === 0;
+
 		if(is_key && value.length > 7){
 			key_check_timer = setTimeout(function(){
 				// field.addClass('loading');
 				key_validate( value, field );
-			}, do_install ? 5 : 2000);						
+			}, do_install ? 5 : 2000);
+		}
+	});
+
+	// Checking and Highlighting access key onchange
+	$('input[name="email_field"]').on('input', function(){
+
+		is_email = $(this).val().trim().search(/^\S+@\S+\.\S+$/) === 0;
+
+		validate_installation();
+	});
+
+	// Checking and Highlighting access key onchange
+	$('input[name="admin_password"]').on('input', function(){
+
+		var field = $(this),
+			value = $(this).val();
+
+		is_password =  value.length >= 4  && value.search(/^[^\s]*$/) === 0;
+
+		validate_installation();
+
+		if( is_password ){
+			$('#password_requirements').hide();
+			field.css('border', '1px solid #04B66B');
+			field.css('box-shadow', '0 0 8px #04B66B');
+		}else{
+			$('#password_requirements').show();
+			field.css('box-shadow', '0 0 8px #F44336');
+			field.css('border', '1px solid #F44336');
 		}
 	});
 
 	// Install button
-	$('.btn-setup').on('click', function(event){
-		if(is_email)
+	$('#btn-setup').on('click', function(event){
+		if( ! key_valid )
 			get_key();
-		if(!is_email && is_key && key_valid)
+		else
 			install();
 	});
 
@@ -109,17 +126,27 @@ jQuery(document).ready(function($) {
 
 	// Close alert
 	$(".close").on('click', function(event){
-	    $(".alert-danger").hide(300);
+		$(".alert-danger").hide(300);
 	});
+
+	function validate_installation(){
+
+		$('.btn-setup').prop(
+			'disabled',
+			! ( is_email && is_password )
+		);
+
+	}
 
 	function get_key(){
 
 		let field = $('input[name="access_key_field"]');
+		let email = $('input[name="email_field"]');
 
 		ct_AJAX(
 			{
 				action: 'get_key',
-				email: field.val().trim(),
+				email: email.val().trim(),
 				security: security,
 			},
 			{
@@ -183,7 +210,7 @@ jQuery(document).ready(function($) {
 				additional_fields: $('#addition_scripts').val().trim(),
 				modify_index: +$('#input__modify_index').is( ":checked" ),
 				admin_password : $('input[name="admin_password"]').val().trim(),
-				email: email,
+				email: $('input[name="email_field"]').val().trim(),
 				user_token: user_token,
 				account_name_ob: account_name_ob,
 			},
@@ -210,7 +237,7 @@ jQuery(document).ready(function($) {
 		ct_AJAX(
 			{
 				action: 'login',
- 				login: login.val().trim(),
+				login: login.val().trim(),
 				password: password,
 			},
 			{
@@ -322,4 +349,3 @@ jQuery(document).ready(function($) {
 	}
 
 });
-

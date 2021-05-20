@@ -14,88 +14,88 @@ require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
 
 if( Server::is_post() && Post::get( 'action' ) ){
-	
-	// Brute force protection
-	sleep(2);
-    
+
+    // Brute force protection
+    sleep(2);
+
     switch (Post::get('action')){
-        
+
         case 'login':
-            
+
             // If password is set in config
-	        if(isset($password)){
-		        if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
+            if(isset($password)){
+                if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
                     setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
                 }else
                     Err::add('Incorrect login or password');
-		        
-            // No password is set. Check only login.
-	        }elseif( ( Post::get( 'login' ) == $apikey ) ){
+
+                // No password is set. Check only login.
+            }elseif( ( Post::get( 'login' ) == $apikey ) ){
                 setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
-                
-            // No match
-	        }else
-		        Err::add('Incorrect login');
-	
-	        Err::check() or die(json_encode(array('passed' => true)));
-	        die(Err::check_and_output( 'as_json' ));
-	        
-	        break;
-	
+
+                // No match
+            }else
+                Err::add('Incorrect login');
+
+            Err::check() or die(json_encode(array('passed' => true)));
+            die(Err::check_and_output( 'as_json' ));
+
+            break;
+
         case 'logout':
             setcookie('authenticated', 0, time()-86400, '/', null, false, true);
-	        die( json_encode( array( 'success' => true ) ) );
+            die( json_encode( array( 'success' => true ) ) );
             break;
-		        
+
         case 'save_settings':
-            
+
             if( Post::get( 'security' ) === $security ){
-	
-	            $path_to_config = CLEANTALK_ROOT . 'config.php';
-	            
+
+                $path_to_config = CLEANTALK_ROOT . 'config.php';
+
                 File::replace__variable( $path_to_config, 'apikey', Post::get( 'apikey' ) );
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
-                
+
                 // SFW actions
-	            if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
-		            
-		            $sfw = new SFW();
-		            
-		            // Update SFW
-		            $result = $sfw->sfw_update( Post::get( 'apikey' ) );
-		            if( ! Err::check() ){
-		                File::replace__variable( $path_to_config, 'sfw_last_update', time() );
-		                File::replace__variable( $path_to_config, 'sfw_entries', $result );
+                if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
+
+                    $sfw = new SFW();
+
+                    // Update SFW
+                    $result = $sfw->sfw_update( Post::get( 'apikey' ) );
+                    if( ! Err::check() ){
+                        File::replace__variable( $path_to_config, 'sfw_last_update', time() );
+                        File::replace__variable( $path_to_config, 'sfw_entries', $result );
                     }
-		            
-		            // Send SFW logs
-		            $result = $sfw->logs__send( Post::get( 'apikey' ) );
-		            if( empty( $result['error'] ) && ! Err::check() )
-		                File::replace__variable( $path_to_config, 'sfw_last_logs_send', time() );
-	            }
-	            
-	            Err::check() or die(json_encode(array('success' => true)));
-	            die(Err::check_and_output( 'as_json' ));
-	            
+
+                    // Send SFW logs
+                    $result = $sfw->logs__send( Post::get( 'apikey' ) );
+                    if( empty( $result['error'] ) && ! Err::check() )
+                        File::replace__variable( $path_to_config, 'sfw_last_logs_send', time() );
+                }
+
+                Err::check() or die(json_encode(array('success' => true)));
+                die(Err::check_and_output( 'as_json' ));
+
             }else
-	            die(Err::add('Forbidden')->get_last( 'as_json' ));
-	        break;
-	
-	    case 'uninstall':
-		
-		    if( Post::get( 'security' ) === $security ){
-		        
+                die(Err::add('Forbidden')->get_last( 'as_json' ));
+            break;
+
+        case 'uninstall':
+
+            if( Post::get( 'security' ) === $security ){
+
                 setcookie('authenticated', 0, time()-86400, '/', null, false, true);
-		        uninstall();
-			
-			    Err::check() or die(json_encode(array('success' => true)));
-			    die(Err::check_and_output( 'as_json' ));
-			    
-		    }else
-			    die(Err::add('Forbidden')->get_last( 'as_json' ));
-		    break;
+                uninstall();
+
+                Err::check() or die(json_encode(array('success' => true)));
+                die(Err::check_and_output( 'as_json' ));
+
+            }else
+                die(Err::add('Forbidden')->get_last( 'as_json' ));
+            break;
 
         case 'update':
             global $security;
@@ -103,13 +103,13 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
             $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
             $result = $updater->update(APBCT_VERSION, $latest_version);
-				if( empty( $result['error'] ) ){
-				    File::clean__variable(CLEANTALK_CONFIG_FILE, 'latest_version');
-				    File::inject__variable(CLEANTALK_CONFIG_FILE, 'latest_version', $latest_version);
-				}
+            if( empty( $result['error'] ) ){
+                File::clean__variable(CLEANTALK_CONFIG_FILE, 'latest_version');
+                File::inject__variable(CLEANTALK_CONFIG_FILE, 'latest_version', $latest_version);
+            }
             die(json_encode( $result, true ));
             break;
-	       
+
         default:
             die(Err::add('Unknown action')->get_last( 'as_json' ));
             break;
@@ -119,91 +119,91 @@ if( Server::is_post() && Post::get( 'action' ) ){
 ?>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="robots" content="noindex, nofollow">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="shortcut icon" href="img/ct_logo.png">
-        <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
-        
-        <title>Universal Anti-Spam Plugin by CleanTalk</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="img/ct_logo.png">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
 
-	    <!-- CSS -->
-	    <!-- Bootstrap core CSS -->
-	    <link href="css/bootstrap.css" rel="stylesheet">
+    <title>Universal Anti-Spam Plugin by CleanTalk</title>
 
-	    <!-- Plugins-->
-	    <link href="css/overhang.min.css" rel="stylesheet">
+    <!-- CSS -->
+    <!-- Bootstrap core CSS -->
+    <link href="css/bootstrap.css" rel="stylesheet">
 
-	    <!-- Custom styles -->
-	    <link href="css/setup-wizard.css" rel="stylesheet">
+    <!-- Plugins-->
+    <link href="css/overhang.min.css" rel="stylesheet">
 
-	    <!-- Animation -->
-	    <link href="css/animate-custom.css" rel="stylesheet">
-    
-    </head>
-    <body class="fade-in">
-        
-        <!-- Login -->
-        <?php if( \Cleantalk\Variables\Cookie::get( 'authenticated' ) !== $security ) { ?>
-        <!-- start login wizard box -->
-        <div class="container" id="setup-block">
-            <div class="row">
-                <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
-                   
-                   <div class="setup-box clearfix animated flipInY">
-                        <div class="page-icon animated bounceInDown">
-                            <img  src="img/ct_logo.png" alt="Cleantalk logo" />
+    <!-- Custom styles -->
+    <link href="css/setup-wizard.css" rel="stylesheet">
+
+    <!-- Animation -->
+    <link href="css/animate-custom.css" rel="stylesheet">
+
+</head>
+<body class="fade-in">
+
+<!-- Login -->
+<?php if( \Cleantalk\Variables\Cookie::get( 'authenticated' ) !== $security ) { ?>
+    <!-- start login wizard box -->
+    <div class="container" id="setup-block">
+        <div class="row">
+            <div class="col-sm-6 col-md-4 col-sm-offset-3 col-md-offset-4">
+
+                <div class="setup-box clearfix animated flipInY">
+                    <div class="page-icon animated bounceInDown">
+                        <img  src="img/ct_logo.png" alt="Cleantalk logo" />
+                    </div>
+                    <div class="setup-logo">
+                        <h3> - Universal Anti-Spam Plugin - </h3>
+                    </div>
+                    <hr />
+                    <div class="setup-form">
+                        <!-- Start Error box -->
+                        <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
+                            <button type="button" class="close" > &times;</button>
+                            <p id='error-msg'></p>
                         </div>
-                        <div class="setup-logo">
-                            <h3> - Universal Anti-Spam Plugin - </h3>
-                        </div>
-                        <hr />
-                        <div class="setup-form">
-                            <!-- Start Error box -->
-                            <div class="alert alert-danger alert-dismissible fade in" style="display:none" role="alert">
-                                  <button type="button" class="close" > &times;</button>
-                                   <p id='error-msg'></p>
-                            </div>
-                            <!-- End Error box -->
-	                        <?php if( ! empty( $is_installed ) ) : ?>
+                        <!-- End Error box -->
+                        <?php if( ! empty( $is_installed ) ) : ?>
                             <form action = 'javascript:void(null);' method="post" id='login-form'>
-                                 <input type="text" placeholder="Access key<?php if( isset( $email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
-                                 
-                                 <?php if( ! empty( $password ) ) : ?>
-                                 <input type="password" placeholder="Password" class="input-field" name="password"/>
-                                 <?php endif; ?>
-                                 <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
-                                 <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
+                                <input type="text" placeholder="Access key<?php if( isset( $email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+
+                                <?php if( ! empty( $password ) ) : ?>
+                                    <input type="password" placeholder="Password" class="input-field" name="password"/>
+                                <?php endif; ?>
+                                <button type="submit" name="action" value="login" class="btn btn-setup" id="btn-login">Login</button>
+                                <p>Don't know your access key? Get it <a href="https://cleantalk.org/my" target="_blank">here</a>.</p>
                             </form>
-                            <?php else : ?>
+                        <?php else : ?>
                             <h4><p class="text-center">Please, <?php echo '<a href="' . CLEANTALK_URI . 'install.php">setup</a>'; ?> plugin first!</p></h4>
-                            <?php endif; ?>
-                        </div>
-                   </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- Settings -->
-    <?php } else { ?>
-        <!-- End login-wizard wizard box -->
-        <!-- Admin area box -->
-        <div class="container" id="admin-block" style="margin-top: 80px;">
+    </div>
+    <!-- Settings -->
+<?php } else { ?>
+    <!-- End login-wizard wizard box -->
+    <!-- Admin area box -->
+    <div class="container" id="admin-block" style="margin-top: 80px;">
 
-            <!-- Uninstall Logout buttons -->
-            <div class="settings-links">
-                <a style="float: right" href="#" id='btn-logout'>Log out </a>
-            </div>
+        <!-- Uninstall Logout buttons -->
+        <div class="settings-links">
+            <a style="float: right" href="#" id='btn-logout'>Log out </a>
+        </div>
 
-            <!-- Icon and title -->
-            <div class="page-icon animated bounceInDown">
-                <img  src="img/ct_logo.png" alt="Cleantalk logo" />
-            </div>
-            <div class="setup-logo">
-                <h3> - Universal Anti-Spam Plugin - </h3>
-            </div>
+        <!-- Icon and title -->
+        <div class="page-icon animated bounceInDown">
+            <img  src="img/ct_logo.png" alt="Cleantalk logo" />
+        </div>
+        <div class="setup-logo">
+            <h3> - Universal Anti-Spam Plugin - </h3>
+        </div>
 
-            <form action='javascript:void(null);' class="form-horizontal" role="form">
+        <form action='javascript:void(null);' class="form-horizontal" role="form">
             <div class="row">
                 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                     <h4><p class="text-center">Settings</p></h4>
@@ -232,49 +232,49 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     <hr>
                     <p>Check detailed statistics on <a href="https://cleantalk.org/my<?php echo !empty($user_token) ? '?cp_mode=antispam&user_token='.$user_token : ''; ?>" target="_blank">your Anti-Spam dashboard</a></p>
                     <p>Presumably CMS: <?php echo $detected_cms; ?></p>
-<!--                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>-->
-<!--                    <p>Average request time for past 7 days: 0.399 seconds.</p>-->
+                    <!--                    <p>Last spam check request to http://moderate3.cleantalk.org server was at Oct 07 2019 14:10:43.</p>-->
+                    <!--                    <p>Average request time for past 7 days: 0.399 seconds.</p>-->
                     <p>SpamFireWall base contains <?php echo $sfw_entries; ?> entries.</p>
                     <p>SpamFireWall was updated: <?php echo $sfw_last_update ? date('M d Y H:i:s', $sfw_last_update) : 'never';?>.</p>
                     <p>SpamFireWall logs were sent: <?php echo $sfw_last_logs_send ? date('M d Y H:i:s', $sfw_last_logs_send) : 'never';?>.</p>
                     <p>Modified files:</p>
-	                <?php foreach($modified_files as $file){;?>
+                    <?php foreach($modified_files as $file){;?>
                         <p>&nbsp; - <?php echo $file; ?></p>
                     <?php } ?>
                 </div>
             </div>
-                <div class="text-center">
-                    <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>
-                    <img class="preloader" src="img/preloader.gif" style="display: none;">
-                </div>
-            </form>
+            <div class="text-center">
+                <button type="submit" class="btn btn-setup mt-sm-2" id='btn-save-settings' style="display: inline">Save</button>
+                <img class="preloader" src="img/preloader.gif" style="display: none;">
+            </div>
+        </form>
 
-            <?php
-            /**
-             * Plugin version section
-             */
-            apbct__plugin_update_message();
-            ?>
+        <?php
+        /**
+         * Plugin version section
+         */
+        apbct__plugin_update_message();
+        ?>
 
-        </div>
-    <?php } ?>
-        <!-- End Admin area box -->
+    </div>
+<?php } ?>
+<!-- End Admin area box -->
 
-        <footer class="container">
-            <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
-        </footer>
-        
-    <script src="js/jquery.min.js"></script>
-    <script src="js/jquery-ui.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/placeholder-shim.min.js"></script>
-    <script src="js/ct_ajax.js?v=<?php echo APBCT_VERSION; ?>"></script>
-    <script src="js/common.js?v=<?php echo APBCT_VERSION; ?>"></script>
-    <script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
-    <script src="js/overhang.min.js"></script>
-    <script type='text/javascript'>
-        var security = '<?php echo $security ?>';
-        var ajax_url = location.href;
-    </script>
+<footer class="container">
+    <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
+</footer>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/jquery-ui.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/placeholder-shim.min.js"></script>
+<script src="js/ct_ajax.js?v=<?php echo APBCT_VERSION; ?>"></script>
+<script src="js/common.js?v=<?php echo APBCT_VERSION; ?>"></script>
+<script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
+<script src="js/overhang.min.js"></script>
+<script type='text/javascript'>
+    var security = '<?php echo $security ?>';
+    var ajax_url = location.href;
+</script>
 
 </body>
