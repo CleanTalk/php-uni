@@ -340,13 +340,15 @@
 							continue(2);
 						}
 					}unset($needle);
-					
+
+					$value_for_email = trim($value);
+
 					// Decodes URL-encoded data to string.
-					$value = urldecode($value);	
+					$value = urldecode(trim($value));
 
 					// Email
-					if (!$email && preg_match("/^\S+@\S+\.\S+$/", $value)){
-						$email = $value;
+					if (!$email && preg_match("/^\S+@\S+\.\S+$/", $value_for_email)){
+						$email = $value_for_email;
 						
 					// Names
 					} elseif (
