@@ -260,9 +260,11 @@ if( Server::is_post() && Post::get( 'action' ) ){
 <?php } ?>
 <!-- End Admin area box -->
 
-<footer class="container">
-    <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
-</footer>
+<?php if( ! empty( $is_installed ) ) : ?>
+    <footer class="container">
+        <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
+    </footer>
+<?php endif; ?>
 
 <script src="js/jquery.min.js"></script>
 <script src="js/jquery-ui.min.js"></script>
