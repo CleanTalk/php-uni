@@ -145,7 +145,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 <body class="fade-in">
 
 <!-- Login -->
-<?php if( \Cleantalk\Variables\Cookie::get( 'authenticated' ) !== $security ) { ?>
+<?php if( !isset($security) || \Cleantalk\Variables\Cookie::get( 'authenticated' ) !== $security ) { ?>
     <!-- start login wizard box -->
     <div class="container" id="setup-block">
         <div class="row">
@@ -257,14 +257,14 @@ if( Server::is_post() && Post::get( 'action' ) ){
         ?>
 
     </div>
+
+	<?php if( ! empty( $is_installed ) ) : ?>
+        <footer class="container">
+            <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
+        </footer>
+	<?php endif; ?>
 <?php } ?>
 <!-- End Admin area box -->
-
-<?php if( ! empty( $is_installed ) ) : ?>
-    <footer class="container">
-        <h5 style="text-align: center"><a href="#" style="color: inherit;" id='btn-uninstall' >Uninstall</a></h5>
-    </footer>
-<?php endif; ?>
 
 <script src="js/jquery.min.js"></script>
 <script src="js/jquery-ui.min.js"></script>
