@@ -176,7 +176,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 			$sfw_die_page = str_replace('{SFW_DIE_NOTICE_IP}',             'SpamFireWall is activated for your IP ', $sfw_die_page);
 			$sfw_die_page = str_replace('{SFW_DIE_MAKE_SURE_JS_ENABLED}',   'To continue working with web site, please make sure that you have enabled JavaScript', $sfw_die_page);
 			$sfw_die_page = str_replace('{SFW_DIE_CLICK_TO_PASS}',          'Please click below to pass protection,', $sfw_die_page);
-			$sfw_die_page = str_replace('{SFW_DIE_YOU_WILL_BE_REDIRECTED}', sprintf('Or you will be automatically redirected to the requested page after %d seconds.', 1), $sfw_die_page);
+			$sfw_die_page = str_replace('{SFW_DIE_YOU_WILL_BE_REDIRECTED}', sprintf('Or you will be automatically redirected to the requested page after %d seconds.', 3), $sfw_die_page);
 			$sfw_die_page = str_replace('{CLEANTALK_TITLE}',                'Antispam by CleanTalk', $sfw_die_page);
 			$sfw_die_page = str_replace('{TEST_TITLE}',                     ($this->test ? 'This is the testing page for SpamFireWall' : ''), $sfw_die_page);
 	
@@ -184,7 +184,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 				$sfw_die_page = str_replace('{REAL_IP__HEADER}', 'Real IP:', $sfw_die_page);
 				$sfw_die_page = str_replace('{TEST_IP__HEADER}', 'Test IP:', $sfw_die_page);
 				$sfw_die_page = str_replace('{TEST_IP}', $this->all_ips['sfw_test']['ip'], $sfw_die_page);
-				$sfw_die_page = str_replace('{REAL_IP}', (isset($this->all_ips['real']) && $this->all_ips['real']['ip']),     $sfw_die_page);
+				$sfw_die_page = str_replace('{REAL_IP}', (isset($this->all_ips['real']) && $this->all_ips['real']['ip']) ? $this->all_ips['real']['ip'] : '',     $sfw_die_page);
 				$sfw_die_page = str_replace('{TEST_IP_BLOCKED}', $this->all_ips['sfw_test']['status'] == 1 ? 'Passed' : 'Blocked', $sfw_die_page);
 				$sfw_die_page = str_replace('{REAL_IP_BLOCKED}', (isset($this->all_ips['real']) && $this->all_ips['real']['status'] == 1) ? 'Passed' : 'Blocked',     $sfw_die_page);
 			}else{
