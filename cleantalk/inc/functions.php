@@ -38,7 +38,7 @@
 		    $skip || // Skip flag set by apbct_get_fields_any()
 			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
 			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
-		    ( apbct_check__exclusions() ) || // Has an exclusions in POST
+		    ( apbct_check__exclusions_in_post() ) || // Has an exclusions in POST
 		    ( apbct_check__url_exclusions() ) // Has an exclusions in URL
 		)
 			$skip = true;
@@ -546,8 +546,13 @@
 	 *
 	 * @return bool
 	 */
-	function apbct_check__exclusions( $exclusions = array() ){
-		
+	function apbct_check__exclusions_in_post( $exclusions = array() ){
+
+	    # Array by default: post_field_name => post_field_value
+        $exclusions_default = array();
+
+        $exclusions = array_merge($exclusions_default, $exclusions);
+
 		foreach ( $exclusions as $name => $exclusion ){
 			if( \Cleantalk\Variables\Post::equal( $name, $exclusion ) ){
 				return true;
