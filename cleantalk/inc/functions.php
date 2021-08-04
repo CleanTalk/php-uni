@@ -38,6 +38,7 @@
 		    $skip || // Skip flag set by apbct_get_fields_any()
 			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
 			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
+            ( apbct_check__exclusions() ) || // main exclusion function
 		    ( apbct_check__exclusions_in_post() ) || // Has an exclusions in POST
 		    ( apbct_check__url_exclusions() ) // Has an exclusions in URL
 		)
@@ -581,3 +582,22 @@
 		
 		return false;
 	}
+
+    /**
+     * Another function for excluding validation based on any number of parameters
+     */
+    function apbct_check__exclusions() {
+
+        global $detected_cms;
+
+        # Exclude refresh captcha in phpbb registration form
+        if(
+            $detected_cms === 'phpBB' &&
+            apbct_check__exclusions_in_post(array('refresh_vc' => true)) &&
+            apbct_check__url_exclusions(array('mode=register'))
+        ) {
+            return true;
+        }
+
+        return false;
+    }
