@@ -2,6 +2,7 @@
 
 require_once 'check_requirements.php';
 
+use Cleantalk\Common\API;
 use Cleantalk\Common\Err;
 use Cleantalk\Common\File;
 use Cleantalk\Variables\Post;
@@ -52,6 +53,31 @@ if( Server::is_post() && Post::get( 'action' ) ){
             if( Post::get( 'security' ) === $security ){
 
                 $path_to_config = CLEANTALK_ROOT . 'config.php';
+                $apikey = Post::get( 'apikey' );
+                global $account_name_ob;
+
+                /**
+                 * Apikey validation
+                 */
+                if(!empty($apikey)) {
+                    $result = API::method__notice_paid_till(
+                        $apikey,
+                        preg_replace( '/http[s]?:\/\//', '', Server::get( 'SERVER_NAME' ), 1 ),
+                        'antispam'
+                    );
+
+                    if(
+                           !empty($result)
+                        && isset($result['valid']) && $result['valid'] === 0
+                        && array_key_exists('account_name_ob', $result)
+                        && ($result['account_name_ob'] === NULL || $result['account_name_ob'] !== $account_name_ob)
+                    ) {
+                        File::replace__variable( $path_to_config, 'apikey', '' );
+                        die(Err::add('Error occurred while API key validating. Error: Testing is failed. Please check the Access key.')->get_last( 'as_json' ));
+                    }
+                } else {
+                    die(Err::add('Please, enter the access key')->get_last( 'as_json' ));
+                }
 
                 File::replace__variable( $path_to_config, 'apikey', Post::get( 'apikey' ) );
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
