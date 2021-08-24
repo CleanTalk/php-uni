@@ -1,6 +1,7 @@
 <?php
 
 //Settings
+	$antispam_activity_status = true;
 	$registrations_test = true;
 	$general_postdata_test = false;
 	$spam_firewall = true;

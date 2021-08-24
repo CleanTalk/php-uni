@@ -1,5 +1,5 @@
 <?php
-	
+
 	// Config
 	require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 
@@ -7,9 +7,10 @@
 		apbct_restore_include_path();
 		return;
 	}
-	
+
 	$apbct_checkjs_val = md5($apikey);
 	global $apbct_checkjs_val;
+	global $antispam_activity_status;
 	if ($spam_firewall == 1) {
 		$is_sfw_check  = true;
 		$sfw           = new \Cleantalk\ApbctUni\SFW();
@@ -28,7 +29,7 @@
 			}
 		}
 		unset($key, $value);
-		
+
 		if ($is_sfw_check)
 		{
 			$sfw->ip_check();
@@ -44,13 +45,20 @@
 				$sfw->sfw_die($apikey);
 			}
 		}
-		
+
 	}
-	
+
+    /**
+     * Skip spamtest if antispam not active in settings
+     */
+    if(!$antispam_activity_status) {
+        return;
+    }
+
 	// Helper functions
 	require_once( CLEANTALK_ROOT . 'inc' . DS . 'functions.php');
-	
-	// Catching buffer 
+
+	// Catching buffer
 	ob_start('ct_attach_js');
 	function ct_attach_js($buffer){
 		global $apbct_checkjs_val;
@@ -58,7 +66,7 @@
 			!(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') // No ajax
 			&& preg_match('/^\s*(<!doctype|<html)[\s\S]*html>\s*$/i', $buffer) == 1 // Only for HTML documents
 		){
-			$html_addition = 
+			$html_addition =
 				'<script>var apbct_checkjs_val = "' . $apbct_checkjs_val . '";</script>'
 				.'<script src="/cleantalk/js/ct_js_test.js"></script>'
 				.'<script src="/cleantalk/js/ct_ajax_catch.js"></script>';
@@ -69,12 +77,12 @@
 				1
 			);
 		}
-		
+
 		apbct_restore_include_path();
-		
+
 		return $buffer;
 	}
-	
+
 	// External forms
 	if( isset($_SERVER['REQUEST_METHOD'], $_POST['ct_method'], $_POST['ct_action']) && $_SERVER['REQUEST_METHOD'] == 'POST' ){
     	$action = htmlspecialchars($_POST['ct_action']);
@@ -96,12 +104,12 @@
 			die();
 		}
     }
-	
+
 	// General spam test
 	if(!empty($_POST)){
 		apbct_spam_test($_POST);
 	}
-			
+
 	// Set Cookies test for cookie test
 	$apbct_timestamp = time();
 	setcookie('apbct_timestamp',     $apbct_timestamp,                0, '/');

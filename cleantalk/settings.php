@@ -80,6 +80,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 }
 
                 File::replace__variable( $path_to_config, 'apikey', Post::get( 'apikey' ) );
+                File::replace__variable( $path_to_config, 'antispam_activity_status', (bool)Post::get( 'antispam_activity_status' ) );
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
@@ -238,6 +239,10 @@ if( Server::is_post() && Post::get( 'action' ) ){
                         <div class="form-group row">
                             <input class="form-control" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($apikey)) echo $apikey; ?>>
                             <p>Account registered for email: <?php echo !empty($account_name_ob) ? $account_name_ob : 'unkonown';  ?></p>
+                        </div>
+                        <div class="form-group row">
+                            <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="antispam_activity_status" name="antispam_activity_status" <?php if (!empty($antispam_activity_status)) echo "checked"; ?>>
+                            <label for="antispam_activity_status" class="apbct_setting-checkbox--label">Enable Antispam</label>
                         </div>
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="check_reg" name="registrations_test" <?php if (!empty($registrations_test)) echo "checked"; ?>>

@@ -269,6 +269,7 @@ jQuery(document).ready(function($) {
 			{
 				action: 'save_settings',
 				apikey: $('input[name="apikey"]').val().trim(),
+                antispam_activity_status: $('#antispam_activity_status').is(':checked') ? 1 : 0,
 				registrations_test: $('#check_reg').is(':checked') ? 1 : 0,
 				general_postdata_test: $('#check_without_email').is(':checked') ? 1 : 0,
 				spam_firewall: $('#enable_sfw').is(':checked') ? 1 : 0,
