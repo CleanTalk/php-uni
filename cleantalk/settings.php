@@ -79,19 +79,19 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     die(Err::add('Please, enter the access key')->get_last( 'as_json' ));
                 }
 
-                File::replace__variable( $path_to_config, 'apikey', Post::get( 'apikey' ) );
+                File::replace__variable( $path_to_config, 'apikey', $apikey );
                 File::replace__variable( $path_to_config, 'antispam_activity_status', (bool)Post::get( 'antispam_activity_status' ) );
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
 
                 // SFW actions
-                if( Post::get( 'spam_firewall' ) && Post::get( 'apikey' ) ){
+                if( Post::get( 'spam_firewall' ) && $apikey ){
 
                     $sfw = new SFW();
 
                     // Update SFW
-                    $result = $sfw->sfw_update( Post::get( 'apikey' ) );
+                    $result = $sfw->sfw_update( $apikey );
                     if( ! Err::check() ){
                         File::replace__variable( $path_to_config, 'sfw_last_update', time() );
                         File::replace__variable( $path_to_config, 'sfw_entries', $result );

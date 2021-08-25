@@ -18,7 +18,7 @@ use Cleantalk\Common\File;
 class SFW extends \Cleantalk\Antispam\SFW {
 
 	public function ip_check() {
-		
+
 		$datafile_path = CLEANTALK_ROOT . 'data/sfw_nets.php';
 		if( file_exists( $datafile_path ) ){
 			require_once $datafile_path;
@@ -30,21 +30,37 @@ class SFW extends \Cleantalk\Antispam\SFW {
 							$found_network['found'] = true;
 							$found_network['network'] = $net[0];
 							$found_network['mask'] = $net[1];
+                            $found_network['status'] = $net[2];
+                            $found_network['source'] = $net[3];
 						}
 					}
 					if($found_network['found']){
 						$this->pass = false;
-						$this->blocked_ips[$origin] = array(
-							'ip'      => $current_ip,
-							'network' => long2ip($found_network['network']),
-							'mask'    => $this->helper()->ip__mask__long_to_number($found_network['mask']),
-						);
-						$this->all_ips[$origin] = array(
-							'ip'      => $current_ip,
-							'network' => long2ip($found_network['network']),
-							'mask'    => $this->helper()->ip__mask__long_to_number($found_network['mask']),
-							'status'  => -1,
-						);
+
+						if($found_network['status'] === 1) {
+                            $this->pass = true;
+
+                            $this->passed_ips[$origin] = array(
+                                'ip'     => $current_ip,
+                            );
+                            $this->all_ips[$origin] = array(
+                                'ip'     => $current_ip,
+                                'status' => 1,
+                            );
+
+                        } else {
+                            $this->blocked_ips[$origin] = array(
+                                'ip'      => $current_ip,
+                                'network' => long2ip($found_network['network']),
+                                'mask'    => $this->helper()->ip__mask__long_to_number($found_network['mask']),
+                            );
+                            $this->all_ips[$origin] = array(
+                                'ip'      => $current_ip,
+                                'network' => long2ip($found_network['network']),
+                                'mask'    => $this->helper()->ip__mask__long_to_number($found_network['mask']),
+                                'status'  => -1,
+                            );
+                        }
 					}else{
 						$this->passed_ips[$origin] = array(
 							'ip'     => $current_ip,
@@ -59,50 +75,50 @@ class SFW extends \Cleantalk\Antispam\SFW {
 		}
 	}
 	public function logs__update($ip, $result) {
-		
+
 		if($ip === NULL || $result === NULL)
 			return;
-		
+
 		global $salt;
-		
+
 		$time = time();
 		$log_path = CLEANTALK_ROOT . 'data/sfw_logs/'. hash('sha256', $ip . $salt) .'.log';
-		
+
 		if( file_exists( $log_path ) ){
-			
+
 			$log             = file_get_contents( $log_path );
 			$log             = explode( ',', $log );
-			
+
 			$all_entries     = isset( $log[1] ) ? $log[1] : 0;
 			$blocked_entries = isset( $log[2] ) ? $log[2] : 0;
 			$blocked_entries = $result == 'blocked' ? $blocked_entries+1 : $blocked_entries;
-			
+
 			$log = array( $ip, intval( $all_entries ) + 1, $blocked_entries, $time );
-			
+
 		}else{
-			
+
 			$blocked = $result == 'blocked' ? 1 : 0;
-			
+
 			$log = array( $ip, 1, $blocked, $time);
-			
+
 		}
-		
+
 		file_put_contents( $log_path, implode( ',', $log) );
 
 	}
 	public function logs__send($ct_key) {
-  
+
 		$log_dir_path = CLEANTALK_ROOT . 'data/sfw_logs';
-		
+
 		if( is_dir( $log_dir_path ) ){
-			
+
 			$log_files = array_diff( scandir( $log_dir_path ), array( '.', '..', 'index.php' ) );
-			
+
 			if( ! empty( $log_files ) ){
-				
+
 				//Compile logs
 				$data = array();
-				
+
 				foreach ( $log_files as $log_file ){
 					$log = file_get_contents( $log_dir_path . DS . $log_file );
 					$log = explode( ',', $log );
@@ -118,18 +134,18 @@ class SFW extends \Cleantalk\Antispam\SFW {
 					);
 				}
 				unset( $log_file );
-				
+
 				$result = $this->api()->method__sfw_logs( $ct_key, $data );
-				
+
 				//Checking answer and deleting all lines from the table
 				if( empty( $result['error'] ) ){
-					
+
 					if( $result['rows'] == count( $data ) ){
-						
+
 						foreach ( $log_files as $log_file ){
 							unlink( $log_dir_path . DS . $log_file );
 						}
-						
+
 						return $result;
 					}else
 						return array( 'error' => 'SENT_AND_RECEIVED_LOGS_COUNT_DOESNT_MACH' );
@@ -140,10 +156,11 @@ class SFW extends \Cleantalk\Antispam\SFW {
 		}else
 			return array( 'error' => 'NO_LOGS_TO_SEND' );
 	}
-	
+
 	public function sfw_update($ct_key, $file_url = null, $immediate = false) {
 		//TODO unzip file and remote calls
-        $result = $this->api()->method__get_2s_blacklists_db($ct_key);
+        $result = $this->api()->method__get_2s_blacklists_db($ct_key, null, '3_0');
+
 		if( empty( $result['error'] ) ){
 			if( ! is_dir( CLEANTALK_ROOT . 'data' ) ) mkdir( CLEANTALK_ROOT . 'data' );
 			File::clean__variable ( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets' );
@@ -156,7 +173,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 		return $out;
 	}
 	public function sfw_die($api_key, $cookie_prefix = '', $cookie_domain = '', $test = false) {
-				
+
 		// Headers
 		if(headers_sent() === false){
 			header('Expires: '.date(DATE_RFC822, mktime(0, 0, 0, 1, 1, 1971)));
@@ -165,10 +182,10 @@ class SFW extends \Cleantalk\Antispam\SFW {
 			header('Pragma: no-cache');
 			header("HTTP/1.0 403 Forbidden");
 		}
-		
+
 		// File exists?
 		if( file_exists( CLEANTALK_ROOT . 'lib/sfw_die_page.html' ) ){
-			
+
 			$sfw_die_page = file_get_contents(CLEANTALK_ROOT . 'lib/sfw_die_page.html' );
 
 			// Translation
@@ -179,7 +196,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 			$sfw_die_page = str_replace('{SFW_DIE_YOU_WILL_BE_REDIRECTED}', sprintf('Or you will be automatically redirected to the requested page after %d seconds.', 3), $sfw_die_page);
 			$sfw_die_page = str_replace('{CLEANTALK_TITLE}',                'Antispam by CleanTalk', $sfw_die_page);
 			$sfw_die_page = str_replace('{TEST_TITLE}',                     ($this->test ? 'This is the testing page for SpamFireWall' : ''), $sfw_die_page);
-	
+
 			if($this->test){
 				$sfw_die_page = str_replace('{REAL_IP__HEADER}', 'Real IP:', $sfw_die_page);
 				$sfw_die_page = str_replace('{TEST_IP__HEADER}', 'Test IP:', $sfw_die_page);
@@ -195,14 +212,14 @@ class SFW extends \Cleantalk\Antispam\SFW {
 				$sfw_die_page = str_replace('{TEST_IP_BLOCKED}', '', $sfw_die_page);
 				$sfw_die_page = str_replace('{REAL_IP_BLOCKED}', '', $sfw_die_page);
 			}
-			
+
 			$sfw_die_page = str_replace('{REMOTE_ADDRESS}', $this->blocked_ips ? $this->blocked_ips[key($this->blocked_ips)]['ip'] : '', $sfw_die_page);
-			
+
 			// Service info
 			$sfw_die_page = str_replace('{REQUEST_URI}',    $request_uri,                    $sfw_die_page);
 			$sfw_die_page = str_replace('{COOKIE_PREFIX}',  $cookie_prefix,                  $sfw_die_page);
 			$sfw_die_page = str_replace('{COOKIE_DOMAIN}',  $cookie_domain,                  $sfw_die_page);
-			
+
 			$sfw_die_page = str_replace(
 				'{SFW_COOKIE}',
 				$this->test
@@ -210,7 +227,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 					: md5(current(end($this->blocked_ips)).$api_key),
 				$sfw_die_page
 			);
-			
+
 			if($this->debug){
 				$debug = '<h1>IP and Networks</h1>'
 					. var_export($this->all_ips, true)
@@ -230,15 +247,15 @@ class SFW extends \Cleantalk\Antispam\SFW {
 					. var_export($this->debug_data, true);
 			}else
 				$debug = '';
-			
+
 			$sfw_die_page = str_replace( "{DEBUG}", $debug, $sfw_die_page );
 			$sfw_die_page = str_replace('{GENERATED}', "<p>The page was generated at&nbsp;".date("D, d M Y H:i:s")."</p>",$sfw_die_page);
-			
+
 			die($sfw_die_page);
-			
+
 		}else{
 			parent::sfw_die($apikey);
 		}
-		
+
 	}
 }
