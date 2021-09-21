@@ -133,6 +133,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
             if( empty( $result['error'] ) ){
                 File::clean__variable(CLEANTALK_CONFIG_FILE, 'latest_version');
                 File::inject__variable(CLEANTALK_CONFIG_FILE, 'latest_version', $latest_version);
+				File::inject__variable(CLEANTALK_CONFIG_FILE, 'antispam_activity_status', true);
             }
             die(json_encode( $result, true ));
             break;
