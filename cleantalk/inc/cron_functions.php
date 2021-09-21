@@ -52,11 +52,14 @@ function apbct_sfw_send_logs(){
  */
 function apbct__plugin_get_latest_version() {
     $path_to_config = CLEANTALK_ROOT . 'config.php';
+    global $antispam_activity_status;
 
     $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
     $latest_version = $updater->getLatestVersion();
     File::clean__variable($path_to_config, 'latest_version');
     File::inject__variable($path_to_config, 'latest_version', $latest_version);
-    File::clean__variable(CLEANTALK_CONFIG_FILE, 'antispam_activity_status');
-    File::inject__variable(CLEANTALK_CONFIG_FILE, 'antispam_activity_status', true);
+    if (! isset($antispam_activity_status)) {
+        File::clean__variable($path_to_config, 'antispam_activity_status');
+        File::inject__variable($path_to_config, 'antispam_activity_status', true);
+    }
 }

@@ -55,6 +55,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 $path_to_config = CLEANTALK_ROOT . 'config.php';
                 $apikey = Post::get( 'apikey' );
                 global $account_name_ob;
+                global $antispam_activity_status;
 
                 /**
                  * Apikey validation
@@ -79,8 +80,14 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     die(Err::add('Please, enter the access key')->get_last( 'as_json' ));
                 }
 
+                if (! isset($antispam_activity_status) && Post::is_set( 'antispam_activity_status' )) {
+                    File::clean__variable($path_to_config, 'antispam_activity_status');
+                    File::inject__variable($path_to_config, 'antispam_activity_status', (bool)Post::get( 'antispam_activity_status' ));
+                } else {
+                    File::replace__variable( $path_to_config, 'antispam_activity_status', (bool)Post::get( 'antispam_activity_status' ) );
+                }
+
                 File::replace__variable( $path_to_config, 'apikey', $apikey );
-                File::replace__variable( $path_to_config, 'antispam_activity_status', (bool)Post::get( 'antispam_activity_status' ) );
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
