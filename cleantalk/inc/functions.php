@@ -511,6 +511,14 @@
                 die(json_encode(array('status' =>'ok', 'data' => array('errors' => $comment))));
             }
 
+            // DLE integration
+            if( $detected_cms === 'DLE' ) {
+                if( ! headers_sent() ) {
+                    header('Content-Type:application/json' );
+                }
+                die(json_encode(array('status' =>'ok', 'text' => $comment)));
+            }
+
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
 			
 		// File exists?
