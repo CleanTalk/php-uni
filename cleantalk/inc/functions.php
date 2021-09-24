@@ -316,9 +316,10 @@
 						$not_reg = true;
 					}else{
 						foreach($registration as $needle){
-							if(stripos($key, $needle) !== false || 
-								( $key == 'page' && $value == 'register' ) || //OsClass
-                                ( $key == 'task' && $value == 'registration.register' ) // Joomla!
+							if(stripos($key, $needle) !== false ||
+                                ( $key == 'page' && $value == 'register' ) || //OsClass
+                                ( $key == 'task' && $value == 'registration.register' ) || // Joomla!
+                                ( $key == 'do' && $value == 'register' ) // DLE!
 							){
 								$reg = true;
 								continue(2);
