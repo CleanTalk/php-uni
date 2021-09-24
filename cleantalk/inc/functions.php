@@ -281,6 +281,8 @@
 			'CSRFToken',
 			'page',
 			'id',
+            'skin',
+            'sec_code'
 		);
 		
 		// Reset $message if we have a sign-up data
