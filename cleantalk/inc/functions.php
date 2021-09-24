@@ -516,6 +516,11 @@
                 if( ! headers_sent() ) {
                     header('Content-Type:application/json' );
                 }
+
+                if (isset($_POST['mod']) && $_POST['mod'] === 'addcomments') {
+                    echo json_encode(array("error" => true, "content" => $comment ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+                }
+
                 die(json_encode(array('status' =>'ok', 'text' => $comment)));
             }
 
