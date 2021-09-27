@@ -134,6 +134,9 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                     case 'Question2Answer':
                         $exclusions['dologin'] = '1';
                         break;
+                    case 'DLE':
+                        array_push( $files_to_mod, $_SERVER['DOCUMENT_ROOT'] . "/engine/ajax/controller.php" );
+                        break;
                 }
 
                 install( $files_to_mod, $api_key, $cms, $exclusions );

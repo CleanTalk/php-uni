@@ -213,7 +213,8 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
             $out = 'phpBB';
         if ( strpos( $index_file, '/wa-config/' ) && strpos( $index_file, 'waSystem::getInstance' ) )
             $out = 'ShopScript';
-
+        if (preg_match('/(DATALIFEENGINE.*?)/', $index_file))
+            $out = 'DLE';
     }
 
 	return $out;
