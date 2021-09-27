@@ -520,8 +520,8 @@
                     header('Content-Type:application/json' );
                 }
 
-                if (isset($_POST['mod']) && $_POST['mod'] === 'addcomments') {
-                    echo json_encode(array("error" => true, "content" => $comment ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+                if (isset($_REQUEST['mod']) && $_REQUEST['mod'] === 'addcomments') {
+                    die(json_encode(array("error" => true, "content" => "<script>\nvar form = document.getElementById('dle-comments-form');\n\n DLEalert('" . $comment . "', 'Добавление комментария');\n var timeval = new Date().getTime();\n\n\n\t\t\n\tif ( dle_captcha_type == \"1\" ) {\n\t\tif ( typeof grecaptcha != \"undefined\"  ) {\n\t\t   grecaptcha.reset();\n\t\t}\n    } else if (dle_captcha_type == \"2\") {\n\t\tif ( typeof grecaptcha != \"undefined\"  ) {\n\t\t\tvar recaptcha_public_key = $('#g-recaptcha-response').data('key');\n\t\t\tgrecaptcha.execute(recaptcha_public_key, {action: 'comments'}).then(function(token) {\n\t\t\t$('#g-recaptcha-response').val(token);\n\t\t\t});\n\t\t}\n\t}\n\n\tif ( form.question_answer ) {\n\n\t   form.question_answer.value ='';\n       jQuery('#dle-question').text('');\n    }\n\n\tif ( document.getElementById('dle-captcha') ) {\n\t\tform.sec_code.value = '';\n\t\tdocument.getElementById('dle-captcha').innerHTML = '<img src=\"' + dle_root + 'engine/modules/antibot/antibot.php?rand=' + timeval + '\" width=\"160\" height=\"80\" alt=\"\">';\n\t}\n\t\t\n </script>" ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ));
                 }
 
                 die(json_encode(array('status' =>'ok', 'text' => $comment)));
