@@ -382,7 +382,7 @@
 						$message[$prev_key.$key] = $value;					
 					}
 					
-				}else if(!is_object($value)&&@get_class($value)!='WP_User'){
+				}else if(!is_object($value)){
 					
 					$prev_key_original = $prev_key;
 					$prev_key = ($prev_key === '' ? $key.'_' : $prev_key.$key.'_');
