@@ -1,7 +1,7 @@
 <?php
 
 define('APBCT_PLUGIN', 'uni');
-define('APBCT_VERSION', '2.5.2');
+define('APBCT_VERSION', '2.5.3');
 define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
 define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
 
