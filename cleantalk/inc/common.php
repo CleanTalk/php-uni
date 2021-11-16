@@ -36,3 +36,10 @@ if( ! empty( $cron->tasks_to_run ) )
 	require_once CLEANTALK_ROOT . 'inc' . DS . 'cron_functions.php'; // File with cron wrappers
 	$cron->runTasks();
 unset( $cron );
+
+/**
+ * Generate value for checking JS
+ */
+function apbct_checkjs_hash($apikey, $salt) {
+    return hash('sha256', $apikey . $salt);
+}

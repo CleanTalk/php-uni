@@ -446,9 +446,9 @@
 	 * return null|0|1;
 	 */
 	 function apbct_js_test(){
-		 global $apikey;
+		 global $apikey, $salt;
 		 if(isset($_COOKIE['apbct_checkjs'])){
-			if($_COOKIE['apbct_checkjs'] == md5($apikey))
+			if($_COOKIE['apbct_checkjs'] == apbct_checkjs_hash($apikey, $salt))
 				return 1;
 			else
 				return 0;
