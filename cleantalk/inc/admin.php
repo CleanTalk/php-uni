@@ -215,6 +215,9 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
             $out = 'ShopScript';
         if (preg_match('/(DATALIFEENGINE.*?)/', $index_file))
             $out = 'DLE';
+        // CsCart
+        if (preg_match('/(Kalynyak.*?)/', $index_file))
+            $out = 'cscart';
     }
 
 	return $out;
