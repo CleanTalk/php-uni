@@ -243,7 +243,11 @@ function apbct__plugin_update_message() {
  * Print Block with CSCart Js Snippet
  */
 function apbct__cscart_js_snippet() {
-    global $apikey, $salt;
+    global $apikey, $salt, $detected_cms;
+    
+    // Only for CsCart
+    if ($detected_cms != 'cscart') return;
+    
     $apbct_checkjs_hash = apbct_checkjs_hash($apikey, $salt);
     ?>
     
