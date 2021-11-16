@@ -291,6 +291,11 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
         <?php
         /**
+         * CsCart JS Snippet
+         */
+        apbct__cscart_js_snippet();
+
+        /**
          * Plugin version section
          */
         apbct__plugin_update_message();

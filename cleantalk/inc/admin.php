@@ -238,3 +238,25 @@ function apbct__plugin_update_message() {
         echo '<p class="text-center">You are using the latest version '. APBCT_VERSION . '</p>';
     }
 }
+
+/**
+ * Print Block with CSCart Js Snippet
+ */
+function apbct__cscart_js_snippet() {
+    global $apikey, $salt;
+    $apbct_checkjs_hash = apbct_checkjs_hash($apikey, $salt);
+    ?>
+    
+    <div class="highlight">
+        <h4>Add this code to all pages of the site (use the basic template). Detailed instructions <a href="https://blog.cleantalk.org/protecting-cs-cart-website-from-spam/">here</a></h4>
+        <pre tabindex="0" class="chroma">
+            <code class="language-html" data-lang="html">
+                &lt;script&gt;var apbct_checkjs_val="<?= $apbct_checkjs_hash; ?>";&lt;/script&gt;
+                &lt;script src="/cleantalk/js/ct_js_test.js"&gt;&lt;/script&gt;
+                &lt;script src="/cleantalk/js/ct_js_test.js"&gt;&lt;/script&gt;
+            </code>
+        </pre>
+    </div>
+
+    <?php
+}
