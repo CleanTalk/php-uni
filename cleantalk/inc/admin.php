@@ -252,7 +252,7 @@ function apbct__cscart_js_snippet() {
     ?>
     
     <div class="highlight">
-        <h4>Add this code to all pages of the site (use the basic template). Detailed instructions <a href="https://blog.cleantalk.org/protecting-cs-cart-website-from-spam/">here</a></h4>
+        <h4>Add this code to all pages of the site (use the basic template). Detailed instruction is <a href="https://blog.cleantalk.org/protecting-cs-cart-website-from-spam/">here</a></h4>
         <pre tabindex="0" class="chroma">
             <code class="language-html" data-lang="html">
                 &lt;script&gt;var apbct_checkjs_val="<?= $apbct_checkjs_hash; ?>";&lt;/script&gt;
