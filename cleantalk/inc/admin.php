@@ -70,7 +70,7 @@ function install( $files, $api_key, $cms, $exclusions ){
 function install_config( $modified_files, $api_key, $cms, $exclusions ){
 
     $path_to_config = CLEANTALK_ROOT . 'config.php';
-    $salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
+    $apbct_salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
     // Attention. Backwards order because inserting it step by step
 
     $pass = 'NO PASS';
@@ -119,8 +119,8 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
         );
     }
 
-    File::inject__variable( $path_to_config, 'salt', $salt );
-    File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $salt ) );
+    File::inject__variable( $path_to_config, 'salt', $apbct_salt );
+    File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $apbct_salt ) );
     File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
     if( $exclusions )
         File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
@@ -243,12 +243,12 @@ function apbct__plugin_update_message() {
  * Print Block with CSCart Js Snippet
  */
 function apbct__cscart_js_snippet() {
-    global $apikey, $salt, $detected_cms;
+    global $apikey, $apbct_salt, $detected_cms;
     
     // Only for CsCart
     if ($detected_cms != 'cscart') return;
     
-    $apbct_checkjs_hash = apbct_checkjs_hash($apikey, $salt);
+    $apbct_checkjs_hash = apbct_checkjs_hash($apikey, $apbct_salt);
     ?>
     
     <div class="highlight">

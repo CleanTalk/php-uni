@@ -446,10 +446,10 @@
 	 * return null|0|1;
 	 */
 	 function apbct_js_test(){
-		 global $apikey, $salt, $detected_cms;
+		 global $apikey, $apbct_salt, $detected_cms;
 		 if(isset($_COOKIE['apbct_checkjs'])){
 			if(
-                $_COOKIE['apbct_checkjs'] == apbct_checkjs_hash($apikey, $salt) ||
+                $_COOKIE['apbct_checkjs'] == apbct_checkjs_hash($apikey, $apbct_salt) ||
                 ($detected_cms === 'cscart' && $_COOKIE['apbct_checkjs'] == md5($apikey))
             )
 				return 1;
