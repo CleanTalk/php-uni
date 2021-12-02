@@ -8,7 +8,8 @@
 		return;
 	}
 
-	$apbct_checkjs_val = md5($apikey);
+    global $apbct_salt;
+    $apbct_checkjs_val = apbct_checkjs_hash($apikey, $apbct_salt);
 	global $apbct_checkjs_val;
 	global $antispam_activity_status;
 	if ($spam_firewall == 1) {

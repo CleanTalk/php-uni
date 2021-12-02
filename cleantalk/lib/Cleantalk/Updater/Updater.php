@@ -308,4 +308,15 @@ class Updater {
 		}else
 			return false;
 	}
+
+    /**
+     * Update 2.5.3
+     */
+    function update_to_2_5_3()
+    {
+        global $apikey, $apbct_salt;
+
+        File::clean__variable(CLEANTALK_CONFIG_FILE, 'apbct_salt');
+        File::inject__variable(CLEANTALK_CONFIG_FILE, 'apbct_salt', apbct_checkjs_hash($apikey, $apbct_salt));
+    }
 }

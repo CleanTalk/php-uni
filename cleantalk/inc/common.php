@@ -1,7 +1,7 @@
 <?php
 
 define('APBCT_PLUGIN', 'uni');
-define('APBCT_VERSION', '2.5.3');
+define('APBCT_VERSION', '2.5.4');
 define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
 define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
 
@@ -36,3 +36,10 @@ if( ! empty( $cron->tasks_to_run ) )
 	require_once CLEANTALK_ROOT . 'inc' . DS . 'cron_functions.php'; // File with cron wrappers
 	$cron->runTasks();
 unset( $cron );
+
+/**
+ * Generate value for checking JS
+ */
+function apbct_checkjs_hash($apikey, $salt) {
+    return hash('sha256', $apikey . $salt);
+}
