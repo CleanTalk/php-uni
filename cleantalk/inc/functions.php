@@ -626,5 +626,27 @@
             return true;
         }
 
+        # Exclude unnecessary requests when filling out an order
+        if(
+            $detected_cms === 'cscart' &&
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'products.quick_view'
+                )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'checkout.customer_info'
+                )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'checkout.update_steps'
+                )
+            )
+        ) {
+            return true;
+        }
+
         return false;
     }
