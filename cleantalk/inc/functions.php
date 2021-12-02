@@ -32,7 +32,15 @@
 		// Flags
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
 		$skip            = isset($msg_data['skip'])     ? $msg_data['skip']     : false;
-		
+
+        // Check registration for CsCart
+        if (
+            $detected_cms === 'cscart' && 
+            isset($data['user_data']['password1'], $data['user_data']['password2'])
+        ) {
+            $registration = true;
+        }
+
 		// Skip check if
 		if(
 		    $skip || // Skip flag set by apbct_get_fields_any()
