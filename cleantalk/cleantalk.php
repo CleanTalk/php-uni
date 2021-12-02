@@ -8,10 +8,9 @@
 		return;
 	}
 
-    global $apbct_salt;
+    global $apbct_salt, $apbct_checkjs_val, $antispam_activity_status, $general_postdata_test, $detected_cms;
     $apbct_checkjs_val = apbct_checkjs_hash($apikey, $apbct_salt);
-	global $apbct_checkjs_val;
-	global $antispam_activity_status;
+
 	if ($spam_firewall == 1) {
 		$is_sfw_check  = true;
 		$sfw           = new \Cleantalk\ApbctUni\SFW();
@@ -104,6 +103,16 @@
 			</script>";
 			die();
 		}
+    }
+
+    // Test for search form cscart
+    if (
+        $detected_cms = 'cscart' &&
+            $general_postdata_test &&
+            isset($_GET['dispatch']) &&
+            $_GET['dispatch'] === 'products.search'
+    ) {
+        apbct_spam_test($_GET);
     }
 
 	// General spam test
