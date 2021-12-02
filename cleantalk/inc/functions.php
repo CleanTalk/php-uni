@@ -643,6 +643,16 @@
                 array(
                     'dispatch' => 'checkout.update_steps'
                 )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'products.view'
+                )
+            )  ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'categories.view'
+                )
             )
         ) {
             return true;
