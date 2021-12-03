@@ -78,7 +78,7 @@
 
 			$comment_type = 'feedback';
 
-			if (strpos($_SERVER['HTTP_REFERER'], 'checkout') !== false) {
+			if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'checkout') !== false) {
 				$comment_type = 'order';
 			}
 
@@ -121,7 +121,7 @@
 			// Common
 			'remote_addr'     => $_SERVER['REMOTE_ADDR'],
 			'USER_AGENT'      => htmlspecialchars($_SERVER['HTTP_USER_AGENT']),
-			'REFFERRER'       => htmlspecialchars($_SERVER['HTTP_REFERER']),
+			'REFFERRER'       => isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER']) : '',
 			'page_url'        => isset($_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']) ? htmlspecialchars($_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']) : null,
 			// 'cms_lang'        => substr(locale_get_default(), 0, 2),
 			
