@@ -107,7 +107,7 @@
 
     // Test for search form cscart
     if (
-        $detected_cms = 'cscart' &&
+        $detected_cms === 'cscart' &&
             $general_postdata_test &&
             isset($_GET['dispatch']) &&
             $_GET['dispatch'] === 'products.search'
