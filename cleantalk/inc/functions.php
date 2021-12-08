@@ -32,7 +32,15 @@
 		// Flags
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
 		$skip            = isset($msg_data['skip'])     ? $msg_data['skip']     : false;
-		
+
+        // Check registration for CsCart
+        if (
+            $detected_cms === 'cscart' && 
+            isset($data['user_data']['password1'], $data['user_data']['password2'])
+        ) {
+            $registration = true;
+        }
+
 		// Skip check if
 		if(
 		    $skip || // Skip flag set by apbct_get_fields_any()
@@ -70,7 +78,7 @@
 
 			$comment_type = 'feedback';
 
-			if (strpos($_SERVER['HTTP_REFERER'], 'checkout') !== false) {
+			if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'checkout') !== false) {
 				$comment_type = 'order';
 			}
 
@@ -113,7 +121,7 @@
 			// Common
 			'remote_addr'     => $_SERVER['REMOTE_ADDR'],
 			'USER_AGENT'      => htmlspecialchars($_SERVER['HTTP_USER_AGENT']),
-			'REFFERRER'       => htmlspecialchars($_SERVER['HTTP_REFERER']),
+			'REFFERRER'       => isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER']) : '',
 			'page_url'        => isset($_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']) ? htmlspecialchars($_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']) : null,
 			// 'cms_lang'        => substr(locale_get_default(), 0, 2),
 			
@@ -382,7 +390,7 @@
 						$message[$prev_key.$key] = $value;					
 					}
 					
-				}else if(!is_object($value)&&@get_class($value)!='WP_User'){
+				}else if(!is_object($value)){
 					
 					$prev_key_original = $prev_key;
 					$prev_key = ($prev_key === '' ? $key.'_' : $prev_key.$key.'_');
@@ -446,9 +454,12 @@
 	 * return null|0|1;
 	 */
 	 function apbct_js_test(){
-		 global $apikey;
+		 global $apikey, $apbct_salt, $detected_cms;
 		 if(isset($_COOKIE['apbct_checkjs'])){
-			if($_COOKIE['apbct_checkjs'] == md5($apikey))
+			if(
+                $_COOKIE['apbct_checkjs'] == apbct_checkjs_hash($apikey, $apbct_salt) ||
+                ($detected_cms === 'cscart' && $_COOKIE['apbct_checkjs'] == md5($apikey))
+            )
 				return 1;
 			else
 				return 0;
@@ -611,6 +622,38 @@
             $detected_cms === 'phpBB' &&
             apbct_check__exclusions_in_post(array('refresh_vc' => true)) &&
             apbct_check__url_exclusions(array('mode=register'))
+        ) {
+            return true;
+        }
+
+        # Exclude unnecessary requests when filling out an order
+        if(
+            $detected_cms === 'cscart' &&
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'products.quick_view'
+                )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'checkout.customer_info'
+                )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'checkout.update_steps'
+                )
+            ) ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'products.view'
+                )
+            )  ||
+            apbct_check__exclusions_in_post(
+                array(
+                    'dispatch' => 'categories.view'
+                )
+            )
         ) {
             return true;
         }

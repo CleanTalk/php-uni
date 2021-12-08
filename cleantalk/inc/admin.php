@@ -41,7 +41,7 @@ function install( $files, $api_key, $cms, $exclusions ){
 					// Addition to index.php Bottom (JavaScript test)
 					File::inject__code(
 						$file,
-						"\tob_end_flush();\n"
+						"\t\nif(ob_get_contents()){\nob_end_flush();\n}\n"
 						."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
 						."\t\tdie();\n"
 						."\t}",
@@ -70,7 +70,7 @@ function install( $files, $api_key, $cms, $exclusions ){
 function install_config( $modified_files, $api_key, $cms, $exclusions ){
 
     $path_to_config = CLEANTALK_ROOT . 'config.php';
-    $salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
+    $apbct_salt = str_pad(rand(0, getrandmax()), 6, '0').str_pad(rand(0, getrandmax()), 6, '0');
     // Attention. Backwards order because inserting it step by step
 
     $pass = 'NO PASS';
@@ -119,8 +119,8 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
         );
     }
 
-    File::inject__variable( $path_to_config, 'salt', $salt );
-    File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $salt ) );
+    File::inject__variable( $path_to_config, 'salt', $apbct_salt );
+    File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $apbct_salt ) );
     File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
     if( $exclusions )
         File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
@@ -215,6 +215,9 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
             $out = 'ShopScript';
         if (preg_match('/(DATALIFEENGINE.*?)/', $index_file))
             $out = 'DLE';
+        // CsCart
+        if (preg_match('/(Kalynyak.*?)/', $index_file))
+            $out = 'cscart';
     }
 
 	return $out;
@@ -234,4 +237,30 @@ function apbct__plugin_update_message() {
     }else{
         echo '<p class="text-center">You are using the latest version '. APBCT_VERSION . '</p>';
     }
+}
+
+/**
+ * Print Block with CSCart Js Snippet
+ */
+function apbct__cscart_js_snippet() {
+    global $apikey, $apbct_salt, $detected_cms;
+    
+    // Only for CsCart
+    if ($detected_cms != 'cscart') return;
+    
+    $apbct_checkjs_hash = apbct_checkjs_hash($apikey, $apbct_salt);
+    ?>
+    
+    <div class="highlight">
+        <h4>Add this code to all pages of the site (use the basic template). Detailed instruction is <a href="https://blog.cleantalk.org/protecting-cs-cart-website-from-spam/">here</a></h4>
+        <pre tabindex="0" class="chroma">
+            <code class="language-html" data-lang="html">
+                &lt;script&gt;var apbct_checkjs_val="<?= $apbct_checkjs_hash; ?>";&lt;/script&gt;
+                &lt;script src="/cleantalk/js/ct_js_test.js"&gt;&lt;/script&gt;
+                &lt;script src="/cleantalk/js/ct_js_test.js"&gt;&lt;/script&gt;
+            </code>
+        </pre>
+    </div>
+
+    <?php
 }

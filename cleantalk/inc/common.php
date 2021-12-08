@@ -1,8 +1,7 @@
 <?php
 
-define( 'CLEANTALK_INITIAL_INCLUDE_PATH', get_include_path() );
 define('APBCT_PLUGIN', 'uni');
-define('APBCT_VERSION', '2.5.2');
+define('APBCT_VERSION', '2.5.4');
 define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
 define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
 
@@ -11,7 +10,7 @@ function apbct_set_include_path(){
 }
 
 function apbct_restore_include_path(){
-	set_include_path( CLEANTALK_INITIAL_INCLUDE_PATH );
+	set_include_path( get_include_path() );
 }
 
 $ds = DIRECTORY_SEPARATOR;
@@ -37,3 +36,10 @@ if( ! empty( $cron->tasks_to_run ) )
 	require_once CLEANTALK_ROOT . 'inc' . DS . 'cron_functions.php'; // File with cron wrappers
 	$cron->runTasks();
 unset( $cron );
+
+/**
+ * Generate value for checking JS
+ */
+function apbct_checkjs_hash($apikey, $salt) {
+    return hash('sha256', $apikey . $salt);
+}

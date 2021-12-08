@@ -291,6 +291,11 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
         <?php
         /**
+         * CsCart JS Snippet
+         */
+        apbct__cscart_js_snippet();
+
+        /**
          * Plugin version section
          */
         apbct__plugin_update_message();
@@ -315,7 +320,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 <script src="js/custom.js?v=<?php echo APBCT_VERSION; ?>"></script>
 <script src="js/overhang.min.js"></script>
 <script type='text/javascript'>
-    var security = '<?php echo $security ?>';
+    var security = '<?php if (isset($security)) echo $security ?>';
     var ajax_url = location.href;
 </script>
 

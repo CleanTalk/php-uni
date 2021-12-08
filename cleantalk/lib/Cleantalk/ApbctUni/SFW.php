@@ -79,10 +79,10 @@ class SFW extends \Cleantalk\Antispam\SFW {
 		if($ip === NULL || $result === NULL)
 			return;
 
-		global $salt;
+		global $apbct_salt;
 
 		$time = time();
-		$log_path = CLEANTALK_ROOT . 'data/sfw_logs/'. hash('sha256', $ip . $salt) .'.log';
+		$log_path = CLEANTALK_ROOT . 'data/sfw_logs/'. hash('sha256', $ip . $apbct_salt) .'.log';
 
 		if( file_exists( $log_path ) ){
 
