@@ -229,11 +229,15 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 function apbct__plugin_update_message() {
     global $latest_version;
 
+    if (!$latest_version) {
+        $latest_version = APBCT_VERSION;
+    }
+
     if( version_compare( APBCT_VERSION, $latest_version ) === -1 ){
         echo '<p class="text-center">There is a newer version. Update to the latest ' . $latest_version . '</p>';
         echo '<p class="text-center"><button id="btn-update" form="none" class="btn btn-setup" value="">Update</button><img class="ajax-preloader" src="img/preloader.gif"></p>';
     }elseif( version_compare( APBCT_VERSION, $latest_version ) === 1 ){
-        echo '<p class="text-center">You are using more than the latest version '. APBCT_VERSION . '</p>';
+        echo '<p class="text-center">You are using a higher version than the latest version '. APBCT_VERSION . '</p>';
     }else{
         echo '<p class="text-center">You are using the latest version '. APBCT_VERSION . '</p>';
     }
