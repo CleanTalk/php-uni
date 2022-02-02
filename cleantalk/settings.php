@@ -25,7 +25,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
             // If password is set in config
             if(isset($password)){
-                if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
+                if( ( Post::get( 'login' ) == $apikey || ( isset( $uni_email ) && Post::get( 'login' ) == $uni_email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
                     setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
                 }else
                     Err::add('Incorrect login or password');
@@ -204,7 +204,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                         <!-- End Error box -->
                         <?php if( ! empty( $is_installed ) ) : ?>
                             <form action = 'javascript:void(null);' method="post" id='login-form'>
-                                <input type="text" placeholder="Access key<?php if( isset( $email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+                                <input type="text" placeholder="Access key<?php if( isset( $uni_email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
 
                                 <?php if( ! empty( $password ) ) : ?>
                                     <input type="password" placeholder="Password" class="input-field" name="password"/>

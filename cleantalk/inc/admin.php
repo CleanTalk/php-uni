@@ -74,7 +74,7 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     // Attention. Backwards order because inserting it step by step
 
     $pass = 'NO PASS';
-    $email = '';
+    $uni_email = '';
 
     if( Post::get( 'admin_password' ) ) {
         $pass = trim( Post::get( 'admin_password' ) );
@@ -82,8 +82,8 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     }
 
     if( Post::get( 'email' ) ) {
-        $email = trim( Post::get( 'email' ) );
-        File::inject__variable( $path_to_config, 'email', trim( Post::get( 'email' ) ) );
+        $uni_email = trim( Post::get( 'email' ) );
+        File::inject__variable( $path_to_config, 'uni_email', trim( Post::get( 'email' ) ) );
     }
 
     if( Post::get( 'user_token' ) )
@@ -91,10 +91,10 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     if( Post::get( 'account_name_ob' ) )
         File::inject__variable( $path_to_config, 'account_name_ob', trim( Post::get( 'account_name_ob' ) ) );
 
-    if($email) {
+    if($uni_email) {
         $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
-        $to = $email;
-        $login = $email;
+        $to = $uni_email;
+        $login = $uni_email;
         $subject = 'Universal Anti-Spam Plugin settings for ' . $host;
         $message = "Hi,<br><br>
                 Your credentials to get access to settings of Universal Anti-Spam Plugin by CleanTalk are bellow,<br><br>
@@ -149,7 +149,7 @@ function uninstall( $files = array() ){
 	File::clean__variable( $path_to_config, 'password' );
 	File::clean__variable( $path_to_config, 'salt' );
 	File::clean__variable( $path_to_config, 'apikey' );
-	File::clean__variable( $path_to_config, 'email' );
+	File::clean__variable( $path_to_config, 'uni_email' );
 	File::clean__variable( $path_to_config, 'user_token' );
 	File::clean__variable( $path_to_config, 'account_name_ob' );
 	File::clean__variable( $path_to_config, 'detected_cms' );
