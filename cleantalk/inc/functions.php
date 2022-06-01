@@ -538,6 +538,14 @@
                 die(json_encode(array('status' =>'ok', 'text' => $comment)));
             }
 
+			// Custom ajax response
+			require_once CLEANTALK_CONFIG_FILE;
+			global $ajax_response;
+
+			if (!empty($ajax_response)) {
+				die(json_encode($ajax_response));
+			}
+
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
 			
 		// File exists?
