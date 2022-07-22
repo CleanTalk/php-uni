@@ -100,6 +100,15 @@ jQuery(document).ready(function($) {
 			install();
 	});
 
+	//set the block with special tag in dependence of post_exclusion_usage statement
+	$('#general_post_exclusion_usage').on('click', function(event) {
+		let state = 'none'
+		if ($('#general_post_exclusion_usage').prop('checked')){
+			state = 'inherit'
+		}
+		$('#exclusions-div').css('display',state)
+	});
+
 
 	$('#btn-login').on('click', function(event) {
 		login();
@@ -273,6 +282,7 @@ jQuery(document).ready(function($) {
 				registrations_test: $('#check_reg').is(':checked') ? 1 : 0,
 				general_postdata_test: $('#check_without_email').is(':checked') ? 1 : 0,
 				spam_firewall: $('#enable_sfw').is(':checked') ? 1 : 0,
+				general_post_exclusion_usage: $('#general_post_exclusion_usage').is(':checked') ? 1 : 0,
 			},
 			{
 				callback: function(result, data, params, obj) {

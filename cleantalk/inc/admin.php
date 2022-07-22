@@ -125,6 +125,7 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     if( $exclusions )
         File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
     File::inject__variable( $path_to_config, 'apikey', $api_key );
+    File::inject__variable( $path_to_config, 'exclusion_key', md5($api_key) );
     File::inject__variable( $path_to_config, 'detected_cms', $cms );
     File::inject__variable( $path_to_config, 'is_installed', true );
 }
@@ -149,6 +150,7 @@ function uninstall( $files = array() ){
 	File::clean__variable( $path_to_config, 'password' );
 	File::clean__variable( $path_to_config, 'salt' );
 	File::clean__variable( $path_to_config, 'apikey' );
+    File::clean__variable( $path_to_config, 'exclusion_key' );
 	File::clean__variable( $path_to_config, 'uni_email' );
 	File::clean__variable( $path_to_config, 'user_token' );
 	File::clean__variable( $path_to_config, 'account_name_ob' );
@@ -166,6 +168,7 @@ function uninstall( $files = array() ){
 	File::replace__variable( $path_to_config, 'registrations_test', true );
 	File::replace__variable( $path_to_config, 'general_postdata_test', false );
 	File::replace__variable( $path_to_config, 'spam_firewall', true );
+    File::replace__variable( $path_to_config, 'general_post_exclusion_usage', false );
 
 	// Deleting cron tasks
 	File::replace__variable( CLEANTALK_CRON_FILE, 'tasks', array() );
