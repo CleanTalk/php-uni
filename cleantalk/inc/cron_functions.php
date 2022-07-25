@@ -55,9 +55,15 @@ function apbct__plugin_get_latest_version() {
     global $antispam_activity_status;
 
     $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
-    $latest_version = $updater->getLatestVersion();
-    File::clean__variable($path_to_config, 'latest_version');
-    File::inject__variable($path_to_config, 'latest_version', $latest_version);
+    $latest_version = $updater->getLatestRelease();
+
+    if (isset($latest_version['error'])){
+        Err::add($latest_version['error']);
+    } else {
+        File::clean__variable($path_to_config, 'latest_version');
+        File::inject__variable($path_to_config, 'latest_version', $latest_version);
+    }
+
     if (! isset($antispam_activity_status)) {
         File::clean__variable($path_to_config, 'antispam_activity_status');
         File::inject__variable($path_to_config, 'antispam_activity_status', true);

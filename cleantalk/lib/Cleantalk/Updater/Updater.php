@@ -33,88 +33,50 @@ class Updater {
 		$this->download_path = $root_path . DS . 'downloads' . DS;
 		$this->backup_path = $root_path . DS . 'backup';
 	}
-	
-	/**
-	 * Recursive
-	 * Multiple HTTP requests
-	 * Check URLs for to find latest version. Checking response code from URL.
-	 *
-	 * @param array $version
-	 * @param int $version_type_to_check
-	 *
-	 * @return array|string|null
-	 */
-	public function getLatestVersion( $version = null, $version_type_to_check = 0 ){
-		
-		$version = $version ? $version : $this->version_current;
 
-        if($version_type_to_check > 2) {
-            return implode( '.', array_slice( $version, 0, 3 ) );
+
+    /**
+     * Get the latest release number from the GitHub API.
+     * Returns version number if success, array of error if not.
+     * @return string|array
+     */
+    public function getLatestRelease()
+    {
+        $url = $this->getURLToCheckLatestReleaseVersion();
+        if ( !$url ) {
+            return array('error' => 'Error: Cannot create latest GitHub release URI.');
         }
-		
-		// Increasing current version type to check
-		$version[ $version_type_to_check ]++;
-		
-		switch( $version_type_to_check ){
-			
-			case 0:
-				$version_to_check = array( $version[0], 0, 0 );
-				break;
-			case 1:
-				$version_to_check = array( $version[0], $version[1], 0 );
-				break;
-			case 2:
-				$version_to_check = $version;
-				break;
-			
-			// Unacceptable version type. We have the latest version. Return it.
-			default:
-				return implode( '.', array_slice( $version, 0, 3 ) );
-				break;
-		}
-		
-		$response_code = Helper::http__request__get_response_code( $this->getURLToCheck( $version_to_check ) );
-		
-		if( $response_code == 200 ){
-			
-			// Set lesser version to 0, if greater was increased
-			if( isset( $version[ $version_type_to_check + 1 ] ) )
-				$version[ $version_type_to_check + 1 ] = 0;
-			if( isset( $version[ $version_type_to_check + 2 ] ) )
-				$version[ $version_type_to_check + 2 ] = 0;
-			
-			return $this->getLatestVersion( $version, $version_type_to_check );
-			
-		}else{
-			
-			// Set previous number if no file was found
-			// Checking next version type
-			$version[ $version_type_to_check ]--;
-			return $this->getLatestVersion( $version, $version_type_to_check + 1 );
-		}
-		
-	}
+
+        $github_response = Helper::http__request($url, array(), 'github_api');
+
+        try {
+            $github_response = json_decode($github_response, true, 512, JSON_THROW_ON_ERROR);
+            if ( isset($github_response['name']) && is_string($github_response['name']) ) {
+                return $github_response['name'];
+            }
+            return array('error' => 'Error: Cannot parse Github response.');
+        } catch ( \JsonException  $e ) {
+            return array('error' => 'Error: JSON exception while parsing Github repsonse: ' . $e);
+        }
+
+    }
 	
 	/**
-	 * Assemble URL to check UniForce version archive
+	 * Assemble URL to check Universal plugins version archive
 	 *
 	 * @param $version
 	 *
 	 * @return string
 	 */
-	private function getURLToCheck( $version ){
-		
-		$version = is_array( $version )
-			? implode( '.', $version )
-			: $version;
+	private function getURLToCheckLatestReleaseVersion(){
 		
 		switch( $this->plugin_name ){
 			case 'uniforce':
-				return 'https://github.com/CleanTalk/php-usp/releases/tag/' . $version;
-				break;
+				return 'https://api.github.com/repos/CleanTalk/php-usp/releases/latest';
 			case 'uni':
-                return 'https://github.com/CleanTalk/php-uni/releases/tag/' . $version;
-				break;
+                return 'https://api.github.com/repos/CleanTalk/php-uni/releases/latest';
+            default:
+                return false;
 		}
 	}
 	
