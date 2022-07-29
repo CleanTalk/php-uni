@@ -7,7 +7,13 @@
 	
 	function apbct_spam_test($data){
 		
-		global $apikey, $response_lang, $registrations_test, $general_postdata_test, $detected_cms;
+		global $apikey,
+               $response_lang,
+               $registrations_test,
+               $general_postdata_test,
+               $detected_cms,
+               $exclusion_key,
+               $general_post_exclusion_usage;
 		
 		// Patch for old PHP versions
 		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
@@ -41,16 +47,26 @@
             $registration = true;
         }
 
-		// Skip check if
-		if(
-		    $skip || // Skip flag set by apbct_get_fields_any()
-			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
-			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
-            ( apbct_check__exclusions() ) || // main exclusion function
-		    ( apbct_check__exclusions_in_post() ) || // Has an exclusions in POST
-		    ( apbct_check__url_exclusions() ) // Has an exclusions in URL
-		)
-			$skip = true;
+        //init exclusions array if general_post_exclusion_usage is enabled
+        if ( isset($exclusion_key, $general_post_exclusion_usage) && $general_post_exclusion_usage ) {
+            $exclusions_in_post = array(
+                'ct_service_data' => $exclusion_key,
+            );
+        } else {
+            $exclusions_in_post = array();
+        }
+
+
+        // Skip check if
+        if ( $skip || // Skip flag set by apbct_get_fields_any()
+            (!$sender_email && !$general_postdata_test) || // No email detected and general post data test is disabled
+            ($registration && !$registrations_test) || // It's registration and registration check is disabled
+            (apbct_check__exclusions()) || // main exclusion function
+            (apbct_check__exclusions_in_post($exclusions_in_post)) || // Has an exclusions in POST
+            (apbct_check__url_exclusions()) // Has an exclusions in URL
+        ) {
+            $skip = true;
+        }
 		
 		// Do check if email is not set
 		if( ! $skip ){
