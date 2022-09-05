@@ -485,7 +485,7 @@ class Helper{
 					CURLOPT_FOLLOWLOCATION => true,
 					CURLOPT_MAXREDIRS => 5,
 					CURLOPT_USERAGENT => static::http__user_agent() . '; ' . ( ! empty( Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST' ),
-					CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0, // see http://stackoverflow.com/a/23322368
+					CURLOPT_HTTP_VERSION =>  in_array( 'github_api', $presets ) ? CURL_HTTP_VERSION_2_0 : CURL_HTTP_VERSION_1_0, // see http://stackoverflow.com/a/23322368
 					CURLOPT_RETURNTRANSFER => true, // receive server response ...
 					CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
 				),
@@ -528,11 +528,13 @@ class Helper{
 						break;
 
                     case 'get_file':
+                    case 'github_api':
                         $opts[CURLOPT_CUSTOMREQUEST] = 'GET';
                         $opts[CURLOPT_POST] = false;
                         $opts[CURLOPT_POSTFIELDS] = null;
                         $opts[CURLOPT_HEADER] = false;
                         break;
+
 					
 					default:
 						

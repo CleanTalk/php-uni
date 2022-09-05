@@ -74,7 +74,7 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     // Attention. Backwards order because inserting it step by step
 
     $pass = 'NO PASS';
-    $email = '';
+    $uni_email = '';
 
     if( Post::get( 'admin_password' ) ) {
         $pass = trim( Post::get( 'admin_password' ) );
@@ -82,8 +82,8 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     }
 
     if( Post::get( 'email' ) ) {
-        $email = trim( Post::get( 'email' ) );
-        File::inject__variable( $path_to_config, 'email', trim( Post::get( 'email' ) ) );
+        $uni_email = trim( Post::get( 'email' ) );
+        File::inject__variable( $path_to_config, 'uni_email', trim( Post::get( 'email' ) ) );
     }
 
     if( Post::get( 'user_token' ) )
@@ -91,10 +91,10 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     if( Post::get( 'account_name_ob' ) )
         File::inject__variable( $path_to_config, 'account_name_ob', trim( Post::get( 'account_name_ob' ) ) );
 
-    if($email) {
+    if($uni_email) {
         $host = $_SERVER['HTTP_HOST'] ?: 'Your Site';
-        $to = $email;
-        $login = $email;
+        $to = $uni_email;
+        $login = $uni_email;
         $subject = 'Universal Anti-Spam Plugin settings for ' . $host;
         $message = "Hi,<br><br>
                 Your credentials to get access to settings of Universal Anti-Spam Plugin by CleanTalk are bellow,<br><br>
@@ -125,6 +125,7 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
     if( $exclusions )
         File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
     File::inject__variable( $path_to_config, 'apikey', $api_key );
+    File::inject__variable( $path_to_config, 'exclusion_key', md5($api_key) );
     File::inject__variable( $path_to_config, 'detected_cms', $cms );
     File::inject__variable( $path_to_config, 'is_installed', true );
 }
@@ -149,7 +150,8 @@ function uninstall( $files = array() ){
 	File::clean__variable( $path_to_config, 'password' );
 	File::clean__variable( $path_to_config, 'salt' );
 	File::clean__variable( $path_to_config, 'apikey' );
-	File::clean__variable( $path_to_config, 'email' );
+    File::clean__variable( $path_to_config, 'exclusion_key' );
+	File::clean__variable( $path_to_config, 'uni_email' );
 	File::clean__variable( $path_to_config, 'user_token' );
 	File::clean__variable( $path_to_config, 'account_name_ob' );
 	File::clean__variable( $path_to_config, 'detected_cms' );
@@ -166,6 +168,7 @@ function uninstall( $files = array() ){
 	File::replace__variable( $path_to_config, 'registrations_test', true );
 	File::replace__variable( $path_to_config, 'general_postdata_test', false );
 	File::replace__variable( $path_to_config, 'spam_firewall', true );
+    File::replace__variable( $path_to_config, 'general_post_exclusion_usage', false );
 
 	// Deleting cron tasks
 	File::replace__variable( CLEANTALK_CRON_FILE, 'tasks', array() );
@@ -229,11 +232,15 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
 function apbct__plugin_update_message() {
     global $latest_version;
 
+    if (!$latest_version) {
+        $latest_version = APBCT_VERSION;
+    }
+
     if( version_compare( APBCT_VERSION, $latest_version ) === -1 ){
         echo '<p class="text-center">There is a newer version. Update to the latest ' . $latest_version . '</p>';
         echo '<p class="text-center"><button id="btn-update" form="none" class="btn btn-setup" value="">Update</button><img class="ajax-preloader" src="img/preloader.gif"></p>';
     }elseif( version_compare( APBCT_VERSION, $latest_version ) === 1 ){
-        echo '<p class="text-center">You are using more than the latest version '. APBCT_VERSION . '</p>';
+        echo '<p class="text-center">You are using a higher version than the latest version '. APBCT_VERSION . '</p>';
     }else{
         echo '<p class="text-center">You are using the latest version '. APBCT_VERSION . '</p>';
     }

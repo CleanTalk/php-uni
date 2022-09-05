@@ -45,7 +45,21 @@ class File{
 			? self::clean__pattern( $file_path, $pattern )
 			: Err::add( __CLASS__, __FUNCTION__, 'Pattern wrong', $pattern );
 	}
-	
+
+    /**
+     * Clear all file content
+     *
+     * @param $file_path
+     *
+     *
+     * @return false|int
+     * @since version
+     */
+    public static function clean__all( $file_path )
+    {
+        return file_put_contents($file_path, '<?php');
+    }
+
 	/**
 	 * Delete given pattern from file.
 	Works only for first collision.
@@ -100,8 +114,8 @@ class File{
 					$result = $new_content !== null ? true : false;
 					
 					if($result){
-						if( file_put_contents( $file_path, $new_content ) ){
-							return true;
+						if( $bytes = file_put_contents( $file_path, $new_content ) ){
+							return $bytes;
 						}else
 							return Err::add(__CLASS__, __FUNCTION__, 'Write error'); // Cannot write new content to template PHP file
 					}else

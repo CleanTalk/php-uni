@@ -25,7 +25,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
             // If password is set in config
             if(isset($password)){
-                if( ( Post::get( 'login' ) == $apikey || ( isset( $email ) && Post::get( 'login' ) == $email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
+                if( ( Post::get( 'login' ) == $apikey || ( isset( $uni_email ) && Post::get( 'login' ) == $uni_email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
                     setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
                 }else
                     Err::add('Incorrect login or password');
@@ -91,6 +91,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 File::replace__variable( $path_to_config, 'registrations_test', (bool)Post::get( 'registrations_test' ) );
                 File::replace__variable( $path_to_config, 'general_postdata_test', (bool)Post::get( 'general_postdata_test' ) );
                 File::replace__variable( $path_to_config, 'spam_firewall', (bool)Post::get( 'spam_firewall' ) );
+                File::replace__variable( $path_to_config, 'general_post_exclusion_usage', (bool)Post::get( 'general_post_exclusion_usage' ) );
 
                 // SFW actions
                 if( Post::get( 'spam_firewall' ) && $apikey ){
@@ -204,7 +205,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                         <!-- End Error box -->
                         <?php if( ! empty( $is_installed ) ) : ?>
                             <form action = 'javascript:void(null);' method="post" id='login-form'>
-                                <input type="text" placeholder="Access key<?php if( isset( $email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
+                                <input type="text" placeholder="Access key<?php if( isset( $uni_email, $password ) ) echo ' or e-mail'; ?>" class="input-field" name="login" required/>
 
                                 <?php if( ! empty( $password ) ) : ?>
                                     <input type="password" placeholder="Password" class="input-field" name="password"/>
@@ -260,6 +261,19 @@ if( Server::is_post() && Post::get( 'action' ) ){
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="check_without_email" name="general_postdata_test" <?php if (!empty($general_postdata_test)) echo "checked"; ?>>
                             <label for="check_without_email" class="apbct_setting-checkbox--label">Check data without email</label>
+                        </div>
+                        <div class="form-group row">
+                            <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="general_post_exclusion_usage" name="general_post_exclusion_usage" <?php if (!empty($general_post_exclusion_usage)) echo "checked"; ?>>
+                            <label for="general_post_exclusion_usage" class="apbct_setting-checkbox--label">Exclude forms contain a service field</label>
+                            <div id="exclusions-div" style="margin: 1% 2%; padding: 1%;border: 1px solid #CFCFCF;
+                            display:
+                            <?php echo $general_post_exclusion_usage ? 'inherit' : 'none' ?>
+                            ">
+                                <p>Add the tag below to the form that needs to be excluded. Set unique "id" attribute if you have several forms on the same page:</p>
+                                <div id="exclusion-html" style="border: solid 1px; word-break: break-all; padding: 1%; background: #fff;">
+                                <?php echo htmlspecialchars('<input id="any_id_1" name="ct_service_data" type="hidden" value="'. $exclusion_key .'">') ?>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="enable_sfw" name="spam_firewall" <?php if (!empty($spam_firewall)) echo "checked"; ?>>

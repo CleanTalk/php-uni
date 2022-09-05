@@ -163,7 +163,7 @@ class SFW extends \Cleantalk\Antispam\SFW {
 
 		if( empty( $result['error'] ) ){
 			if( ! is_dir( CLEANTALK_ROOT . 'data' ) ) mkdir( CLEANTALK_ROOT . 'data' );
-			File::clean__variable ( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets' );
+			File::clean__all(CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php');
 			File::inject__variable( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets', $result, 'yes');
 			$out = count( $result );
 		}else{

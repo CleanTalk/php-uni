@@ -1,7 +1,7 @@
 <?php
 
 define('APBCT_PLUGIN', 'uni');
-define('APBCT_VERSION', '2.5.4');
+define('APBCT_VERSION', '2.6.0');
 define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
 define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
 
@@ -14,7 +14,9 @@ function apbct_restore_include_path(){
 }
 
 $ds = DIRECTORY_SEPARATOR;
-define( 'DS', DIRECTORY_SEPARATOR );
+if ( ! defined('DS') ) {
+    define( 'DS', DIRECTORY_SEPARATOR );
+}
 define( 'CLEANTALK_SITE_ROOT', realpath(__DIR__ . "$ds..$ds..$ds" ) . $ds );
 define( 'CLEANTALK_ROOT', CLEANTALK_SITE_ROOT . 'cleantalk' . $ds );
 define( 'CLEANTALK_LIB', CLEANTALK_ROOT . 'lib' . $ds );

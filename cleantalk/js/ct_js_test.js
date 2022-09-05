@@ -16,10 +16,57 @@ var ctStart = function(){
 	ctSetCookie("apbct_visible_fields_count", 0);
 
 	setTimeout(function(){
-		
+
+		var visible_fields_collection = {};
+		var processedForms = [];
+
 		for(var i = 0, host = '', action = ''; i < document.forms.length; i++){
 			var form = document.forms[i];
-			
+
+			//Exclusion for forms
+			if (
+				form.method.toString().toLowerCase() === 'get' ||
+				form.classList.contains('slp_search_form') || //StoreLocatorPlus form
+				form.parentElement.classList.contains('mec-booking') ||
+				form.action.toString().indexOf('activehosted.com') !== -1 || // Active Campaign
+				(form.id && form.id === 'caspioform') || //Caspio Form
+				(form.classList && form.classList.contains('tinkoffPayRow')) || // TinkoffPayForm
+				(form.classList && form.classList.contains('give-form')) || // GiveWP
+				(form.id && form.id === 'ult-forgot-password-form') || //ult forgot password
+				(form.id && form.id.toString().indexOf('calculatedfields') !== -1) || // CalculatedFieldsForm
+				(form.id && form.id.toString().indexOf('sac-form') !== -1) || // Simple Ajax Chat
+				(form.id && form.id.toString().indexOf('cp_tslotsbooking_pform') !== -1) || // WP Time Slots Booking Form
+				(form.name && form.name.toString().indexOf('cp_tslotsbooking_pform') !== -1)  || // WP Time Slots Booking Form
+				form.action.toString() === 'https://epayment.epymtservice.com/epay.jhtml' || // Custom form
+				(form.name && form.name.toString().indexOf('tribe-bar-form') !== -1)  // The Events Calendar
+			) {
+				continue;
+			}
+
+			if( ! apbct_visible_fields_already_collected( processedForms, form ) ) {
+				visible_fields_collection[i] = apbct_collect_visible_fields( form );
+				processedForms.push( apbct_get_form_details( form ) );
+			}
+
+			form.onsubmit_prev = form.onsubmit;
+
+			form.ctFormIndex = i;
+			form.onsubmit = function (event) {
+
+				var visible_fields = {};
+				visible_fields[0] = apbct_collect_visible_fields(this);
+				apbct_visible_fields_set_cookie( visible_fields, event.target.ctFormIndex );
+
+				// Call previous submit action
+				if (event.target.onsubmit_prev instanceof Function) {
+					setTimeout(function () {
+						event.target.onsubmit_prev.call(event.target, event);
+					}, 500);
+				}
+			};
+
+			apbct_visible_fields_set_cookie( visible_fields_collection );
+
 			if( typeof(form.action) == 'string' ){
 			
 				action = document.forms[i].action;
@@ -52,32 +99,6 @@ var ctStart = function(){
 						}
 						document.forms[i].action = window.location.origin;
 					}
-				}
-			}
-			
-			form.onsubmit_prev = form.onsubmit;
-			form.onsubmit = function(event){
-				this.visible_fields = '';
-				this.visible_fields_count = this.elements.length;
-				for(var j = 0; j < this.elements.length; j++){
-					var elem = this.elements[j];
-					if( getComputedStyle(elem).display    == "none" ||
-						getComputedStyle(elem).visibility == "hidden" ||
-						getComputedStyle(elem).width      == "0" ||
-						getComputedStyle(elem).heigth     == "0" ||
-						getComputedStyle(elem).opacity    == "0" ||
-						elem.getAttribute("type")         == "hidden" ||
-						elem.getAttribute("type")         == "submit"
-					){
-						this.visible_fields_count--;
-					}else{
-						this.visible_fields += (this.visible_fields == "" ? "" : " ") + elem.getAttribute("name");
-					}
-				}
-				ctSetCookie("apbct_visible_fields", this.visible_fields);
-				ctSetCookie("apbct_visible_fields_count", this.visible_fields_count);
-				if(this.onsubmit_prev instanceof Function){
-					this.onsubmit_prev.call(this, event);
 				}
 			}
 		}
@@ -139,6 +160,177 @@ function ctKeyStopStopListening(){
 		window.detachEvent("mousedown", ctFunctionFirstKey);
 		window.detachEvent("keydown", ctFunctionFirstKey);
 	}
+}
+
+
+function apbct_collect_visible_fields( form ) {
+
+	// Get only fields
+	var inputs = [],
+		inputs_visible = '',
+		inputs_visible_count = 0,
+		inputs_invisible = '',
+		inputs_invisible_count = 0,
+		inputs_with_duplicate_names = [];
+
+	for(var key in form.elements){
+		if(!isNaN(+key))
+			inputs[key] = form.elements[key];
+	}
+
+	// Filter fields
+	inputs = inputs.filter(function(elem){
+
+		// Filter already added fields
+		if( inputs_with_duplicate_names.indexOf( elem.getAttribute('name') ) !== -1 ){
+			return false;
+		}
+		// Filter inputs with same names for type == radio
+		if( -1 !== ['radio', 'checkbox'].indexOf( elem.getAttribute("type") )){
+			inputs_with_duplicate_names.push( elem.getAttribute('name') );
+			return false;
+		}
+		return true;
+	});
+
+	// Visible fields
+	inputs.forEach(function(elem, i, elements){
+		// Unnecessary fields
+		if(
+			elem.getAttribute("type")         === "submit" || // type == submit
+			elem.getAttribute('name')         === null     ||
+			elem.getAttribute('name')         === 'ct_checkjs'
+		) {
+			return;
+		}
+		// Invisible fields
+		if(
+			getComputedStyle(elem).display    === "none" ||   // hidden
+			getComputedStyle(elem).visibility === "hidden" || // hidden
+			getComputedStyle(elem).opacity    === "0" ||      // hidden
+			elem.getAttribute("type")         === "hidden" // type == hidden
+		) {
+			if( elem.classList.contains("wp-editor-area") ) {
+				inputs_visible += " " + elem.getAttribute("name");
+				inputs_visible_count++;
+			} else {
+				inputs_invisible += " " + elem.getAttribute("name");
+				inputs_invisible_count++;
+			}
+		}
+		// Visible fields
+		else {
+			inputs_visible += " " + elem.getAttribute("name");
+			inputs_visible_count++;
+		}
+
+	});
+
+	inputs_invisible = inputs_invisible.trim();
+	inputs_visible = inputs_visible.trim();
+
+	return {
+		visible_fields : inputs_visible,
+		visible_fields_count : inputs_visible_count,
+		invisible_fields : inputs_invisible,
+		invisible_fields_count : inputs_invisible_count,
+	}
+
+}
+
+function apbct_visible_fields_set_cookie( visible_fields_collection, form_id ) {
+
+	var collection = typeof visible_fields_collection === 'object' && visible_fields_collection !== null ?  visible_fields_collection : {};
+
+	for ( var i in collection ) {
+		if ( i > 10 ) {
+			// Do not generate more than 10 cookies
+			return;
+		}
+		var collectionIndex = form_id !== undefined ? form_id : i;
+		ctSetCookie("apbct_visible_fields_" + collectionIndex, JSON.stringify( collection[i] ) );
+	}
+}
+
+function apbct_visible_fields_already_collected( formsProcessed, form ) {
+
+	if ( formsProcessed.length > 0 && form.elements.length > 0 ) {
+
+		var formMethod      = form.method;
+		var formAction      = form.action;
+		var formFieldsCount = form.elements.length;
+		var formInputs      = [];
+
+		// Getting only input elements from HTMLFormControlsCollection and putting these into the simple array.
+		for( var key in form.elements ){
+			if( ! isNaN( +key ) ) {
+				formInputs[key] = form.elements[key];
+			}
+		}
+
+		for ( var i = 0; i < formsProcessed.length; i++ ) {
+			// The form with the same METHOD has not processed.
+			if ( formsProcessed[i].method !== formMethod ) {
+				return false;
+			}
+			// The form with the same ACTION has not processed.
+			if ( formsProcessed[i].action !== formAction ) {
+				// @ToDo actions often are different in the similar forms
+				//return false;
+			}
+			// The form with the same FIELDS COUNT has not processed.
+			if ( formsProcessed[i].fields_count !== formFieldsCount ) {
+				return false;
+			}
+
+			// Compare every form fields by their TYPE and NAME
+			var fieldsNames = formsProcessed[i].fields_names;
+			for ( var field in fieldsNames ) {
+				var res = formInputs.filter(function(item, index, array){
+					var fieldName = item.name;
+					var fieldType = item.type;
+					if( fieldsNames[field].fieldName === fieldName && fieldsNames[field].fieldType === fieldType ) {
+						return true;
+					}
+				});
+				if( res.length > 0  ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	return false;
+}
+
+function apbct_get_form_details( form ) {
+
+	if( form.elements.length > 0 ) {
+
+		var fieldsNames = {};
+
+		// Collecting fields and their names
+		var inputs = form.elements;
+		for (i = 0; i < inputs.length; i++) {
+			var fieldName = inputs[i].name;
+			var fieldType = inputs[i].type;
+			fieldsNames[i] = {
+				fieldName : fieldName,
+				fieldType : fieldType,
+			}
+		}
+
+		return {
+			'method' : form.method,
+			'action' : form.action,
+			'fields_count' : form.elements.length,
+			'fields_names' : fieldsNames,
+		};
+	}
+
+	return false;
 }
 
 if(typeof window.addEventListener == "function"){

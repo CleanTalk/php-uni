@@ -1,13 +1,23 @@
 <?php
-	
-	/*
-	* Performs spam test
-	* @return void or exit script
-	*/
-	
-	function apbct_spam_test($data){
+
+use Cleantalk\Common\Arr;
+use Cleantalk\Common\GetFieldsAny;
+use Cleantalk\Variables\Cookie;
+use Cleantalk\Variables\Post;
+
+/*
+* Performs spam test
+* @return void or exit script
+*/
+function apbct_spam_test($data){
 		
-		global $apikey, $response_lang, $registrations_test, $general_postdata_test, $detected_cms;
+		global $apikey,
+               $response_lang,
+               $registrations_test,
+               $general_postdata_test,
+               $detected_cms,
+               $exclusion_key,
+               $general_post_exclusion_usage;
 		
 		// Patch for old PHP versions
 		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
@@ -41,16 +51,26 @@
             $registration = true;
         }
 
-		// Skip check if
-		if(
-		    $skip || // Skip flag set by apbct_get_fields_any()
-			( ! $sender_email && ! $general_postdata_test ) || // No email detected and general post data test is disabled
-			( $registration && ! $registrations_test ) || // It's registration and registration check is disabled
-            ( apbct_check__exclusions() ) || // main exclusion function
-		    ( apbct_check__exclusions_in_post() ) || // Has an exclusions in POST
-		    ( apbct_check__url_exclusions() ) // Has an exclusions in URL
-		)
-			$skip = true;
+        //init exclusions array if general_post_exclusion_usage is enabled
+        if ( isset($exclusion_key, $general_post_exclusion_usage) && $general_post_exclusion_usage ) {
+            $exclusions_in_post = array(
+                'ct_service_data' => $exclusion_key,
+            );
+        } else {
+            $exclusions_in_post = array();
+        }
+
+
+        // Skip check if
+        if ( $skip || // Skip flag set by apbct_get_fields_any()
+            (!$sender_email && !$general_postdata_test) || // No email detected and general post data test is disabled
+            ($registration && !$registrations_test) || // It's registration and registration check is disabled
+            (apbct_check__exclusions()) || // main exclusion function
+            (apbct_check__exclusions_in_post($exclusions_in_post)) || // Has an exclusions in POST
+            (apbct_check__url_exclusions()) // Has an exclusions in URL
+        ) {
+            $skip = true;
+        }
 		
 		// Do check if email is not set
 		if( ! $skip ){
@@ -115,35 +135,47 @@
 	{
 		
 		global $apikey, $response_lang;
-				
-		return $sender_info = array(
-		
+
+        // Visible fields processing
+        $visible_fields_collection = '';
+        if ( Cookie::getVisibleFields() ) {
+            $visible_fields_collection = Cookie::getVisibleFields();
+        } elseif ( Post::get('apbct_visible_fields') ) {
+            $visible_fields_collection = stripslashes(Post::get('apbct_visible_fields'));
+        }
+
+        $visible_fields = apbct_visible_fields__process($visible_fields_collection);
+
+		return array(
+
 			// Common
 			'remote_addr'     => $_SERVER['REMOTE_ADDR'],
 			'USER_AGENT'      => htmlspecialchars($_SERVER['HTTP_USER_AGENT']),
 			'REFFERRER'       => isset($_SERVER['HTTP_REFERER']) ? htmlspecialchars($_SERVER['HTTP_REFERER']) : '',
 			'page_url'        => isset($_SERVER['SERVER_NAME'], $_SERVER['REQUEST_URI']) ? htmlspecialchars($_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI']) : null,
 			// 'cms_lang'        => substr(locale_get_default(), 0, 2),
-			
-			'php_session'     => session_id() != '' ? 1 : 0, 
+
+			'php_session'     => session_id() != '' ? 1 : 0,
 			'cookies_enabled' => apbct_cookies_test(),
 			'fields_number'   => sizeof($data),
 			'ct_options'      => json_encode(array('auth_key' => $apikey, 'response_lang' => $response_lang)),
-			
-			// PHP cookies                                                                                                                                                 
-			// 'cookies_enabled'        => $cookie_is_ok,                                                                                                                     
+
+			// PHP cookies
+			// 'cookies_enabled'        => $cookie_is_ok,
 			// 'REFFERRER_PREVIOUS'     => !empty($_COOKIE['apbct_prev_referer'])    && $cookie_is_ok     ? $_COOKIE['apbct_prev_referer']                                    : null,
 			// 'site_landing_ts'        => !empty($_COOKIE['apbct_site_landing_ts']) && $cookie_is_ok     ? $_COOKIE['apbct_site_landing_ts']                                 : null,
 			// 'page_hits'              => !empty($_COOKIE['apbct_page_hits'])                            ? $_COOKIE['apbct_page_hits']                                       : null,
-			
+
 			// JS params
 			'mouse_cursor_positions' => isset($_COOKIE['apbct_pointer_data'])          ? json_decode(stripslashes($_COOKIE['apbct_pointer_data']), true) : null,
 			'js_timezone'            => isset($_COOKIE['apbct_timezone'])              ? $_COOKIE['apbct_timezone']             : null,
 			'key_press_timestamp'    => isset($_COOKIE['apbct_fkp_timestamp'])         ? $_COOKIE['apbct_fkp_timestamp']        : null,
 			'page_set_timestamp'     => isset($_COOKIE['apbct_ps_timestamp'])          ? $_COOKIE['apbct_ps_timestamp']         : null,
-			'form_visible_inputs'    => !empty($_COOKIE['apbct_visible_fields_count']) ? $_COOKIE['apbct_visible_fields_count'] : null,
-			'apbct_visible_fields'   => !empty($_COOKIE['apbct_visible_fields'])       ? $_COOKIE['apbct_visible_fields']       : null,
-			
+            'form_visible_inputs'    => ! empty($visible_fields['visible_fields_count']) ? $visible_fields['visible_fields_count'] : null,
+            'apbct_visible_fields'   => ! empty($visible_fields['visible_fields']) ? $visible_fields['visible_fields'] : null,
+            'form_invisible_inputs'  => ! empty($visible_fields['invisible_fields_count']) ? $visible_fields['invisible_fields_count'] : null,
+            'apbct_invisible_fields' => ! empty($visible_fields['invisible_fields']) ? $visible_fields['invisible_fields'] : null,
+
 			// Debug
 			'action' => \Cleantalk\Variables\Post::get('action') ? \Cleantalk\Variables\Post::get('action') : null,
 		);
@@ -218,223 +250,49 @@
 			return null;
 		}
 	}
-	
-	/*
-	* Get data from an ARRAY recursively
-	* @return array
-	*/ 
+
+    /**
+     * Get data from an ARRAY recursively
+     *
+     * @param array $arr
+     * @param array $message
+     * @param null|string $email
+     * @param array $nickname
+     * @param null $subject
+     * @param bool $contact
+     * @param string $prev_name
+     *
+     * @return array
+     * @deprecated Use ct_gfa()
+     */
 	function apbct_get_fields_any($arr, $message=array(), $email = null, $nickname = array('nick' => '', 'first' => '', 'last' => ''), $subject = null, $skip = false, $reg = false, $not_reg=false, $prev_key = '')
 	{
-        global $detected_cms;
+        if ( is_array($nickname) ) {
+            $nickname_str = '';
+            foreach ( $nickname as $value ) {
+                $nickname_str .= ($value ? $value . " " : "");
+            }
+            $nickname = trim($nickname_str);
+        }
 
-		// Skip request if fields exists
-		$skip_params = array( 
-			'ipn_track_id', 	// PayPal IPN #
-			'txn_type', 		// PayPal transaction type
-			'payment_status', 	// PayPal payment status
-			'ccbill_ipn', 		// CCBill IPN 
-		);
-		
-		$registration = array(
-			'registration',
-			'register',
-			'submitCreate', // PrestaShop
-		);
-		
-		// Fields to replace with ****
-		$obfuscate_params = array( 
-			'password',
-			'pass',
-			'pwd',
-			'pswd'
-		);
-		
-		// Array for strings in keys to skip and known service fields
-		$skip_fields_with_strings = array( 
-			// Common
-			'ct_checkjs', //Do not send ct_checkjs
-			'nonce', //nonce for strings such as 'rsvp_nonce_name'
-			'security',
-			'action',
-			'http_referer',
-			// Formidable Form
-			'form_key',
-			'submit_entry',
-			// Custom Contact Forms
-			'form_id',
-			'ccf_form',
-			'form_page',
-			// Qu Forms
-			'iphorm_uid',
-			'form_url',
-			'post_id',
-			'iphorm_ajax',
-			'iphorm_id',
-			// Fast SecureContact Froms
-			'fs_postonce_1',
-			'fscf_submitted',
-			'mailto_id',
-			'si_contact_action',
-			// Ninja Forms
-			'formData_id',
-			'formData_settings',
-			'formData_fields_\d+_id',
-			// E_signature
-			'recipient_signature',
-			'output_\d+_\w{0,2}',
-			// Contact Form by Web-Settler protection
-			'_formId',
-			'_returnLink',
-			'CSRFName',
-			'CSRFToken',
-			'page',
-			'id',
-            'skin',
-            'sec_code'
-		);
-		
-		// Reset $message if we have a sign-up data
-		$skip_message_post = array( 
-			'edd_action', // Easy Digital Downloads
-		);
-		
-		// Flag for skipping check
-		foreach($skip_params as $value){
-			if(array_key_exists($value,$_GET) || array_key_exists($value,$_POST))
-				$skip = true;
-		} unset($value);	
-		
-		$reg = false;
-
-		if(count($arr)){
-			foreach($arr as $key => $value){
-				
-				if(is_string($value)){
-					$decoded_json_value = json_decode($value, true);
-					if($decoded_json_value !== null)
-						$value = $decoded_json_value;
-				}
-				
-				if(!is_array($value) && !is_object($value)){
-					
-					if($value === '')
-						continue;
-					
-					// Flag for detecting registrations
-					if(strlen($value) > 40 && $not_reg){
-						$reg = false;
-						$not_reg = true;
-					}else{
-						foreach($registration as $needle){
-							if(stripos($key, $needle) !== false ||
-                                ( $key == 'page' && $value == 'register' ) || //OsClass
-                                ( $key == 'task' && $value == 'registration.register' ) || // Joomla!
-                                ( $key == 'do' && $value == 'register' ) // DLE!
-							){
-								$reg = true;
-								continue(2);
-							}
-						} unset($needle);
-					}
-					
-					
-					// Skipping fields names with strings from (array)skip_fields_with_strings
-					foreach($skip_fields_with_strings as $needle){
-						if (preg_match("/".$needle."/", $prev_key.$key) == 1){
-							continue(2);
-						}
-					}unset($needle);
-					
-					// Obfuscating params
-					foreach($obfuscate_params as $needle){
-						if (strpos($key, $needle) !== false){
-							$value = apbct_obfuscate_param($value);
-							continue(2);
-						}
-					}unset($needle);
-
-					$value_for_email = trim($value);
-
-					// Decodes URL-encoded data to string.
-					$value = urldecode(trim($value));
-
-					// Email
-					if (!$email && preg_match("/^\S+@\S+\.\S+$/", $value_for_email)){
-						$email = $value_for_email;
-						
-					// Names
-					} elseif (
-                        preg_match( "/name/i", $key ) ||
-                        ( $detected_cms == 'Question2Answer' && preg_match( "/^handle$/i", $key ) )
-                    ){
-						
-						preg_match("/(first.?name)?(name.?first)?(forename)?/", $key, $match_forename);
-						preg_match("/(last.?name)?(family.?name)?(second.?name)?(surname)?/", $key, $match_surname);
-						preg_match("/(nick.?name)?(user.?name)?(nick)?(login)?/", $key, $match_nickname);
-						
-						if(count($match_forename) > 1)
-							$nickname['first'] = $value;
-						elseif(count($match_surname) > 1)
-							$nickname['last'] = $value;
-						elseif(count($match_nickname) > 1)
-							$nickname['nick'] = $value;
-						else
-                            $nickname[$prev_key.$key] = $value;
-					
-					// Subject
-					}elseif ($subject === null && preg_match("/subject/i", $key)){
-						$subject = $value;
-					
-					// Message
-					}else{
-						$message[$prev_key.$key] = $value;					
-					}
-					
-				}else if(!is_object($value)){
-					
-					$prev_key_original = $prev_key;
-					$prev_key = ($prev_key === '' ? $key.'_' : $prev_key.$key.'_');
-					
-					$temp = apbct_get_fields_any($value, $message, $email, $nickname, $subject, $skip, $reg, $not_reg, $prev_key);
-					
-					$message 	= ($temp['subject']  ? array_merge(array('subject' => $temp['subject']), $temp['message']) : $temp['message']);
-					$email 		= ($temp['email']    ? $temp['email']    : null);
-					$nickname 	= ($temp['nickname'] ? $temp['nickname'] : null);				
-					$skip       = ($temp['skip']     ? true              : $skip);
-					$reg        = ($temp['reg']      ? true              : $reg);
-					$prev_key 	= $prev_key_original;
-				}
-			} unset($key, $value);
-		}
-		
-		foreach ($skip_message_post as $v) {
-			if (isset($_POST[$v])) {
-				$message = null;
-				break;
-			}
-		} unset($v);
-		
-		//If top iteration, returns compiled name field. Example: "Nickname Firtsname Lastname".
-		if($prev_key === ''){
-			if(!empty($nickname)){
-				$nickname_str = '';
-				foreach($nickname as $value){
-					$nickname_str .= ($value ? $value." " : "");
-				}unset($value);
-			}
-			$nickname = $nickname_str;
-		}
-
-		$return_param = array(
-			'email'    => $email,
-			'nickname' => $nickname,
-			'subject'  => $subject,
-			'message'  => $message,
-			'skip' 	   => $skip,
-			'reg'      => $reg,
-		);	
-		return $return_param;
+        return ct_gfa($arr, $email, $nickname);
 	}
+
+    /**
+     * Get data from an ARRAY recursively
+     *
+     * @param array $input_array
+     * @param string $email
+     * @param string $nickname
+     *
+     * @return array
+     */
+    function ct_gfa($input_array, $email = '', $nickname = '')
+    {
+        $gfa = new GetFieldsAny($input_array);
+
+        return $gfa->getFields($email, $nickname);
+    }
 
 	/**
 	* Masks a value with asterisks (*)
@@ -537,6 +395,14 @@
 
                 die(json_encode(array('status' =>'ok', 'text' => $comment)));
             }
+
+			// Custom ajax response
+			require_once CLEANTALK_CONFIG_FILE;
+			global $ajax_response;
+
+			if (!empty($ajax_response)) {
+				die(json_encode($ajax_response));
+			}
 
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
 			
@@ -660,3 +526,80 @@
 
         return false;
     }
+
+/**
+ * Process visible fields for specific form to match the fields from request
+ *
+ * @param string|array $visible_fields JSON string
+ *
+ * @return array
+ */
+function apbct_visible_fields__process($visible_fields)
+{
+    $visible_fields = is_array($visible_fields)
+        ? json_encode($visible_fields, JSON_FORCE_OBJECT)
+        : $visible_fields;
+
+    // Do not decode if it's already decoded
+    $fields_collection = json_decode($visible_fields, true);
+
+    if ( ! empty($fields_collection) ) {
+        // These fields belong this request
+        $fields_to_check = apbct_get_fields_to_check();
+
+        foreach ( $fields_collection as $current_fields ) {
+            if ( isset($current_fields['visible_fields'], $current_fields['visible_fields_count']) ) {
+                $fields = explode(' ', $current_fields['visible_fields']);
+
+                if ( count(array_intersect(array_keys($fields_to_check), $fields)) > 0 ) {
+                    // WP Forms visible fields formatting
+                    if ( strpos($current_fields['visible_fields'], 'wpforms') !== false ) {
+                        $current_fields = preg_replace(
+                            array('/\[/', '/\]/'),
+                            '',
+                            str_replace(
+                                '][',
+                                '_',
+                                str_replace(
+                                    'wpforms[fields]',
+                                    '',
+                                    $visible_fields
+                                )
+                            )
+                        );
+                    }
+
+                    return $current_fields;
+                }
+            }
+        }
+    }
+
+    return array();
+}
+
+/**
+ * Get fields from POST to checking on visible fields.
+ *
+ * @return array
+ */
+function apbct_get_fields_to_check()
+{
+    //Formidable fields
+    if ( isset($_POST['item_meta']) && is_array($_POST['item_meta']) ) {
+        $fields = array();
+        foreach ( $_POST['item_meta'] as $key => $item ) {
+            $fields['item_meta[' . $key . ']'] = $item;
+        }
+
+        return $fields;
+    }
+
+    // @ToDo we have to implement a logic to find form fields (fields names, fields count) in serialized/nested/encoded items. not only $_POST.
+    return $_POST;
+}
+
+function apbct_array($array)
+{
+    return new Arr($array);
+}
