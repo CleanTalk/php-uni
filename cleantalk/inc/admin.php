@@ -15,6 +15,8 @@ function install( $files, $api_key, $cms, $exclusions ){
 		$php_open_tags  = preg_match_all("/(<\?)/", $file_content);
 		$php_close_tags = preg_match_all("/(\?>)/", $file_content);
 		$first_php_start = strpos($file_content, '<?');
+        $contains_namespace_declaration = strpos($file_content, 'namespace');
+        $contains_declare_declaration = strpos($file_content, 'declare');
 
 		// Adding <?php to the start if it's not there
 		if($first_php_start !== 0)
@@ -28,13 +30,21 @@ function install( $files, $api_key, $cms, $exclusions ){
 
 			if( ! Err::check() ){
 
-				// Addition to the top of the script
-				File::inject__code(
-					$file,
-					"\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
-					'(<\?php)|(<\?)',
-					'top_code'
-				);
+                if( $contains_namespace_declaration !== false ) {
+                    $needle = 'namespace\s?[a-zA-Z_\\x80-\\xff\\x5c][a-zA-Z0-9\\x80-\\xff\\x5c]*\s*;';
+                } elseif ( $contains_declare_declaration !== false ) {
+                    $needle = 'declare\s*\({1}.*\){1};';
+                } else {
+                    $needle = '(<\?php)|(<\?)';
+                }
+
+                // Addition to the top of the script
+                File::inject__code(
+                    $file,
+                    "\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
+                    $needle,
+                    'top_code'
+                );
 
 				if( ! Err::check() ){
 
