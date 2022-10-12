@@ -4,13 +4,24 @@ define('APBCT_PLUGIN', 'uni');
 define('APBCT_VERSION', '2.6.0');
 define('APBCT_AGENT', APBCT_PLUGIN . '-' . str_replace( '.', '', APBCT_VERSION ) );
 define('APBCT_USER_AGENT', 'Cleantalk-Antispam-Universal-Plugin/' . APBCT_VERSION);
+define('APBCT_INITIAL_INCLUDE_PATH', get_include_path());
 
-function apbct_set_include_path(){
-	set_include_path( CLEANTALK_ROOT );
+function apbct_set_include_path()
+{
+    define('APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL', get_include_path());
+    set_include_path(CLEANTALK_ROOT);
 }
 
-function apbct_restore_include_path(){
-	set_include_path( get_include_path() );
+function apbct_restore_include_path()
+{
+    set_include_path(get_include_path());
+    if ( get_include_path() === CLEANTALK_ROOT ) {
+        if ( defined(APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL) ) {
+            set_include_path(APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL);
+        } else {
+            set_include_path(APBCT_INITIAL_INCLUDE_PATH);
+        }
+    }
 }
 
 $ds = DIRECTORY_SEPARATOR;
