@@ -231,6 +231,10 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
         // CsCart
         if (preg_match('/(Kalynyak.*?)/', $index_file))
             $out = 'cscart';
+        //moodle moodle
+        if ( preg_match('/(moodle.*?)/', $index_file) ) {
+            $out = 'moodle';
+        }
     }
 
 	return $out;
