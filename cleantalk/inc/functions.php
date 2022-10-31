@@ -466,8 +466,22 @@ function apbct_spam_test($data){
 	 * @return bool
 	 */
 	function apbct_check__url_exclusions( $exclusions = array() ){
-		
-		$exclusions[] = 'login';
+        global $detected_cms;
+
+        //custom login word transform ruleset
+        $login_word = 'login';
+        if ( isset($detected_cms) ) {
+            switch ( $detected_cms ) {
+                //moodle case
+                case 'moodle':
+                {
+                    $login_word = 'login/index.php';
+                    break;
+                }
+                //add a new rule if needs
+            }
+        }
+		$exclusions[] = $login_word;
 		
 		foreach ( $exclusions as $name => $exclusion ){
 			if( \Cleantalk\Variables\Server::has_string('REQUEST_URI', $exclusion ) ){
