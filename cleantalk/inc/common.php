@@ -8,9 +8,7 @@ define('APBCT_INITIAL_INCLUDE_PATH', get_include_path());
 
 function apbct_set_include_path()
 {
-    if ( ! defined(APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL) ) {
-        define('APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL', get_include_path());
-    }
+    defined('APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL') or define('APBCT_INCLUDE_PATH_ON_FIRST_SET_CALL', get_include_path());
     set_include_path(CLEANTALK_ROOT);
 }
 
