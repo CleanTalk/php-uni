@@ -405,17 +405,19 @@ function apbct_spam_test($data){
 			}
 
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
-			
-		// File exists?
-		}elseif(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
-			$die_page = file_get_contents( getcwd() . '/cleantalk/lib/die_page.html');
-		
-		// Default
-		}else{
-			die($comment);
-		}
-		
-		$die_page = str_replace('{BLOCK_REASON}', $comment, $die_page);
+
+
+        }
+        // Die page file exists?
+        $path = CLEANTALK_ROOT . '/lib/die_page.html';
+        if ( file_exists($path) ) {
+            //if so setup die page template
+            $die_page = file_get_contents($path);
+        } else {
+            die($comment);
+        }
+
+        $die_page = str_replace('{BLOCK_REASON}', $comment, $die_page);
 		
 		// Headers
 		if(headers_sent() === false){
