@@ -74,6 +74,11 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                 $files_to_mod[] = 'memberlist.php';
             }
 
+            //moodle CMS integration
+            if( 'moodle' === $cms ) {
+                $files_to_mod[] = 'login/signup.php';
+            }
+
             if( Post::get( 'modify_index' ) )
                 $files_to_mod[] = 'index.php';
 
