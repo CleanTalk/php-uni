@@ -492,6 +492,15 @@ class Helper{
 			
 			// Merging OBLIGATORY options with GIVEN options
 			// Using POST method by default
+			$curlopt_http_version = CURL_HTTP_VERSION_1_0;
+			$curl_version = curl_version();
+			if (
+				isset($curl_version['version']) &&
+				version_compare($curl_version['version'], '7.33.0') >= 0 &&
+				in_array( 'github_api', $presets )
+			) {
+				$curlopt_http_version = CURL_HTTP_VERSION_2_0;
+			}
 			$opts = static::array_merge__save_numeric_keys(
 				array(
 					CURLOPT_URL => $url,
@@ -503,7 +512,7 @@ class Helper{
 					CURLOPT_FOLLOWLOCATION => true,
 					CURLOPT_MAXREDIRS => 5,
 					CURLOPT_USERAGENT => static::http__user_agent() . '; ' . ( ! empty( Server::get( 'SERVER_NAME' ) ) ? Server::get( 'SERVER_NAME' ) : 'UNKNOWN_HOST' ),
-					CURLOPT_HTTP_VERSION =>  in_array( 'github_api', $presets ) ? CURL_HTTP_VERSION_2_0 : CURL_HTTP_VERSION_1_0, // see http://stackoverflow.com/a/23322368
+					CURLOPT_HTTP_VERSION => $curlopt_http_version, // see http://stackoverflow.com/a/23322368
 					CURLOPT_RETURNTRANSFER => true, // receive server response ...
 					CURLOPT_HTTPHEADER => array('Expect:'), // Fix for large data and old servers http://php.net/manual/ru/function.curl-setopt.php#82418
 				),
