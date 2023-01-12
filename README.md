@@ -14,3 +14,7 @@ Module for any CMS
 ## Unistallation
 * Proceed to address: <YOUR_WEBSITE.DOMAIN>/cleantalk/settings.php, log in and click "Uninstall"
 * Done!
+
+## Requirements
+
+* CleanTalk account https://cleantalk.org/register?product=anti-spam
