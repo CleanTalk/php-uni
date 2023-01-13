@@ -17,4 +17,5 @@ Module for any CMS
 
 ## Requirements
 
+* PHP 5.6 or higher
 * CleanTalk account https://cleantalk.org/register?product=anti-spam
