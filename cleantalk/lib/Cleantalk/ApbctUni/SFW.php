@@ -143,7 +143,10 @@ class SFW extends \Cleantalk\Antispam\SFW {
 					if( $result['rows'] == count( $data ) ){
 
 						foreach ( $log_files as $log_file ){
-							unlink( $log_dir_path . DS . $log_file );
+							$file_path = $log_dir_path . DS . $log_file;
+							if (file_exists($file_path)) {
+								unlink( $file_path );
+							}
 						}
 
 						return $result;
