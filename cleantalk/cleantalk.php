@@ -123,7 +123,7 @@
 	// Set Cookies test for cookie test
 	$apbct_timestamp = time();
 
-	$cookie_secure = !in_array($_SERVER('HTTPS'), ['off', '']) || $_SERVER('SERVER_PORT') === 443;
+	$cookie_secure = (isset($_SERVER['HTTPS']) && !in_array($_SERVER['HTTPS'], ['off', ''])) || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT']) === 443;
 
 	// For PHP 7.3+ and above
 	if (version_compare(phpversion(), '7.3.0', '>=')) {
