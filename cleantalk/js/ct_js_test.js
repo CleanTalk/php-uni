@@ -5,7 +5,8 @@ var ct_date = new Date(),
 	ctMouseDataCounter = 0;
 
 function ctSetCookie(c_name, value) {
-	document.cookie = c_name + "=" + encodeURIComponent(value) + "; path=/";
+	var ctSecure = location.protocol === 'https:' ? '; secure' : '';
+	document.cookie = c_name + "=" + encodeURIComponent(value) + "; path=/; samesite=lax" + ctSecure;
 }
 
 var ctStart = function(){

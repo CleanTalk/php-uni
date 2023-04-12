@@ -122,11 +122,35 @@
 
 	// Set Cookies test for cookie test
 	$apbct_timestamp = time();
-	setcookie('apbct_timestamp',     $apbct_timestamp,                0, '/');
-	setcookie('apbct_cookies_test',  md5($apikey.$apbct_timestamp), 0, '/');
-	setcookie('apbct_timezone',      '0',                             0, '/');
-    setcookie('apbct_fkp_timestamp', '0',                             0, '/');
-    setcookie('apbct_pointer_data',  '0',                             0, '/');
-    setcookie('apbct_ps_timestamp',  '0',                             0, '/');
+
+	$cookie_secure = !in_array($_SERVER('HTTPS'), ['off', '']) || $_SERVER('SERVER_PORT') === 443;
+
+	// For PHP 7.3+ and above
+	if (version_compare(phpversion(), '7.3.0', '>=')) {
+		$params = array(
+			'expires' => 0,
+			'path' => '/',
+			'domain' => '',
+			'secure' => $cookie_secure,
+			'httponly' => true,
+			'samesite' => 'Lax'
+		);
+
+		setcookie('apbct_timestamp', $apbct_timestamp, $params);
+		setcookie('apbct_cookies_test', md5($apikey.$apbct_timestamp), $params);
+		setcookie('apbct_timezone', '0', $params);
+		setcookie('apbct_fkp_timestamp', '0', $params);
+		setcookie('apbct_pointer_data', '0', $params);
+		setcookie('apbct_ps_timestamp', '0', $params);
+
+	// For PHP 5.6 - 7.2
+	} else {
+		setcookie('apbct_timestamp', $apbct_timestamp, 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_cookies_test', md5($apikey.$apbct_timestamp), 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_timezone', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_fkp_timestamp', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_pointer_data', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_ps_timestamp', '0', 0, '/', '', $cookie_secure, true);
+	}
 
 	apbct_restore_include_path();
