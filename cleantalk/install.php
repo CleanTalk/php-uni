@@ -89,34 +89,6 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                 $files_to_mod     = array_unique( array_merge( $files_to_mod, $additional_files ) );
             }
 
-            if( $files_to_mod ){
-                $tmp = array();
-                foreach ( $files_to_mod as $file_to_mod ){
-
-                    // Check for absolute paths
-                    if(
-                        preg_match( '/^[\/\\\\].*/', $file_to_mod) || // Root for *nix systems
-                        preg_match( '/^[A-Za-z]:\/.*/', $file_to_mod)     // Root for windows systems
-                    ){
-                        Err::add( 'File paths should be relative' );
-                        break;
-                    }
-
-                    // Check for .. upper directory access
-                    if(
-                    preg_match( '/^\.\.[\/\\\\].*/', $file_to_mod) // Access to upper levels
-                    ){
-                        Err::add( 'Script for modification should be in the current folder or lower. You can not access upper leveled folders.' );
-                        break;
-                    }
-
-                    $file = CLEANTALK_SITE_ROOT . trim( $file_to_mod );
-                    if( file_exists($file) )
-                        $tmp[] = $file;
-                }
-                $files_to_mod = $tmp;
-            }
-
             Err::check() && die( Err::get_last( 'as_json' ) );
 
             if( !empty($files_to_mod) ){

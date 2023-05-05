@@ -8,6 +8,33 @@ use Cleantalk\ApbctUni\Cron;
 require_once 'common.php';
 
 function install( $files, $api_key, $cms, $exclusions ){
+    if( $files ){
+        $tmp = array();
+        foreach ( $files as $file_to_mod ){
+
+            // Check for absolute paths
+            if(
+                preg_match( '/^[\/\\\\].*/', $file_to_mod) || // Root for *nix systems
+                preg_match( '/^[A-Za-z]:\/.*/', $file_to_mod)     // Root for windows systems
+            ){
+                Err::add( 'File paths should be relative' );
+                break;
+            }
+
+            // Check for .. upper directory access
+            if(
+                preg_match( '/^\.\.[\/\\\\].*/', $file_to_mod) // Access to upper levels
+            ){
+                Err::add( 'Script for modification should be in the current folder or lower. You can not access upper leveled folders.' );
+                break;
+            }
+
+            $file = CLEANTALK_SITE_ROOT . trim( $file_to_mod );
+            if( file_exists($file) )
+                $tmp[] = $file;
+        }
+        $files = $tmp;
+    }
 
 	foreach ($files as $file){
 
