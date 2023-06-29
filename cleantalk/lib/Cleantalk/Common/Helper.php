@@ -17,14 +17,14 @@ use Cleantalk\Variables\Server;
  * @see           https://github.com/CleanTalk/php-antispam
  */
 class Helper{
-	
+
 	use \Cleantalk\Templates\Singleton;
-	
+
 	/**
 	 * Default user agent for HTTP requests
 	 */
 	const DEFAULT_USER_AGENT = 'Cleantalk-Helper/3.2';
-	
+
 	/**
 	 * @var array Set of private networks IPv4 and IPv6
 	 */
@@ -41,7 +41,7 @@ class Helper{
 			'0:0:0:0:0:0:a:1/128', // ::ffff:127.0.0.1
 		),
 	);
-	
+
 	/**
 	 * @var array Set of CleanTalk servers
 	 */
@@ -61,20 +61,19 @@ class Helper{
 		'netserv2.cleantalk.org' => '178.63.60.214',
 		'netserv3.cleantalk.org' => '188.40.14.173',
 	);
-	
+
 	/**
 	 * Getting arrays of IP (REMOTE_ADDR, X-Forwarded-For, X-Real-Ip, Cf_Connecting_Ip)
 	 *
 	 * @param array $ip_types Type of IP you want to receive
 	 * @param bool  $v4_only
-	 *
 	 * @return array|mixed|null
 	 */
 	static public function ip__get($ip_types = array('real', 'remote_addr', 'x_forwarded_for', 'x_real_ip', 'cloud_flare'), $v4_only = true)
 	{
 		$ips = array_flip($ip_types); // Result array with IPs
 		$headers = self::http__get_headers();
-		
+
 		// REMOTE_ADDR
 		if(isset($ips['remote_addr'])){
 			$ip_type = self::ip__validate(Server::get( 'REMOTE_ADDR' ));
@@ -82,7 +81,7 @@ class Helper{
 				$ips['remote_addr'] = $ip_type == 'v6' ? self::ip__v6_normalize(Server::get( 'REMOTE_ADDR' )) : Server::get( 'REMOTE_ADDR' );
 			}
 		}
-		
+
 		// X-Forwarded-For
 		if(isset($ips['x_forwarded_for'])){
 			if(isset($headers['X-Forwarded-For'])){
@@ -94,7 +93,7 @@ class Helper{
 				}
 			}
 		}
-		
+
 		// X-Real-Ip
 		if(isset($ips['x_real_ip'])){
 			if(isset($headers['X-Real-Ip'])){
@@ -106,7 +105,7 @@ class Helper{
 				}
 			}
 		}
-		
+
 		// Cloud Flare
 		if(isset($ips['cloud_flare'])){
 			if(isset($headers['CF-Connecting-IP'], $headers['CF-IPCountry'], $headers['CF-RAY']) || isset($headers['Cf-Connecting-Ip'], $headers['Cf-Ipcountry'], $headers['Cf-Ray'])){
@@ -118,15 +117,15 @@ class Helper{
 				}
 			}
 		}
-		
+
 		// Getting real IP from REMOTE_ADDR or Cf_Connecting_Ip if set or from (X-Forwarded-For, X-Real-Ip) if REMOTE_ADDR is local.
 		if(isset($ips['real'])){
-			
+
 			// Detect IP type
 			$ip_type = self::ip__validate(Server::get( 'REMOTE_ADDR' ) );
 			if($ip_type)
 				$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize(Server::get( 'REMOTE_ADDR' )) : Server::get( 'REMOTE_ADDR' );
-			
+
 			// Cloud Flare
 			if(isset($headers['CF-Connecting-IP'], $headers['CF-IPCountry'], $headers['CF-RAY']) || isset($headers['Cf-Connecting-Ip'], $headers['Cf-Ipcountry'], $headers['Cf-Ray'])){
 				$tmp = isset($headers['CF-Connecting-IP']) ? $headers['CF-Connecting-IP'] : $headers['Cf-Connecting-Ip'];
@@ -134,29 +133,29 @@ class Helper{
 				$ip_type = self::ip__validate(trim($tmp[0]));
 				if($ip_type)
 					$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize(trim($tmp[0])) : trim($tmp[0]);
-				
+
 				// Sucury
 			}elseif(isset($headers['X-Sucuri-Clientip'], $headers['X-Sucuri-Country'])){
 				$ip_type = self::ip__validate($headers['X-Sucuri-Clientip']);
 				if($ip_type)
 					$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize($headers['X-Sucuri-Clientip']) : $headers['X-Sucuri-Clientip'];
-				
+
 				// OVH
 			}elseif(isset($headers['X-Cdn-Any-Ip'], $headers['Remote-Ip'])){
 				$ip_type = self::ip__validate($headers['X-Cdn-Any-Ip']);
 				if($ip_type)
 					$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize($headers['X-Cdn-Any-Ip']) : $headers['X-Cdn-Any-Ip'];
-				
+
 				// Incapsula proxy
 			}elseif(isset($headers['Incap-Client-Ip'])){
 				$ip_type = self::ip__validate($headers['Incap-Client-Ip']);
 				if($ip_type)
 					$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize($headers['Incap-Client-Ip']) : $headers['Incap-Client-Ip'];
 			}
-			
+
 			// Is private network
 			if($ip_type === false || ($ip_type && (self::ip__is_private_network($ips['real'], $ip_type) || self::ip__mask_match($ips['real'], $_SERVER['SERVER_ADDR'] . '/24', $ip_type)))){
-				
+
 				// X-Forwarded-For
 				if(isset($headers['X-Forwarded-For'])){
 					$tmp = explode(',', trim($headers['X-Forwarded-For']));
@@ -164,7 +163,7 @@ class Helper{
 					$ip_type = self::ip__validate($tmp);
 					if($ip_type)
 						$ips['real'] = $ip_type == 'v6' ? self::ip__v6_normalize($tmp) : $tmp;
-					
+
 					// X-Real-Ip
 				}elseif(isset($headers['X-Real-Ip'])){
 					$tmp = explode(',', trim($headers['X-Real-Ip']));
@@ -175,7 +174,7 @@ class Helper{
 				}
 			}
 		}
-		
+
 		// Validating IPs
 		$result = array();
 		foreach($ips as $key => $ip){
@@ -184,7 +183,7 @@ class Helper{
 				$result[$key] = $ip;
 			}
 		}
-		
+
 		$result = array_unique($result);
 		return count($result) > 1
 			? $result
@@ -192,7 +191,7 @@ class Helper{
 				? reset($result)
 				: null);
 	}
-	
+
 	/**
 	 * Checks if the IP is in private range
 	 *
@@ -205,7 +204,7 @@ class Helper{
 	{
 		return self::ip__mask_match($ip, self::$private_networks[$ip_type], $ip_type);
 	}
-	
+
 	/**
 	 * Check if the IP belong to mask.  Recursive.
 	 * Octet by octet for IPv4
@@ -229,26 +228,26 @@ class Helper{
 			unset($curr_mask);
 			return false;
 		}
-		
+
 		$xtet_base = ($ip_type == 'v4') ? 8 : 16;
-		
+
 		// Calculate mask
 		$exploded = explode('/', $cidr);
 		$net_ip = $exploded[0];
 		$mask = $exploded[1];
-		
+
 		// Exit condition
 		$xtet_end = ceil($mask / $xtet_base);
 		if($xtet_count == $xtet_end)
 			return true;
-		
+
 		// Lenght of bits for comparsion
 		$mask = $mask - $xtet_base * $xtet_count >= $xtet_base ? $xtet_base : $mask - $xtet_base * $xtet_count;
-		
+
 		// Explode by octets/hextets from IP and Net
 		$net_ip_xtets = explode($ip_type == 'v4' ? '.' : ':', $net_ip);
 		$ip_xtets = explode($ip_type == 'v4' ? '.' : ':', $ip);
-		
+
 		// Standartizing. Getting current octets/hextets. Adding leading zeros.
 		$net_xtet = str_pad(
             decbin(
@@ -270,7 +269,7 @@ class Helper{
             0,
             STR_PAD_LEFT
         );
-		
+
 		// Comparing bit by bit
 		for($i = 0, $result = true; $mask != 0; $mask--, $i++){
 			if($ip_xtet[$i] != $net_xtet[$i]){
@@ -278,15 +277,15 @@ class Helper{
 				break;
 			}
 		}
-		
+
 		// Recursing. Moving to next octet/hextet.
 		if($result)
 			$result = self::ip__mask_match($ip, $cidr, $ip_type, $xtet_count + 1);
-		
+
 		return $result;
-		
+
 	}
-	
+
 	/**
 	 * Converts long mask like 4294967295 to number like 32
 	 *
@@ -299,7 +298,7 @@ class Helper{
 		$num_mask = strpos((string)decbin($long_mask), '0');
 		return $num_mask === false ? 32 : $num_mask;
 	}
-	
+
 	/**
 	 * Validating IPv4, IPv6
 	 *
@@ -314,7 +313,7 @@ class Helper{
 		if(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) && self::ip__v6_reduce($ip) != '0::0') return 'v6';  // IPv6
 		return false; // Unknown
 	}
-	
+
 	/**
 	 * Expand IPv6
 	 *
@@ -342,7 +341,7 @@ class Helper{
 		}
 		return $ip;
 	}
-	
+
 	/**
 	 * Reduce IPv6
 	 *
@@ -359,7 +358,7 @@ class Helper{
 		}
 		return $ip;
 	}
-	
+
 	/**
 	 * Get URL form IP. Check if it's belong to cleantalk.
 	 *
@@ -377,7 +376,7 @@ class Helper{
 		}else
 			return false;
 	}
-	
+
 	/**
 	 * Get URL form IP. Check if it's belong to cleantalk.
 	 *
@@ -395,7 +394,7 @@ class Helper{
 		}else
 			return $ip;
 	}
-	
+
 	/**
 	 * Get URL form IP
 	 *
@@ -412,7 +411,7 @@ class Helper{
 		}
 		return $ip;
 	}
-	
+
 	/**
 	 * Resolve DNS to IP
 	 *
@@ -423,7 +422,7 @@ class Helper{
 	 */
 	static public function dns__resolve($host, $out = false)
 	{
-		
+
 		// Get DNS records about URL
 		if(function_exists('dns_get_record')){
 			$records = dns_get_record($host, DNS_A);
@@ -431,7 +430,7 @@ class Helper{
 				$out = $records[0]['ip'];
 			}
 		}
-		
+
 		// Another try if first failed
 		if(!$out && function_exists('gethostbynamel')){
 			$records = gethostbynamel($host);
@@ -439,15 +438,15 @@ class Helper{
 				$out = $records[0];
 			}
 		}
-		
+
 		return $out;
-		
+
 	}
-	
+
 	static public function http__user_agent(){
 		return defined( 'CLEANTALK_USER_AGENT' ) ? CLEANTALK_USER_AGENT : static::DEFAULT_USER_AGENT;
 	}
-	
+
 	/**
 	 * Function sends raw http request
 	 *
@@ -471,7 +470,7 @@ class Helper{
 			global $apbct_debug;
 			$apbct_debug['data'] = $data;
 		}
-		
+
 		// Preparing presets
 		$presets = is_array($presets) ? $presets : explode(' ', $presets);
 		$curl_only = in_array( 'async', $presets ) ||
@@ -479,11 +478,11 @@ class Helper{
 		             in_array( 'ssl', $presets ) ||
 		             in_array( 'split_to_array', $presets )
 			? true : false;
-		
+
 		if(function_exists('curl_init')){
-			
+
 			$ch = curl_init();
-			
+
 			// Set data if it's not empty
 			if(!empty($data)){
 				// If $data scalar converting it to array
@@ -505,35 +504,35 @@ class Helper{
 				),
 				$opts
 			);
-			
+
 			foreach($presets as $preset){
-				
+
 				switch($preset){
-					
+
 					// Do not follow redirects
 					case 'dont_follow_redirects':
 						$opts[CURLOPT_FOLLOWLOCATION] = false;
 						$opts[CURLOPT_MAXREDIRS] = 0;
 						break;
-					
+
 					// Get headers only
 					case 'get_code':
 						$opts[CURLOPT_HEADER] = true;
 						$opts[CURLOPT_NOBODY] = true;
 						break;
-					
+
 					// Make a request, don't wait for an answer
 					case 'async':
 						$opts[CURLOPT_CONNECTTIMEOUT_MS] = 1000;
 						$opts[CURLOPT_TIMEOUT_MS] = 500;
 						break;
-					
+
 					case 'get':
 						$opts[ CURLOPT_URL ] .= $data ? '?' . str_replace( "&amp;", "&", http_build_query( $data ) ) : '';
 						$opts[CURLOPT_POST] = false;
 						$opts[CURLOPT_POSTFIELDS] = null;
 						break;
-					
+
 					case 'ssl':
 						$opts[CURLOPT_SSL_VERIFYPEER] = true;
 						$opts[CURLOPT_SSL_VERIFYHOST] = 2;
@@ -549,47 +548,47 @@ class Helper{
                         $opts[CURLOPT_HEADER] = false;
                         break;
 
-					
+
 					default:
-						
+
 						break;
 				}
 			}
-			
+
 			curl_setopt_array($ch, $opts);
 			$result = curl_exec($ch);
-			
+
 			// RETURN if async request
 			if(in_array('async', $presets))
 				return true;
-			
+
 			if($result){
-				
+
 				// Split to array by lines if such preset given
 				if( strpos( $result, PHP_EOL ) !== false && in_array( 'split_to_array', $presets ) )
 					$result = explode(PHP_EOL, $result);
-				
+
 				// Get code crossPHP method
 				if(in_array('get_code', $presets)){
 					$curl_info = curl_getinfo($ch);
 					$result = $curl_info['http_code'];
 				}
-				
+
 				$out = $result;
-				
+
 			}else
 				$out = array('error' => curl_error($ch));
-			
+
 			curl_close($ch);
-			
+
 		// Curl not installed. Trying file_get_contents()
 		}elseif( ini_get( 'allow_url_fopen' ) && ! $curl_only ){
-			
+
 			// Trying to get code via get_headers()
 			if( in_array( 'get_code', $presets ) ){
 				$headers = get_headers( $url );
 				$result  = (int) preg_replace( '/.*(\d{3}).*/', '$1', $headers[0] );
-				
+
 			// Making common request
 			}else{
 				$opts    = array(
@@ -602,14 +601,14 @@ class Helper{
 				$context = stream_context_create( $opts );
 				$result  = @file_get_contents( $url, 0, $context );
 			}
-			
+
 			$out = $result === false
 				? array('error' => 'FAILED_TO_USE_FILE_GET_CONTENTS')
 				: $result;
-			
+
 		}else
 			$out = array('error' => 'CURL not installed and allow_url_fopen is disabled');
-		
+
 		return $out;
 	}
 
@@ -624,7 +623,7 @@ class Helper{
     static public function http__request__get_content( $url ){
         return static::http__request( $url, array(), 'get dont_split_to_array');
     }
-	
+
 	/**
 	 * Gets every HTTP_ headers from $_SERVER
 	 *
@@ -634,7 +633,7 @@ class Helper{
 	 * returns array
 	 */
 	static public function http__get_headers(){
-		
+
 		$headers = array();
 		foreach($_SERVER as $key => $val){
 			if(preg_match('/\AHTTP_/', $key)){
@@ -652,8 +651,8 @@ class Helper{
 		}
 		return $headers;
 	}
-	
-	
+
+
 	/**
 	 * Merging arrays without reseting numeric keys
 	 *
@@ -669,7 +668,7 @@ class Helper{
 		}
 		return $arr1;
 	}
-	
+
 	/**
 	 * Merging arrays without reseting numeric keys recursive
 	 *
@@ -681,21 +680,21 @@ class Helper{
 	public static function array_merge__save_numeric_keys__recursive($arr1, $arr2)
 	{
 		foreach($arr2 as $key => $val){
-			
+
 			// Array | array => array
 			if(isset($arr1[$key]) && is_array($arr1[$key]) && is_array($val)){
 				$arr1[$key] = self::array_merge__save_numeric_keys__recursive($arr1[$key], $val);
-				
+
 			// Scalar | array => array
 			}elseif(isset($arr1[$key]) && !is_array($arr1[$key]) && is_array($val)){
 				$tmp = $arr1[$key] =
 				$arr1[$key] = $val;
 				$arr1[$key][] = $tmp;
-				
+
 			// array  | scalar => array
 			}elseif(isset($arr1[$key]) && is_array($arr1[$key]) && !is_array($val)){
 				$arr1[$key][] = $val;
-				
+
 			// scalar | scalar => scalar
 			}else{
 				$arr1[$key] = $val;
@@ -703,7 +702,7 @@ class Helper{
 		}
 		return $arr1;
 	}
-	
+
 	/**
 	 * Function removing non UTF8 characters from array|string|object
 	 *
@@ -719,7 +718,7 @@ class Helper{
 				$val = self::removeNonUTF8($val);
 			}
 			unset($key, $val);
-			
+
 			//String
 		}else{
 			if(!preg_match('//u', $data))
@@ -727,7 +726,7 @@ class Helper{
 		}
 		return $data;
 	}
-	
+
 	/**
 	 * Function convert anything to UTF8 and removes non UTF8 characters
 	 *
@@ -744,7 +743,7 @@ class Helper{
 				$val = self::toUTF8($val, $data_codepage);
 			}
 			unset($key, $val);
-			
+
 			//String
 		}else{
 			if(!preg_match('//u', $obj) && function_exists('mb_detect_encoding') && function_exists('mb_convert_encoding')){
@@ -756,7 +755,7 @@ class Helper{
 		}
 		return $obj;
 	}
-	
+
 	/**
 	 * Function convert from UTF8
 	 *
@@ -773,7 +772,7 @@ class Helper{
 				$val = self::fromUTF8($val, $data_codepage);
 			}
 			unset($key, $val);
-			
+
 			//String
 		}else{
 			if(preg_match('u', $obj) && function_exists('mb_convert_encoding') && $data_codepage !== null)
@@ -781,7 +780,7 @@ class Helper{
 		}
 		return $obj;
 	}
-	
+
 	/**
 	 * Checks if the string is JSON type
 	 *
@@ -793,7 +792,7 @@ class Helper{
 	{
 		return is_string($string) && is_array(json_decode($string, true)) ? true : false;
 	}
-	
+
 	/**
 	 * Checks if given string is valid regular expression
 	 *
@@ -804,7 +803,7 @@ class Helper{
 	static public function is_regexp($regexp){
 		return @preg_match('/' . $regexp . '/', null) !== false;
 	}
-	
+
 	static public function convert_to_regexp( $string ){
 		$string = preg_replace( '/\$/', '\\\\$', $string );
 		$string = preg_replace( '/\//', '\/', $string );

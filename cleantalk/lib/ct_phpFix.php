@@ -1,16 +1,17 @@
 <?php
 
-/* 
+/*
  * Patch for filter_var()
  */
+
 if(!function_exists('filter_var')){
-	
+
 	define('FILTER_VALIDATE_IP', 'ip');
 	define('FILTER_FLAG_IPV4', 'ipv4');
 	define('FILTER_FLAG_IPV6', 'ipv6');
 	define('FILTER_VALIDATE_EMAIL', 'email');
 	define('FILTER_FLAG_EMAIL_UNICODE', 'unicode');
-	
+
 	function filter_var($variable, $filter, $option = false){
 		if($filter == 'ip'){
 			if($option == 'ipv4'){
@@ -96,9 +97,9 @@ if(!function_exists('mime_content_type')) {
 	 * @link http://php.net/manual/ru/function.mime-content-type.php source
 	 */
 	function mime_content_type($filename) {
-		
+
 		$mime_types = array(
-			
+
 			'txt' => 'text/plain',
 			'htm' => 'text/html',
 			'html' => 'text/html',
@@ -109,7 +110,7 @@ if(!function_exists('mime_content_type')) {
 			'xml' => 'application/xml',
 			'swf' => 'application/x-shockwave-flash',
 			'flv' => 'video/x-flv',
-			
+
 			// images
 			'png' => 'image/png',
 			'jpe' => 'image/jpeg',
@@ -122,37 +123,37 @@ if(!function_exists('mime_content_type')) {
 			'tif' => 'image/tiff',
 			'svg' => 'image/svg+xml',
 			'svgz' => 'image/svg+xml',
-			
+
 			// archives
 			'zip' => 'application/zip',
 			'rar' => 'application/x-rar-compressed',
 			'exe' => 'application/x-msdownload',
 			'msi' => 'application/x-msdownload',
 			'cab' => 'application/vnd.ms-cab-compressed',
-			
+
 			// audio/video
 			'mp3' => 'audio/mpeg',
 			'qt' => 'video/quicktime',
 			'mov' => 'video/quicktime',
-			
+
 			// adobe
 			'pdf' => 'application/pdf',
 			'psd' => 'image/vnd.adobe.photoshop',
 			'ai' => 'application/postscript',
 			'eps' => 'application/postscript',
 			'ps' => 'application/postscript',
-			
+
 			// ms office
 			'doc' => 'application/msword',
 			'rtf' => 'application/rtf',
 			'xls' => 'application/vnd.ms-excel',
 			'ppt' => 'application/vnd.ms-powerpoint',
-			
+
 			// open office
 			'odt' => 'application/vnd.oasis.opendocument.text',
 			'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
 		);
-		
+
 		$ext = strtolower(array_pop(explode('.',$filename)));
 		if (array_key_exists($ext, $mime_types)) {
 			return $mime_types[$ext];
