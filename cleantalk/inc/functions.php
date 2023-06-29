@@ -298,14 +298,15 @@ function apbct_spam_test($data){
 	* Masks a value with asterisks (*)
 	* @return string
 	*/
-	function apbct_obfuscate_param($value = null)
-	{
-		if ($value && (!is_object($value) || !is_array($value))) {
-			$length = strlen($value);
-			$value = str_repeat('*', $length);
-		}
-		return $value;
-	}
+    function apbct_obfuscate_param($value = null)
+    {
+        if ($value && (!is_object($value) || !is_array($value))) {
+            $value = (string)$value;
+            $length = strlen($value);
+            $value = str_repeat('*', $length);
+        }
+        return $value;
+    }
 
 	/**
 	 * JavaScript test for sender

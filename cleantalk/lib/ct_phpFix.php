@@ -54,7 +54,10 @@ if(!function_exists('utf8_decode')){
 	 * If PHP complied without XML support
 	 * From getID3() by James Heinrich <info@getid3.org> under GNU GPL
 	 */
-	function utf8_decode($string){
+	function utf8_decode($string) {
+        if ( empty($string) ) {
+            return $string;
+        }
 		$newcharstring = '';
 		$offset = 0;
 		$stringlength = strlen($string);

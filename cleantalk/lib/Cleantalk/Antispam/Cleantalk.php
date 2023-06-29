@@ -215,9 +215,13 @@ class Cleantalk {
      * @param type string
      * @return string
      */
-    private function compressData($data = null){
+    private function compressData($data = '') {
 
-        if (strlen($data) > $this->dataMaxSise && function_exists('gzencode') && function_exists('base64_encode')){
+        if ( is_string($data) &&
+            strlen($data) > $this->dataMaxSise &&
+            function_exists('gzencode') &&
+            function_exists('base64_encode')
+        ) {
 
             $localData = gzencode($data, $this->compressRate, FORCE_GZIP);
 
@@ -350,6 +354,7 @@ class Cleantalk {
                 } else {
                     $ping = $this->httpPing($server['ip']);
                     $ping = $ping * 1000;
+                    $ping = (int)round($ping);
                 }
 
                 $tmp[$ping] = $server;

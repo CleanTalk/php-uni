@@ -154,8 +154,21 @@ class Helper{
 			}
 
 			// Is private network
-			if($ip_type === false || ($ip_type && (self::ip__is_private_network($ips['real'], $ip_type) || self::ip__mask_match($ips['real'], $_SERVER['SERVER_ADDR'] . '/24', $ip_type)))){
-
+            if($ip_type === false || (
+                    $ip_type &&
+                    (
+                        self::ip__is_private_network($ips['real'], $ip_type) ||
+                        (
+                            $ip_type === self::ip__validate(filter_input(INPUT_SERVER, 'SERVER_ADDR')) &&
+                            self::ip__mask_match(
+                                $ips['real'],
+                                filter_input(INPUT_SERVER, 'SERVER_ADDR') . '/24',
+                                $ip_type)
+                        )
+                    )
+                )
+            )
+            {
 				// X-Forwarded-For
 				if(isset($headers['X-Forwarded-For'])){
 					$tmp = explode(',', trim($headers['X-Forwarded-For']));
@@ -635,20 +648,22 @@ class Helper{
 	static public function http__get_headers(){
 
 		$headers = array();
-		foreach($_SERVER as $key => $val){
-			if(preg_match('/\AHTTP_/', $key)){
-				$server_key = preg_replace('/\AHTTP_/', '', $key);
-				$key_parts = explode('_', $server_key);
-				if(count($key_parts) > 0 and strlen($server_key) > 2){
-					foreach($key_parts as $part_index => $part){
-						$key_parts[$part_index] = function_exists('mb_strtolower') ? mb_strtolower($part) : strtolower($part);
-						$key_parts[$part_index][0] = strtoupper($key_parts[$part_index][0]);
-					}
-					$server_key = implode('-', $key_parts);
-				}
-				$headers[$server_key] = $val;
-			}
-		}
+        foreach($_SERVER as $key => $val){
+            if(preg_match('/\AHTTP_/', $key)){
+                $server_key = preg_replace('/\AHTTP_/', '', $key);
+                if ( is_string($server_key) ) {
+                    $key_parts = explode('_', $server_key);
+                    if( count($key_parts) > 0 && strlen($server_key) > 2 ) {
+                        foreach($key_parts as $part_index => $part){
+                            $key_parts[$part_index] = function_exists('mb_strtolower') ? mb_strtolower($part) : strtolower($part);
+                            $key_parts[$part_index][0] = strtoupper($key_parts[$part_index][0]);
+                        }
+                        $server_key = implode('-', $key_parts);
+                    }
+                }
+                $headers[$server_key] = $val;
+            }
+        }
 		return $headers;
 	}
 
@@ -735,26 +750,31 @@ class Helper{
 	 *
 	 * @return mixed(array|object|string)
 	 */
-	public static function toUTF8($obj, $data_codepage = null)
-	{
-		// Array || object
-		if(is_array($obj) || is_object($obj)){
-			foreach($obj as $key => &$val){
-				$val = self::toUTF8($val, $data_codepage);
-			}
-			unset($key, $val);
+    public static function toUTF8($obj, $data_codepage = null)
+    {
+        // Array || object
+        if ( is_array($obj) || is_object($obj) ){
+            foreach($obj as $key => &$val){
+                $val = self::toUTF8($val, $data_codepage);
+            }
+            unset($key, $val);
 
-			//String
-		}else{
-			if(!preg_match('//u', $obj) && function_exists('mb_detect_encoding') && function_exists('mb_convert_encoding')){
-				$encoding = mb_detect_encoding($obj);
-				$encoding = $encoding ? $encoding : $data_codepage;
-				if($encoding)
-					$obj = mb_convert_encoding($obj, 'UTF-8', $encoding);
-			}
-		}
-		return $obj;
-	}
+            //String
+        } else {
+            $obj = is_null($obj) ? '' : $obj;
+            if (
+                !preg_match('//u', $obj) &&
+                function_exists('mb_detect_encoding') &&
+                function_exists('mb_convert_encoding')
+            ) {
+                $encoding = mb_detect_encoding($obj);
+                $encoding = $encoding ? $encoding : $data_codepage;
+                if($encoding)
+                    $obj = mb_convert_encoding($obj, 'UTF-8', $encoding);
+            }
+        }
+        return $obj;
+    }
 
 	/**
 	 * Function convert from UTF8
