@@ -32,7 +32,7 @@
 
 		if ($is_sfw_check)
 		{
-			$sfw->ip_check();
+			$sfw->check();
 
 			if($sfw->test){
 				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');

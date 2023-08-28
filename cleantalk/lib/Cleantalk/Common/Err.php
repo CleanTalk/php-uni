@@ -62,7 +62,7 @@ class Err{
 		return $out;
 	}
 	
-	public function get_all( $output_style = 'string' ){
+	public static function get_all( $output_style = 'string' ){
 		$out = self::$instance->errors;
 		if($output_style == 'as_json')
 			$out = json_encode( self::$instance->errors, true );

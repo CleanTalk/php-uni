@@ -12,7 +12,9 @@ use Cleantalk\ApbctUni\SFW;
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 
-define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
+if (!defined('CLEANTALK_URI')) {
+    define('CLEANTALK_URI', preg_replace('/^(.*\/)(.*?.php)?/', '$1', Server::get('REQUEST_URI')));
+}
 $cookie_domain = Server::get('HTTP_HOST');
 define( 'COOKIE_DOMAIN', $cookie_domain );
 
@@ -104,7 +106,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     $result = $sfw->sfw_update( $apikey );
                     if( ! Err::check() ){
                         File::replace__variable( $path_to_config, 'sfw_last_update', time() );
-                        File::replace__variable( $path_to_config, 'sfw_entries', $result );
                     }
 
                     // Send SFW logs

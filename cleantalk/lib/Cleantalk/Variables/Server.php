@@ -81,4 +81,15 @@ class Server extends SuperGlobalVariables{
 	public static function is_post(){
 		return self::get( 'REQUEST_METHOD' ) === 'POST';
 	}
+
+	/**
+	 * Returns domain name
+	 *
+	 * @return string|int
+	 */
+	public static function get_domain()
+	{
+		preg_match('@\.(\S+)\/?$@', self::get('HTTP_HOST'), $matches);
+		return isset($matches[1]) ? $matches[1] : false;
+	}
 }
