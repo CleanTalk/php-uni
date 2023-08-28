@@ -393,7 +393,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				'apbct_remote_call_token'  => md5($ct_key),
 				'apbct_remote_call_action' => 'update_ct_firewall',
 				'plugin_name'			   => 'apbct',
-				'delay'					   => 1,
+				'delay'					   => 3,
 				'sub_action'	           => $sub_action,
 			),
 			array('get', 'async')

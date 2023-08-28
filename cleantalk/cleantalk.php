@@ -34,15 +34,17 @@
 		{
 			$sfw->check();
 
-			if($sfw->test){
-				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
-				$sfw->sfw_die($apikey, '', '', 'test');
-			}
+			if (!empty($sfw->blocked_ips)) {
+				if($sfw->test){
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->sfw_die($apikey, '', '', 'test');
+				}
 
-			if ($sfw->pass === false)
-			{
-				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
-				$sfw->sfw_die($apikey);
+				if ($sfw->pass === false)
+				{
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->sfw_die($apikey);
+				}
 			}
 		}
 

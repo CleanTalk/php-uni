@@ -16,7 +16,9 @@ if (!defined('CLEANTALK_URI')) {
     define('CLEANTALK_URI', preg_replace('/^(.*\/)(.*?.php)?/', '$1', Server::get('REQUEST_URI')));
 }
 $cookie_domain = Server::get('HTTP_HOST');
-define( 'COOKIE_DOMAIN', $cookie_domain );
+if (!defined('COOKIE_DOMAIN')) {
+    define('COOKIE_DOMAIN',$cookie_domain);
+}
 
 if( Server::is_post() && Post::get( 'action' ) ){
 
