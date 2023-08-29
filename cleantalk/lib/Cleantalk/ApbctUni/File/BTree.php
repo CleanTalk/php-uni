@@ -130,11 +130,6 @@ class BTree {
     public function get( $key, $link = 0 ){
         
         $out = array();
-
-						// $myfile = fopen(__DIR__ . "/btree-get-a.txt", "a") or die("Unable to open file!");
-						// fwrite($myfile, json_encode($key));
-						// fwrite($myfile, PHP_EOL.PHP_EOL);
-						// fclose($myfile);
         
         $this->setCurrentLeaf( new BTreeLeaf( $this->leaf_params, $link ?: $this->root_link ) );
         

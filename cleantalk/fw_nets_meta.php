@@ -38,5 +38,5 @@ $fw_nets_meta = array (
     ),
   ),
   'cols_num' => 4,
-  'rows' => 13350,
+  'rows' => 0,
 );
