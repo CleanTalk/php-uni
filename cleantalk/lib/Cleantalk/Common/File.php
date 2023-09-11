@@ -99,6 +99,25 @@ class File{
 		$needle = '\s*\$' . $variable . '\s?=[\S\s]*?;';
 		static::replace__code( $file_path, $injection, $needle );
 	}
+
+	public static function get__variable($file_path, $variable)
+	{
+		if (!is_file($file_path)) {
+			return Err::add(__CLASS__, __FUNCTION__, 'File not found', $file_path); // No PHP file
+		}
+
+		if (!is_writable($file_path)) {
+			return Err::add(__CLASS__, __FUNCTION__, 'No right to write in file'); // No PHP file
+		}
+
+		$file_content = file_get_contents($file_path);
+		$value_start = strpos($file_content, '$' . $variable . ' = ');
+		$value_end = strpos($file_content, ';', $value_start);
+		$value = substr($file_content, $value_start + strlen($variable) + 4, $value_end - $value_start - strlen($variable) - 4);
+		$value = trim($value, " \t\n\r\0\x0B'\"\'");
+
+		return $value;
+	}
 	
 	public static function replace__code( $file_path, $injection, $needle ){
 		

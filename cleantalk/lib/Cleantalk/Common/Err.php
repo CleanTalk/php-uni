@@ -45,12 +45,12 @@ class Err{
 		return self::$instance;
 	}
 	
-	public function prepend( $string ){
-		$this->errors[ count( $this->errors ) - 1 ] = $string . ': ' . end( self::getInstance()->errors );
+	public static function prepend( $string ){
+        self::getInstance()->errors[ count( self::getInstance()->errors ) - 1 ] = $string . ': ' . end( self::getInstance()->errors );
 	}
 	
-	public function append( $string ){
-		$this->string = $string . ': ' . $this->string;
+	public static function append( $string ){
+        self::getInstance()->string = $string . ': ' . self::getInstance()->string;
 	}
 	
 	public static  function get_last( $output_style = 'bool' ){
@@ -62,7 +62,7 @@ class Err{
 		return $out;
 	}
 	
-	public function get_all( $output_style = 'string' ){
+	public static function get_all( $output_style = 'string' ){
 		$out = self::$instance->errors;
 		if($output_style == 'as_json')
 			$out = json_encode( self::$instance->errors, true );

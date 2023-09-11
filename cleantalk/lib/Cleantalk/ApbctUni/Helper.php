@@ -17,10 +17,53 @@ namespace Cleantalk\ApbctUni;
  *
  */
 
-class Helper extends \Cleantalk\Common\Helper{
-	
-	static public function http__user_agent(){
+class Helper extends \Cleantalk\Common\Helper
+{	
+	public static function http__user_agent()
+	{
 		return defined( 'APBCT_USER_AGENT' ) ? APBCT_USER_AGENT : static::DEFAULT_USER_AGENT;
 	}
-	
+
+	/**
+	 * Pops line from the csv buffer and format it by map to array
+	 *
+	 * @param $csv
+	 * @param array $map
+	 *
+	 * @return array|false
+	 */
+	public static function buffer__csv__pop_line_to_array(&$csv, $map = array(), $stripslashes = false)
+	{
+		$line = trim(static::buffer__csv__pop_line($csv));
+		$line = strpos( $line, '\'' ) === 0
+            ? str_getcsv( $line, ',', '\'' )
+            : explode( ',', $line );
+		
+		if( $stripslashes ){
+            $line = array_map( function( $elem ){
+                    return stripslashes( $elem );
+                },
+                $line
+            );
+        }
+		if( $map )
+			$line = array_combine( $map, $line );
+		
+		return $line;
+	}
+
+	/**
+	 * Pops line from buffer without formatting
+	 *
+	 * @param $csv
+	 *
+	 * @return false|string
+	 */
+	public static function buffer__csv__pop_line(&$csv)
+	{
+		$pos  = strpos( $csv, "\n" );
+		$line = substr( $csv, 0, $pos );
+		$csv  = substr_replace( $csv, '', 0, $pos + 1 );
+		return $line;
+	}
 }

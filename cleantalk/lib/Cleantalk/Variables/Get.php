@@ -23,7 +23,10 @@ class Get extends SuperGlobalVariables{
 	protected function get_variable( $name ){
 		
 		// Return from memory. From $this->variables
-		if(isset(static::$instance->variables[$name]))
+		if(isset(static::$instance->variables[$name])
+			&& isset(static::$instance->variable[$name])
+			&& static::$instance->variable[$name] !== null
+		)
 			return static::$instance->variable[$name];
 		
 		if( function_exists( 'filter_input' ) )
