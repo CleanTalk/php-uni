@@ -28,8 +28,8 @@ class BTreeLeaf {
 
 	// State
 	public $link;
-	public $link_left;
-	public $link_parent;
+	public $link_left = '';
+	public $link_parent = '';
 
 	public $elements = array();
 
@@ -232,9 +232,10 @@ class BTreeLeaf {
 		$raw .= str_pad( $this->link_parent, $this->link_size, "\x00" );
 
 		foreach ( $this->elements as $elem ) {
+            $link = isset($elem['link']) ? $elem['link'] : '';
 			$raw .= str_pad( $elem['key'], $this->key_size, "\x00" );
 			$raw .= str_pad( $elem['val'], $this->val_size, "\x00" );
-			$raw .= str_pad( $elem['link'], $this->link_size, "\x00" );
+			$raw .= str_pad( $link, $this->link_size, "\x00" );
 		}
 
 		$raw .= $this->eod;

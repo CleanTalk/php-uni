@@ -22,7 +22,7 @@ class Storage
     
     private $input_buffer;
     
-    private $buffer;
+    private $buffer = '';
     private $buffer_size;
     
     private $row_separator = "\n";

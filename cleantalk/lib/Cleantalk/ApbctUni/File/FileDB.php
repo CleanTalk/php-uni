@@ -39,7 +39,7 @@ class FileDB
     private $columns;
     private $where;
     private $where_columns;
-    private $offset;
+    private $offset = 0;
     private $amount;
     
     
