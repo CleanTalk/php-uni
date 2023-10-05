@@ -227,7 +227,8 @@ class BTreeLeaf {
 
 	public function serialize( $raw = '' ){
 
-		$raw .= str_pad( $this->link_left, $this->link_size, "\x00" );
+        $link_left = ! $this->link_left ? '' : $this->link_left;
+		$raw .= str_pad( $link_left, $this->link_size, "\x00" );
 
 		$raw .= str_pad( $this->link_parent, $this->link_size, "\x00" );
 
