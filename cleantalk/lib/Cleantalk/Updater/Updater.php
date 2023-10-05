@@ -50,7 +50,7 @@ class Updater {
         $github_response = Helper::http__request($url, array(), 'github_api');
 
         try {
-            $github_response = json_decode($github_response, true, 512, JSON_THROW_ON_ERROR);
+            $github_response = json_decode($github_response, true, 512);
             if ( isset($github_response['name']) && is_string($github_response['name']) ) {
                 return $github_response['name'];
             }

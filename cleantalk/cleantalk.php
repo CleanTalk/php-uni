@@ -32,17 +32,19 @@
 
 		if ($is_sfw_check)
 		{
-			$sfw->ip_check();
+			$sfw->check();
 
-			if($sfw->test){
-				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
-				$sfw->sfw_die($apikey, '', '', 'test');
-			}
+			if (!empty($sfw->blocked_ips)) {
+				if($sfw->test){
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->sfw_die($apikey, '', '', 'test');
+				}
 
-			if ($sfw->pass === false)
-			{
-				$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
-				$sfw->sfw_die($apikey);
+				if ($sfw->pass === false)
+				{
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->sfw_die($apikey);
+				}
 			}
 		}
 
@@ -68,8 +70,8 @@
 		){
 			$html_addition =
 				'<script>var apbct_checkjs_val = "' . $apbct_checkjs_val . '";</script>'
-				.'<script src="/cleantalk/js/ct_js_test.js"></script>'
-				.'<script src="/cleantalk/js/ct_ajax_catch.js"></script>';
+				.'<script src="cleantalk/js/ct_js_test.js"></script>'
+				.'<script src="cleantalk/js/ct_ajax_catch.js"></script>';
 			$buffer = preg_replace(
 				'/<\/body>\s*<\/html>/i',
 				$html_addition.'</body></html>',
@@ -122,11 +124,35 @@
 
 	// Set Cookies test for cookie test
 	$apbct_timestamp = time();
-	setcookie('apbct_timestamp',     $apbct_timestamp,                0, '/');
-	setcookie('apbct_cookies_test',  md5($apikey.$apbct_timestamp), 0, '/');
-	setcookie('apbct_timezone',      '0',                             0, '/');
-    setcookie('apbct_fkp_timestamp', '0',                             0, '/');
-    setcookie('apbct_pointer_data',  '0',                             0, '/');
-    setcookie('apbct_ps_timestamp',  '0',                             0, '/');
+
+	$cookie_secure = (isset($_SERVER['HTTPS']) && !in_array($_SERVER['HTTPS'], ['off', ''])) || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT']) === 443;
+
+	// For PHP 7.3+ and above
+	if (version_compare(phpversion(), '7.3.0', '>=')) {
+		$params = array(
+			'expires' => 0,
+			'path' => '/',
+			'domain' => '',
+			'secure' => $cookie_secure,
+			'httponly' => true,
+			'samesite' => 'Lax'
+		);
+
+		setcookie('apbct_timestamp', $apbct_timestamp, $params);
+		setcookie('apbct_cookies_test', md5($apikey.$apbct_timestamp), $params);
+		setcookie('apbct_timezone', '0', $params);
+		setcookie('apbct_fkp_timestamp', '0', $params);
+		setcookie('apbct_pointer_data', '0', $params);
+		setcookie('apbct_ps_timestamp', '0', $params);
+
+	// For PHP 5.6 - 7.2
+	} else {
+		setcookie('apbct_timestamp', $apbct_timestamp, 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_cookies_test', md5($apikey.$apbct_timestamp), 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_timezone', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_fkp_timestamp', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_pointer_data', '0', 0, '/', '', $cookie_secure, true);
+		setcookie('apbct_ps_timestamp', '0', 0, '/', '', $cookie_secure, true);
+	}
 
 	apbct_restore_include_path();

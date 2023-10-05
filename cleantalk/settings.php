@@ -12,7 +12,13 @@ use Cleantalk\ApbctUni\SFW;
 require_once 'inc' . DIRECTORY_SEPARATOR . 'common.php';
 require_once 'inc' . DIRECTORY_SEPARATOR . 'admin.php';
 
-define( 'CLEANTALK_URI', preg_replace( '/^(.*\/)(.*?.php)?/', '$1',  Server::get('REQUEST_URI') ) );
+if (!defined('CLEANTALK_URI')) {
+    define('CLEANTALK_URI', preg_replace('/^(.*\/)(.*?.php)?/', '$1', Server::get('REQUEST_URI')));
+}
+$cookie_domain = Server::get('HTTP_HOST');
+if (!defined('COOKIE_DOMAIN')) {
+    define('COOKIE_DOMAIN',$cookie_domain);
+}
 
 if( Server::is_post() && Post::get( 'action' ) ){
 
@@ -26,13 +32,13 @@ if( Server::is_post() && Post::get( 'action' ) ){
             // If password is set in config
             if(isset($password)){
                 if( ( Post::get( 'login' ) == $apikey || ( isset( $uni_email ) && Post::get( 'login' ) == $uni_email ) ) && hash( 'sha256', trim( Post::get( 'password' ) ) ) === $password ){
-                    setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
+                    setcookie('authenticated', $security, time() + 86400 * 30, '/', COOKIE_DOMAIN, false, true);
                 }else
                     Err::add('Incorrect login or password');
 
                 // No password is set. Check only login.
             }elseif( ( Post::get( 'login' ) == $apikey ) ){
-                setcookie('authenticated', $security, time() + 86400 * 30, '/', null, false, true);
+                setcookie('authenticated', $security, time() + 86400 * 30, '/', COOKIE_DOMAIN, false, true);
 
                 // No match
             }else
@@ -44,7 +50,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
             break;
 
         case 'logout':
-            setcookie('authenticated', 0, time()-86400, '/', null, false, true);
+            setcookie('authenticated', 0, time()-86400, '/', COOKIE_DOMAIN, false, true);
             die( json_encode( array( 'success' => true ) ) );
             break;
 
@@ -102,7 +108,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     $result = $sfw->sfw_update( $apikey );
                     if( ! Err::check() ){
                         File::replace__variable( $path_to_config, 'sfw_last_update', time() );
-                        File::replace__variable( $path_to_config, 'sfw_entries', $result );
                     }
 
                     // Send SFW logs
@@ -122,7 +127,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
 
             if( Post::get( 'security' ) === $security ){
 
-                setcookie('authenticated', 0, time()-86400, '/', null, false, true);
+                setcookie('authenticated', 0, time()-86400, '/', COOKIE_DOMAIN, false, true);
                 uninstall();
 
                 Err::check() or die(json_encode(array('success' => true)));

@@ -13,21 +13,21 @@ class Cleantalk {
      * Use Wordpress built-in API
      */
     public $use_bultin_api = false;
-    
+
     /**
     * Maximum data size in bytes
     * @var int
     */
     private $dataMaxSise = 32768;
-    
+
     /**
-    * Data compression rate 
+    * Data compression rate
     * @var int
     */
     private $compressRate = 6;
-    
+
     /**
-    * Server connection timeout in seconds 
+    * Server connection timeout in seconds
     * @var int
     */
     private $server_timeout = 15;
@@ -63,41 +63,40 @@ class Cleantalk {
     public $server_change = false;
 
     /**
-     * Codepage of the data 
+     * Codepage of the data
      * @var bool
      */
     public $data_codepage = null;
-    
+
     /**
-     * API version to use 
+     * API version to use
      * @var string
      */
     public $api_version = '/api2.0';
-    
+
     /**
-     * Use https connection to servers 
-     * @var bool 
+     * Use https connection to servers
+     * @var bool
      */
     public $ssl_on = false;
-    
+
     /**
-     * Path to SSL certificate 
+     * Path to SSL certificate
      * @var string
      */
     public $ssl_path = '';
 
     /**
      * Minimal server response in miliseconds to catch the server
-     *
      */
     public $min_server_timeout = 50;
-    
+
     /**
      * Maximal server response in miliseconds to catch the server
      *
      */
     public $max_server_timeout = 1500;
-    
+
     /**
      * Function checks whether it is possible to publish the message
      * @param CleantalkRequest $request
@@ -128,7 +127,7 @@ class Cleantalk {
         $msg = $this->createMsg('send_feedback', $request);
         return $this->httpRequest($msg);
     }
-    
+
     /**
      * Create msg for cleantalk server
      * @param type $method
@@ -136,9 +135,9 @@ class Cleantalk {
      * @return \xmlrpcmsg
      */
     private function createMsg($method, CleantalkRequest $request) {
-    
+
         $request->method_name = $method;
-        
+
         switch ($method) {
             case 'check_message':
                 // Convert strings to UTF8
@@ -162,7 +161,7 @@ class Cleantalk {
                 }
                 break;
         }
-        
+
         // Removing non UTF8 characters from request, because non UTF8 or malformed characters break json_encode().
         foreach ($request as $param => $value) {
             if(is_array($request->$param) || is_string($request->$param))
@@ -173,22 +172,22 @@ class Cleantalk {
             // Cleaning from null values
             array_filter( $request->message, function( $var ){
                 return ! is_null( $var );
-            } );  
-            $request->message = json_encode($request->message);          
+            } );
+            $request->message = json_encode($request->message);
         }
-        
+
         // Wiping cleantalk's headers but, not for send_feedback
         if($request->method_name != 'send_feedback'){
-            
+
             $ct_tmp = \Cleantalk\ApbctUni\Helper::http__get_headers();
-            
+
             if(isset($ct_tmp['Cookie']))
                 $cookie_name = 'Cookie';
             elseif(isset($ct_tmp['cookie']))
                 $cookie_name = 'cookie';
             else
                 $cookie_name = 'COOKIE';
-            
+
             $ct_tmp[$cookie_name] = preg_replace(array(
 				'/\s?apbct_checkjs=[a-z0-9]*[^;]*;?/',
 				'/\s?apbct_timezone=.{0,1}\d{1,2}[^;]*;?/',
@@ -207,42 +206,46 @@ class Cleantalk {
             ), '', $ct_tmp[$cookie_name]);
             $request->all_headers = json_encode($ct_tmp);
         }
-        
+
         return $request;
     }
-    
+
     /**
-     * Compress data and encode to base64 
+     * Compress data and encode to base64
      * @param type string
-     * @return string 
+     * @return string
      */
-    private function compressData($data = null){
-        
-        if (strlen($data) > $this->dataMaxSise && function_exists('gzencode') && function_exists('base64_encode')){
+    private function compressData($data = '') {
+
+        if ( is_string($data) &&
+            strlen($data) > $this->dataMaxSise &&
+            function_exists('gzencode') &&
+            function_exists('base64_encode')
+        ) {
 
             $localData = gzencode($data, $this->compressRate, FORCE_GZIP);
 
             if ($localData === false)
                 return $data;
-            
+
             $localData = base64_encode($localData);
-            
+
             if ($localData === false)
                 return $data;
-            
+
             return $localData;
         }
 
         return $data;
-    } 
-    
+    }
+
     /**
-     * httpRequest 
+     * httpRequest
      * @param $msg
      * @return boolean|CleantalkResponse
      */
     private function httpRequest($msg) {
-        
+
         // Using current server without changing it
         $result = !empty($this->work_url) && ($this->server_changed + $this->server_ttl > time())
             ? $this->sendRequest($this->work_url, $msg, $this->server_timeout)
@@ -250,23 +253,23 @@ class Cleantalk {
 
         // Changing server
         if ($result === false || (is_object($result) && $result->errno != 0)) {
-            
+
             // Split server url to parts
             preg_match("/^(https?:\/\/)([^\/:]+)(.*)/i", $this->server_url, $matches);
-            
+
             $url_protocol = isset($matches[1]) ? $matches[1] : '';
             $url_host     = isset($matches[2]) ? $matches[2] : '';
             $url_suffix   = isset($matches[3]) ? $matches[3] : '';
-            
+
             $servers = $this->get_servers_ip($url_host);
 
             // Loop until find work server
             foreach ($servers as $server) {
-                
+
                 $dns = Helper::ip__resolve__cleantalks($server['ip']);
                 if(!$dns)
                     continue;
-                
+
                 $this->work_url = $url_protocol.$dns.$url_suffix;
                 $this->server_ttl = $server['ttl'];
 
@@ -278,9 +281,9 @@ class Cleantalk {
                 }
             }
         }
-        
+
         $response = new CleantalkResponse(null, $result);
-        
+
         if (!empty($this->data_codepage) && $this->data_codepage !== 'UTF-8') {
             if (!empty($response->comment))
             $response->comment = $this->stringFromUTF8($response->comment, $this->data_codepage);
@@ -289,10 +292,10 @@ class Cleantalk {
             if (!empty($response->sms_error_text))
             $response->sms_error_text = $this->stringFromUTF8($response->sms_error_text, $this->data_codepage);
         }
-        
+
         return $response;
     }
-    
+
     /**
      * Function DNS request
      * @param $host
@@ -302,9 +305,9 @@ class Cleantalk {
     {
         if (!isset($host))
             return null;
-        
+
         $servers = array();
-        
+
         // Get DNS records about URL
         if (function_exists('dns_get_record')) {
             $records = dns_get_record($host, DNS_A);
@@ -331,30 +334,31 @@ class Cleantalk {
 
         // If couldn't get records
         if (count($servers) == 0){
-            
+
             $servers[] = array(
                 "ip" => null,
                 "host" => $host,
                 "ttl" => $this->server_ttl
             );
-        
+
         // If records recieved
         } else {
-            
+
             $tmp = null;
             $fast_server_found = false;
-                
+
             foreach ($servers as $server) {
-                
+
                 if ($fast_server_found) {
                     $ping = $this->max_server_timeout;
                 } else {
                     $ping = $this->httpPing($server['ip']);
                     $ping = $ping * 1000;
+                    $ping = (int)round($ping);
                 }
-                
+
                 $tmp[$ping] = $server;
-                
+
                 $fast_server_found = $ping < $this->min_server_timeout ? true : false;
 
             }
@@ -368,7 +372,7 @@ class Cleantalk {
 
         return empty($response) ? null : $response;
     }
-    
+
     /**
      * Send JSON request to servers
      * @param $msg
@@ -378,23 +382,23 @@ class Cleantalk {
     {
         // Convert to JSON
         $data = json_encode($data);
-        
+
         // Adding API version
         if( isset( $this->api_version ) && strpos( $url, $this->api_version ) === false ) {
             $url .= $this->api_version;
         }
-        
+
         // Default preset is 'api'
         $presets = array( 'moderate_api' );
-        
+
         // Add ssl to 'presets' if enabled
         if($this->ssl_on){
             array_push( $presets, 'ssl' );
             $url = ! preg_match( "/^https:/", $url ) ? preg_replace( "/^(http)/i", "$1s", $url ) : $url;
         }
-        
-        $result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, $presets);    
-        
+
+        $result = \Cleantalk\ApbctUni\Helper::http__request( $url, $data, $presets);
+
         // Retry with SSL enabled if failed
         if( ! empty ( $result['error'] ) && ! $this->ssl_on ){
             array_push( $presets, 'ssl' );
@@ -412,9 +416,9 @@ class Cleantalk {
                 $response['errstr'] = $result['error'];
             }
             $response = json_decode( json_encode( $response ) );
-            
+
             return $response;
-        }   
+        }
 
         $errstr = null;
         $response = json_decode($result);
@@ -424,16 +428,16 @@ class Cleantalk {
             $response->errstr = $errstr;
         } else {
             $errstr = 'Unknown response from ' . $url . '.' . ' ' . $result;
-            
+
             $response = null;
             $response['errno'] = 1;
             $response['errstr'] = $errstr;
             $response = json_decode(json_encode($response));
-        }       
+        }
 
         return $response;
     }
-    
+
     /**
     * Function to check response time
     * param string
@@ -449,7 +453,7 @@ class Cleantalk {
         $starttime = microtime(true);
         $file      = @fsockopen ($host, 80, $errno, $errstr, $this->max_server_timeout/1000);
         $stoptime  = microtime(true);
-        
+
         if (!$file) {
             $status = $this->max_server_timeout/1000;  // Site is down
         } else {
@@ -457,7 +461,7 @@ class Cleantalk {
             $status = ($stoptime - $starttime);
             $status = round($status, 4);
         }
-        
+
         return $status;
     }
 }

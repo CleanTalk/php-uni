@@ -10,7 +10,7 @@ use Cleantalk\Variables\Post;
 * @return void or exit script
 */
 function apbct_spam_test($data){
-		
+
 		global $apikey,
                $response_lang,
                $registrations_test,
@@ -18,8 +18,8 @@ function apbct_spam_test($data){
                $detected_cms,
                $exclusion_key,
                $general_post_exclusion_usage;
-		
-		// Patch for old PHP versions
+
+		// Patch for old PHP versions.
 		require_once( CLEANTALK_ROOT . 'lib' . DS . 'ct_phpFix.php');
 
         // ShopScript integration: test only reviews and order requests
@@ -32,20 +32,20 @@ function apbct_spam_test($data){
         }
 
 		$msg_data = apbct_get_fields_any($data);
-		
+
 		// Data
 		$sender_email    = isset($msg_data['email'])    ? $msg_data['email']    : '';
 		$sender_nickname = isset($msg_data['nickname']) ? $msg_data['nickname'] : '';
 		$subject         = isset($msg_data['subject'])  ? $msg_data['subject']  : '';
 		$message         = isset($msg_data['message'])  ? $msg_data['message']  : array();
-		
+
 		// Flags
 		$registration    = isset($msg_data['reg'])      ? $msg_data['reg']      : false;
 		$skip            = isset($msg_data['skip'])     ? $msg_data['skip']     : false;
 
         // Check registration for CsCart
         if (
-            $detected_cms === 'cscart' && 
+            $detected_cms === 'cscart' &&
             isset($data['user_data']['password1'], $data['user_data']['password2'])
         ) {
             $registration = true;
@@ -71,21 +71,21 @@ function apbct_spam_test($data){
         ) {
             $skip = true;
         }
-		
+
 		// Do check if email is not set
 		if( ! $skip ){
-			
+
 			$ct_request = new \Cleantalk\Antispam\CleantalkRequest();
-			
+
 			// Service pararams
 			$ct_request->auth_key             = $apikey;
 			$ct_request->agent                = APBCT_AGENT;
-			                                  
-			// Message params                 
-			$ct_request->sender_email         = $sender_email; 
-			$ct_request->sender_nickname      = $sender_nickname; 
+
+			// Message params
+			$ct_request->sender_email         = $sender_email;
+			$ct_request->sender_nickname      = $sender_nickname;
 			$ct_request->message              = json_encode($message);
-			
+
 			// IPs
 			$possible_ips = apbct_get_possible_ips();
 			$ct_request->sender_ip            = apbct_get_ip();
@@ -93,7 +93,7 @@ function apbct_spam_test($data){
 			if ($possible_ips) {
 				$ct_request->x_forwarded_for      = $possible_ips['X-Forwarded-For'];
 				$ct_request->x_forwarded_for_last = $possible_ips['X-Forwarded-For-Last'];
-				$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];				
+				$ct_request->x_real_ip            = $possible_ips['X-Real-Ip'];
 			}
 
 			$comment_type = 'feedback';
@@ -108,32 +108,32 @@ function apbct_spam_test($data){
 			$ct_request->sender_info          = json_encode(apbct_get_sender_info($data));
 			$ct_request->all_headers          = json_encode( \Cleantalk\ApbctUni\Helper::http__get_headers() );
 			$ct_request->post_info            = $registration ?  '' : json_encode(array('comment_type' => $comment_type));
-			
+
 			// Making a request
 			$ct = new \Cleantalk\Antispam\Cleantalk();
 			$ct->server_url = 'http://moderate.cleantalk.org';
-			
+
 			$ct_result = $registration
 				? $ct->isAllowUser($ct_request)
 				: $ct->isAllowMessage($ct_request);
-			
+
 			if(!empty($ct_result->errno) && !empty($ct_result->errstr)){
-				
+
 			}elseif($ct_result->allow == 1){
-				
+
 			}else{
 				apbct_die($ct_result->comment, $registration);
 			}
 		}
 	}
-	
+
 	/**
-	 * Inner function - Default data array for senders 
-	 * @return array 
+	 * Inner function - Default data array for senders
+	 * @return array
 	 */
 	function apbct_get_sender_info($data)
 	{
-		
+
 		global $apikey, $response_lang;
 
         // Visible fields processing
@@ -180,7 +180,7 @@ function apbct_spam_test($data){
 			'action' => \Cleantalk\Variables\Post::get('action') ? \Cleantalk\Variables\Post::get('action') : null,
 		);
 	}
-	
+
 	/**
 	 * Gets sender ip
 	 * Filters IPv4 or IPv6
@@ -192,13 +192,13 @@ function apbct_spam_test($data){
 		$ip = !$ip ? filter_var(trim($_SERVER['REMOTE_ADDR']), FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) : $ip;
 		return $ip;
 	}
-	
-	/* 
+
+	/*
 	 * Gets possible IPs
 	 *
 	 * Checks for HTTP headers HTTP_X_FORWARDED_FOR and HTTP_X_REAL_IP and filters it for IPv6 or IPv4
 	 * returns array()
-	 */	
+	 */
 	function apbct_get_possible_ips()
 	{
 		$result_ips = array(
@@ -206,9 +206,9 @@ function apbct_spam_test($data){
 			'X-Forwarded-For-Last' => null,
 			'X-Real-Ip' => null,
 		);
-		
+
 		$headers = \Cleantalk\ApbctUni\Helper::http__get_headers();
-		
+
 		// X-Forwarded-For
 		if(array_key_exists( 'X-Forwarded-For', $headers )){
 			$ips = explode(",", trim($headers['X-Forwarded-For']));
@@ -225,7 +225,7 @@ function apbct_spam_test($data){
 				$result_ips['X-Forwarded-For-Last'] = !$ip ? '' : $ip;
 			}
 		}
-		
+
 		// X-Real-Ip
 		if(array_key_exists( 'X-Real-Ip', $headers )){
 			$ip = trim($headers['X-Real-Ip']);
@@ -235,7 +235,7 @@ function apbct_spam_test($data){
 		}
 		return ($result_ips) ? $result_ips : null;
 	}
-	
+
 	/**
 	 * Gets submit time
 	 * Uses Cookies with check via apbct_cookies_test()
@@ -298,15 +298,16 @@ function apbct_spam_test($data){
 	* Masks a value with asterisks (*)
 	* @return string
 	*/
-	function apbct_obfuscate_param($value = null)
-	{		
-		if ($value && (!is_object($value) || !is_array($value))) {
-			$length = strlen($value);
-			$value = str_repeat('*', $length);
-		}
-		return $value;
-	}
-		
+    function apbct_obfuscate_param($value = null)
+    {
+        if ($value && (!is_object($value) || !is_array($value))) {
+            $value = (string)$value;
+            $length = strlen($value);
+            $value = str_repeat('*', $length);
+        }
+        return $value;
+    }
+
 	/**
 	 * JavaScript test for sender
 	 * return null|0|1;
@@ -325,46 +326,46 @@ function apbct_spam_test($data){
 			return null;
 		 }
 	 }
-	
+
 	/**
-	 * Cookies test for sender 
+	 * Cookies test for sender
 	 * Also checks for valid timestamp in $_COOKIE['apbct_timestamp']
 	 * @return null|0|1;
 	 */
 	function apbct_cookies_test()
 	{
 		global $apikey;
-		if(isset($_COOKIE['apbct_cookies_test'], $_COOKIE['apbct_timestamp'])){			
+		if(isset($_COOKIE['apbct_cookies_test'], $_COOKIE['apbct_timestamp'])){
 			if($_COOKIE['apbct_cookies_test'] == md5($apikey.$_COOKIE['apbct_timestamp']))
 				return 1;
 			else
 				return 0;
-		}else			
+		}else
 			return null;
 	}
-	
+
 	function apbct_print_form( $arr, $k ){
-		
+
 		foreach( $arr as $key => $value ){
-			
+
 			if( !is_array( $value ) ){
-				
+
 				if( $k == '' )
 					print '<textarea name="'.$key.'" style="display:none;">'.htmlspecialchars( $value ).'</textarea>';
 				else
 					print '<textarea name="'.$k.'['.$key.']" style="display:none;">'.htmlspecialchars( $value ).'</textarea>';
-				
+
 			}else{
-				
+
 				if( $k == '' )
 					apbct_print_form( $value,$key );
 				else
 					apbct_print_form( $value, $k . '['.$key.']' );
-				
+
 			}
 		}
 	}
-	
+
 	function apbct_die($comment, $registration = false, $additional_text = null){
 
         global $detected_cms;
@@ -405,18 +406,20 @@ function apbct_spam_test($data){
 			}
 
 			die(json_encode(array('apbct' => array('blocked' => true, 'comment' => $comment,))));
-			
-		// File exists?
-		}elseif(file_exists( getcwd() . '/cleantalk/lib/die_page.html')){
-			$die_page = file_get_contents( getcwd() . '/cleantalk/lib/die_page.html');
-		
-		// Default
-		}else{
-			die($comment);
-		}
-		
-		$die_page = str_replace('{BLOCK_REASON}', $comment, $die_page);
-		
+
+
+        }
+        // Die page file exists?
+        $path = CLEANTALK_ROOT . '/lib/die_page.html';
+        if ( file_exists($path) ) {
+            //if so setup die page template
+            $die_page = file_get_contents($path);
+        } else {
+            die($comment);
+        }
+
+        $die_page = str_replace('{BLOCK_REASON}', $comment, $die_page);
+
 		// Headers
 		if(headers_sent() === false){
 			header("Cache-Control: no-store, no-cache, must-revalidate");
@@ -428,7 +431,7 @@ function apbct_spam_test($data){
 		}else{
 			$die_page = str_replace('{GENERATED}', "<h2 class='second'>The page was generated at&nbsp;".date("D, d M Y H:i:s")."</h2>",$die_page);
 		}
-		
+
 		die($die_page);
 	}
 
@@ -452,7 +455,7 @@ function apbct_spam_test($data){
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -464,15 +467,29 @@ function apbct_spam_test($data){
 	 * @return bool
 	 */
 	function apbct_check__url_exclusions( $exclusions = array() ){
-		
-		$exclusions[] = 'login';
-		
+        global $detected_cms;
+
+        //custom login word transform ruleset
+        $login_word = 'login';
+        if ( isset($detected_cms) ) {
+            switch ( $detected_cms ) {
+                //moodle case
+                case 'moodle':
+                {
+                    $login_word = 'login/index.php';
+                    break;
+                }
+                //add a new rule if needs
+            }
+        }
+		$exclusions[] = $login_word;
+
 		foreach ( $exclusions as $name => $exclusion ){
 			if( \Cleantalk\Variables\Server::has_string('REQUEST_URI', $exclusion ) ){
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 

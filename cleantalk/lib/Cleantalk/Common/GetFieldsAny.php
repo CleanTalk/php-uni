@@ -385,11 +385,11 @@ class GetFieldsAny
      */
     private function obfuscateParam($value = null)
     {
-        if ($value) {
+        if ($value && (!is_object($value) || !is_array($value))) {
+            $value = (string)$value;
             $length = strlen($value);
-            $value  = str_repeat('*', $length);
+            $value = str_repeat('*', $length);
         }
-
         return $value;
     }
 

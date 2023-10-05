@@ -8,6 +8,33 @@ use Cleantalk\ApbctUni\Cron;
 require_once 'common.php';
 
 function install( $files, $api_key, $cms, $exclusions ){
+    if( $files ){
+        $tmp = array();
+        foreach ( $files as $file_to_mod ){
+
+            // Check for absolute paths
+            if(
+                preg_match( '/^[\/\\\\].*/', $file_to_mod) || // Root for *nix systems
+                preg_match( '/^[A-Za-z]:\/.*/', $file_to_mod)     // Root for windows systems
+            ){
+                Err::add( 'File paths should be relative' );
+                break;
+            }
+
+            // Check for .. upper directory access
+            if(
+                preg_match( '/^\.\.[\/\\\\].*/', $file_to_mod) // Access to upper levels
+            ){
+                Err::add( 'Script for modification should be in the current folder or lower. You can not access upper leveled folders.' );
+                break;
+            }
+
+            $file = CLEANTALK_SITE_ROOT . trim( $file_to_mod );
+            if( file_exists($file) )
+                $tmp[] = $file;
+        }
+        $files = $tmp;
+    }
 
 	foreach ($files as $file){
 
@@ -15,6 +42,8 @@ function install( $files, $api_key, $cms, $exclusions ){
 		$php_open_tags  = preg_match_all("/(<\?)/", $file_content);
 		$php_close_tags = preg_match_all("/(\?>)/", $file_content);
 		$first_php_start = strpos($file_content, '<?');
+        $contains_namespace_declaration = strpos($file_content, 'namespace');
+        $contains_declare_declaration = strpos($file_content, 'declare');
 
 		// Adding <?php to the start if it's not there
 		if($first_php_start !== 0)
@@ -28,13 +57,21 @@ function install( $files, $api_key, $cms, $exclusions ){
 
 			if( ! Err::check() ){
 
-				// Addition to the top of the script
-				File::inject__code(
-					$file,
-					"\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
-					'(<\?php)|(<\?)',
-					'top_code'
-				);
+                if( $contains_namespace_declaration !== false ) {
+                    $needle = 'namespace\s?[a-zA-Z_\\x80-\\xff\\x5c][a-zA-Z0-9\\x80-\\xff\\x5c]*\s*;';
+                } elseif ( $contains_declare_declaration !== false ) {
+                    $needle = 'declare\s*\({1}.*\){1};';
+                } else {
+                    $needle = '(<\?php)|(<\?)';
+                }
+
+                // Addition to the top of the script
+                File::inject__code(
+                    $file,
+                    "\trequire_once( '" . CLEANTALK_SITE_ROOT . "cleantalk/cleantalk.php');",
+                    $needle,
+                    'top_code'
+                );
 
 				if( ! Err::check() ){
 
@@ -221,6 +258,10 @@ function detect_cms( $path_to_index, $out = 'Unknown' ){
         // CsCart
         if (preg_match('/(Kalynyak.*?)/', $index_file))
             $out = 'cscart';
+        //moodle moodle
+        if ( preg_match('/(moodle.*?)/', $index_file) ) {
+            $out = 'moodle';
+        }
     }
 
 	return $out;
