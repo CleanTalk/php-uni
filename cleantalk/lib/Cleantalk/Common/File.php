@@ -82,7 +82,7 @@ class File{
 				$result = $new_content !== null ? true : false;
 				
 				if($result){
-					if( file_put_contents( $file_path, $new_content ) ){
+					if( file_put_contents( $file_path, $new_content, LOCK_EX ) ){
 						return true;
 					}else
 						return Err::add(__CLASS__, __FUNCTION__, 'Write error'); // Cannot write new content to template PHP file
@@ -133,7 +133,7 @@ class File{
 					$result = $new_content !== null ? true : false;
 					
 					if($result){
-						if( $bytes = file_put_contents( $file_path, $new_content ) ){
+						if( $bytes = file_put_contents( $file_path, $new_content, LOCK_EX ) ){
 							return $bytes;
 						}else
 							return Err::add(__CLASS__, __FUNCTION__, 'Write error'); // Cannot write new content to template PHP file
@@ -188,7 +188,7 @@ class File{
 					
 					$result = $new_content !== null && $new_content != $file_content ? true : false;
 					if($result){
-						if( file_put_contents( $file_path, $new_content ) ){
+						if( file_put_contents( $file_path, $new_content, LOCK_EX ) ){
 							return true;
 						}else
 							return Err::add(__CLASS__, __FUNCTION__, 'Write error'); // Cannot write new content to template PHP file
