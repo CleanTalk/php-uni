@@ -21,6 +21,7 @@ if (!defined('COOKIE_DOMAIN')) {
 }
 
 if( Server::is_post() && Post::get( 'action' ) ){
+    global $security;
 
     // Brute force protection
     sleep(2);
@@ -124,7 +125,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
             break;
 
         case 'uninstall':
-
             if( Post::get( 'security' ) === $security ){
 
                 setcookie('authenticated', 0, time()-86400, '/', COOKIE_DOMAIN, false, true);
@@ -138,7 +138,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
             break;
 
         case 'update':
-            global $security;
             global $latest_version;
 
             $updater = new \Cleantalk\Updater\Updater( CLEANTALK_ROOT );
@@ -253,7 +252,7 @@ if( Server::is_post() && Post::get( 'action' ) ){
                     <div class="col-sm-12">
                         <div class="form-group row">
                             <input class="form-control" type="text" placeholder="Access key" id="auth_key" name = "apikey" value =<?php if (isset($apikey)) echo $apikey; ?>>
-                            <p>Account registered for email: <?php echo !empty($account_name_ob) ? $account_name_ob : 'unkonown';  ?></p>
+                            <p>Account registered for email: <?php echo !empty($account_name_ob) ? $account_name_ob : 'unknown';  ?></p>
                         </div>
                         <div class="form-group row">
                             <input type="checkbox" class="checkbox style-2 apbct_setting-checkbox" id="antispam_activity_status" name="antispam_activity_status" <?php if (!empty($antispam_activity_status)) echo "checked"; ?>>
