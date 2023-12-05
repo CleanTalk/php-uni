@@ -45,8 +45,8 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
 
         $result['email'] = Post::get( 'email' );
 
-        if( ! empty( $result['exists'] ) ){
-            $result['error'] = 'This website already registered!';
+        if( ! empty( $result['account_exists'] ) ){
+            $result['error'] = 'Please, get the access key from <a href="https://cleantalk.org/my/?cp_mode=antispam"> CleanTalk Control Panel</a> and insert it in the Access Key field';
         }
         if( ! empty( $result['error'] ) ){
             $result['error'] = 'Getting key error: ' . $result['error'];

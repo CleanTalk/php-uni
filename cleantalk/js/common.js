@@ -59,7 +59,7 @@ function ct_AJAX(data, params, obj){
 
 function ct_AJAX__error_handler(result, data, params, obj){
 	jQuery('.alert-danger').show(300);
-	jQuery('#error-msg').text(result.error);
+	jQuery('#error-msg').html(result.error);
 	console.log(data);
 	console.log(params);
 	console.log(obj);
