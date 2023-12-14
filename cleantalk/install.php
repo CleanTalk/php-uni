@@ -112,7 +112,7 @@ if( version_compare( phpversion(), '5.6', '>=' ) && empty( $is_installed ) ){
                         $exclusions['dologin'] = '1';
                         break;
                     case 'DLE':
-                        array_push( $files_to_mod, $_SERVER['DOCUMENT_ROOT'] . "/engine/ajax/controller.php" );
+                        array_push( $files_to_mod, "engine/ajax/controller.php" );
                         break;
                 }
 
