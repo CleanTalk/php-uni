@@ -354,8 +354,8 @@ class SFW extends \Cleantalk\Antispam\SFW
 				$nets_for_save[] = array(
 					'network'     => $entry[0],
 					'mask'        => $entry[1],
-					'status'      => isset( $entry[3] ) ? $entry[3] : 0,
-					'is_personal' => isset( $entry[4] ) ? intval( $entry[4] ) : 0,
+					'status'      => isset( $entry[2] ) ? $entry[2] : 0,
+					'is_personal' => isset( $entry[3] ) ? intval( $entry[3] ) : 0,
 				);
 				
 			}
