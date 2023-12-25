@@ -25,10 +25,10 @@ class SFW extends \Cleantalk\Antispam\SFW
 	public function check()
 	{
 		$results = array();
-
+		
 		foreach( $this->ip_array as $ip_origin => $current_ip ) {
 			$ip_type = Helper::ip__validate($current_ip);
-
+			
 			if (!$ip_type || $ip_type !== 'v4') {
 				continue;
 			}
@@ -42,13 +42,13 @@ class SFW extends \Cleantalk\Antispam\SFW
 				$needles[] = sprintf("%u", bindec($mask & base_convert($current_ip_v4, 10, 2)));
 			}
 			$needles = array_unique($needles);
-
+			
 			$db = new FileDB('fw_nets');
 			$db_results = $db
 				->setWhere(array('network' => $needles))
 				->setLimit(0, 20)
 				->select('network', 'mask', 'status', 'is_personal');
-
+	
 			if (!empty($db_results)) {
 				foreach( $db_results as $entry ) {
 					$this->pass = false;
@@ -70,7 +70,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 						'mask'    => $this->helper()->ip__mask__long_to_number($entry['mask']),
 						'status'  => -1,
 					);
-
+					
 					$results[] = $result_entry;
 				}
 
@@ -84,7 +84,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				'ip'     => $current_ip,
 				'status' => 1,
 			);
-
+			
 			$results[] = array(
 				'ip' => $current_ip,
 				'network' => null,
@@ -92,7 +92,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				'status' => 'PASS',
 			);
 		}
-
+		
 		return $results;
 	}
 
@@ -187,6 +187,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 		$sub_action = Get::get('sub_action') === "" ? "download_data" : Get::get('sub_action');
 		$out = 0;
 		$update_folder_path = CLEANTALK_ROOT . 'data' . DS . 'fw_files' . DS;
+
 		switch ($sub_action) {
 			case "download_data":
 				$update_folder = $this->sfw_update__prepare_upd_dir($update_folder_path);
@@ -200,9 +201,9 @@ class SFW extends \Cleantalk\Antispam\SFW
 					return $out;
 				}
 
-				$gz_single_file_stream = Helper::http__download_remote_file($result['file_url'], $update_folder_path);
-				if (isset($gz_single_file_stream['error']) && !empty($gz_single_file_stream['error'])) {
-					Err::add('SpamFirewall update', $gz_single_file_stream['error'] );
+				$file = Helper::http__download_remote_file($result['file_url'], $update_folder_path);
+				if (isset($file['error']) && !empty($file['error'])) {
+					Err::add('SpamFirewall update', $file['error'] );
 					return $out;
 				}
 
@@ -218,14 +219,14 @@ class SFW extends \Cleantalk\Antispam\SFW
 				}
 
 				$buffer_size = 4096;
-				$out_file_name = $update_folder_path . 'sfw_data.csv';
-				$gz_single_file_stream = gzopen($gz_files[0], 'rb');
-				$output_csv_file_stream = fopen($out_file_name, 'wb');
-				while (!gzeof($gz_single_file_stream)) {
-					fwrite($output_csv_file_stream, gzread($gz_single_file_stream, $buffer_size));
+				$out_file_name = $update_folder_path . 'sfw_data.csv'; 
+				$file = gzopen($gz_files[0], 'rb');
+				$out_file = fopen($out_file_name, 'wb'); 
+				while (!gzeof($file)) {
+					fwrite($out_file, gzread($file, $buffer_size));
 				}
-				fclose($output_csv_file_stream);
-				gzclose($gz_single_file_stream);
+				fclose($out_file);
+				gzclose($file);
 
 				if (file_exists($gz_files[0])) {
 					unlink($gz_files[0]);
@@ -235,52 +236,45 @@ class SFW extends \Cleantalk\Antispam\SFW
 				return $out;
 
 			case "split_csv":
-				$output_file_prefix = $update_folder_path . 'sfw_data-';
+				$outputFile = $update_folder_path . 'sfw_data-';
 				$split_size = 5000;
-				$csv_data_file_path = $update_folder_path . 'sfw_data.csv';
-                if (!is_file($csv_data_file_path) || !is_readable($csv_data_file_path)) {
-                    Err::add('SpamFirewall update', 'Can not find CSV file to parse: ' . $csv_data_file_path);
-                    return $out;
-                }
-				$csv_file_stream = @fopen($csv_data_file_path, 'r');
-                if (!$csv_file_stream) {
-                    Err::add('SpamFirewall update', 'Can not init file stream ' . $csv_data_file_path);
-                    return $out;
-                }
+				$data_file = $update_folder_path . 'sfw_data.csv';
+				$in = fopen($data_file, 'r');
 				$rows = 0;
 				$file_count = 1;
-				$csv_splitted_stream = null;
+				$out = null;
 
-				while (!feof($csv_file_stream)) {
+				while (!feof($in)) {
 					if (($rows % $split_size) == 0) {
 						if ($rows > 0) {
-							fclose($csv_splitted_stream);
+							fclose($out);
 						}
 
 						$file_count++;
 						$file_counter = sprintf("%04d", $file_count);
-						$file_name = $output_file_prefix . $file_counter . ".csv";
-                        $csv_splitted_stream = fopen($file_name, 'w');
+						$file_name = $outputFile . $file_counter . ".csv";
+						$out = fopen($file_name, 'w');
 					}
 
-					$data = fgetcsv($csv_file_stream);
+					$data = fgetcsv($in);
 					if ($data) {
-						fputcsv($csv_splitted_stream, $data);
+						fputcsv($out, $data);
 					}
 
 					$rows++;
 				}
-				fclose($csv_splitted_stream);
+				fclose($out);
 
-				if (file_exists($csv_data_file_path)) {
-					unlink($csv_data_file_path);
+				if (file_exists($data_file)) {
+					unlink($data_file);
 				}
 
 				$this->sfw_update__clear_temp_data();
 				File::replace__variable(CLEANTALK_ROOT . 'config.php', 'sfw_entries', 0);
-                $this->sfw_update__remote_call($ct_key, "insert_to_db");
-				break;
 
+					$this->sfw_update__remote_call($ct_key, "insert_to_db");
+				break;
+			
 			case "insert_to_db":
 				$files = glob($update_folder_path . 'sfw_data-*.csv');
 				if (!$files || !isset($files[0])) {
@@ -308,14 +302,8 @@ class SFW extends \Cleantalk\Antispam\SFW
 				break;
 
 			case "replace_temp_to_permanent":
-                $current_btree_temp_name = CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network_temp.btree';
-                $current_storage_temp_name = CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_temp.storage';
-                if (is_file($current_btree_temp_name) && is_writeable($current_btree_temp_name)) {
-                    @rename($current_btree_temp_name, CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network.btree');
-                }
-                if (is_file($current_storage_temp_name) && is_writeable($current_storage_temp_name)) {
-                    @rename($current_storage_temp_name, CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets.storage');
-                }
+				rename(CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network_temp.btree', CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network.btree');
+				rename(CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_temp.storage', CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets.storage');
 				break;
 		}
 
@@ -328,17 +316,17 @@ class SFW extends \Cleantalk\Antispam\SFW
 		if (!file_exists($path)) {
 			return array('error' => 'File doesn\'t exists: ' . $path);
 		}
-
+	
 		if (!is_readable($path)) {
 			return array('error' => 'File is not readable: ' . $path);
 		}
-
+		
 		$data = file_get_contents($path);
-
+		
 		if (!$data) {
 			return array('error' => 'Couldn\'t get data');
 		}
-
+			
 		// Write to DB
 		$db = new FileDB('fw_nets');
 		$networks_to_skip = array();
@@ -362,23 +350,23 @@ class SFW extends \Cleantalk\Antispam\SFW
 				if (!is_numeric($entry[0])) {
 					continue;
 				}
-
+				
 				$nets_for_save[] = array(
 					'network'     => $entry[0],
 					'mask'        => $entry[1],
 					'status'      => isset( $entry[2] ) ? $entry[2] : 0,
 					'is_personal' => isset( $entry[3] ) ? intval( $entry[3] ) : 0,
 				);
-
+				
 			}
-
+			
 			if(empty($nets_for_save)) {
 				Err::add( 'Updating FW', 'No data to save' );
 				return $inserted;
 			}
 
 			$inserted += $db->insertTemp($nets_for_save);
-
+			
 			if (Err::check()) {
 				Err::prepend('Updating FW');
 				error_log(var_export(Err::get_all('string'), true));
@@ -393,7 +381,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 	{
 		$db = new FileDB('fw_nets');
 		$db->deleteTemp();
-
+		
 		return array('success' => true);
 	}
 
@@ -421,12 +409,12 @@ class SFW extends \Cleantalk\Antispam\SFW
 		if (!is_dir(CLEANTALK_ROOT . 'data')) {
 			mkdir(CLEANTALK_ROOT . 'data');
 		}
-
+    
         if (!is_dir($dir_name) && !mkdir($dir_name)) {
             return !is_writable(CLEANTALK_ROOT . 'data')
                 ? array('error' => 'Can not to make FW dir. Low permissions: ' . fileperms(CLEANTALK_ROOT . 'data'))
                 : array('error' => 'Can not to make FW dir. Unknown reason.');
-
+            
         }
 
 		$files = glob( $dir_name . '/*' );
@@ -441,7 +429,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				return array( 'error' => 'Can not delete the FW file: ' . $file );
 			}
 		}
-
+        
         return (bool) file_put_contents( $dir_name . 'index.php', '<?php' );
     }
 

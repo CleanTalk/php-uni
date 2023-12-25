@@ -135,14 +135,14 @@ class BTree {
         
         // Empty tree
         if( $this->isCurrentLeafEmpty() ){
-            return false;
+            // return false;
         }
         
         $found = $this->currentLeaf->searchForKey( $key );
         
         // No BTreeLeafNode was found
         if( $found === false ){
-            return false;
+            // return false;
         }
         
         $leaf_links_to_search = array();
