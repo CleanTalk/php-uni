@@ -158,9 +158,9 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
 
     File::inject__variable( $path_to_config, 'salt', $apbct_salt );
     File::inject__variable( $path_to_config, 'security', hash( 'sha256', '0(o_O)0' . $apbct_salt ) );
-    File::inject__variable( $path_to_config, 'modified_files', $modified_files, true );
+    File::inject__variable( $path_to_config, 'modified_files', $modified_files, false, true );
     if( $exclusions )
-        File::inject__variable( $path_to_config, 'exclusions', $exclusions, true );
+        File::inject__variable( $path_to_config, 'exclusions', $exclusions, false, true );
     File::inject__variable( $path_to_config, 'apikey', $api_key );
     File::inject__variable( $path_to_config, 'exclusion_key', md5($api_key) );
     File::inject__variable( $path_to_config, 'detected_cms', $cms );

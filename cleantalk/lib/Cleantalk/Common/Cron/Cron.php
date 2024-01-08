@@ -17,7 +17,7 @@ use Cleantalk\Common\StorageHandler\StorageHandler;
  */
 class Cron
 {
-    public $debug = true;
+    public $debug = false;
 
     protected $tasks = array();           // Array with tasks
     protected $tasks_completed = array(); // Result of executed tasks
@@ -43,8 +43,8 @@ class Cron
      */
     public function __construct(
         $cron_option_name = 'cleantalk_cron',
-        $task_execution_min_interval = 12,
-        $cron_execution_min_interval = 12
+        $task_execution_min_interval = 120,
+        $cron_execution_min_interval = 120
     ) {
         /*
          * @todo perform this logic
