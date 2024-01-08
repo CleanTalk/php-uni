@@ -168,9 +168,10 @@ function install_config( $modified_files, $api_key, $cms, $exclusions ){
 }
 
 function install_cron(){
-	Cron::addTask( 'sfw_update', 'apbct_sfw_update', 86400, time() + 60 );
-	Cron::addTask( 'sfw_send_logs', 'apbct_sfw_send_logs', 3600 );
-    Cron::addTask( 'plugin_get_latest_version', 'apbct__plugin_get_latest_version', 86400 );
+    /** @var \Cleantalk\Custom\Cron\Cron $cron_class */
+    $cron_class = \Cleantalk\Common\Mloader\Mloader::get('Cron');
+    $cron = new $cron_class();
+    $cron->checkCronData();
 }
 
 function uninstall( $files = array() ){
@@ -209,6 +210,9 @@ function uninstall( $files = array() ){
 
 	// Deleting cron tasks
 	File::replace__variable( CLEANTALK_CRON_FILE, 'tasks', array() );
+    File::replace__variable( CLEANTALK_CRON_FILE, 'cleantalk_cron', array(), true );
+    File::replace__variable( CLEANTALK_CRON_FILE, 'cleantalk_cron_last_start', 0 );
+    File::replace__variable( CLEANTALK_CRON_FILE, 'cleantalk_cron_pid', 0 );
 
 	// Deleting SFW nets
 	File::clean__variable( CLEANTALK_ROOT . 'data' . DS . 'sfw_nets.php', 'sfw_nets' );

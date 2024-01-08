@@ -123,6 +123,14 @@ jQuery(document).ready(function($) {
 		save_settings();
 	});
 
+	$('#serve_run_cron_sfw_update').on('click', function(event) {
+		serve_run_cron_sfw_update();
+	});
+
+	$('#serve_run_cron_sfw_send_logs').on('click', function(event) {
+		serve_run_cron_sfw_send_logs();
+	});
+
 	$("#btn-uninstall").on('click', function(event){
 		if(confirm('Are you sure you want to uninstall the plugin?'))
 			uninstall();
@@ -310,6 +318,40 @@ jQuery(document).ready(function($) {
 						easing: 'linear'
 					});
 				}
+			}
+		);
+	}
+
+	function serve_run_cron_sfw_update(){
+		console.log('serve_run_cron_sfw_update')
+		ct_AJAX(
+			{
+				action: 'serve_run_cron_sfw_update',
+			},
+			{
+				callback: function(result, data, params, obj) {
+					console.log(result)
+					if(result.success){
+						alert('OK');
+					}
+				},
+			}
+		);
+	}
+
+	function serve_run_cron_sfw_send_logs(){
+		console.log('serve_run_cron_sfw_send_logs')
+		ct_AJAX(
+			{
+				action: 'serve_run_cron_sfw_send_logs',
+			},
+			{
+				callback: function(result, data, params, obj) {
+					console.log(result)
+					if(result.success){
+						alert('OK');
+					}
+				},
 			}
 		);
 	}
