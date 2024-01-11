@@ -94,19 +94,13 @@ class File{
 			return Err::add(__CLASS__, __FUNCTION__, 'No file'); // No template PHP file
 	}
 	
-	public static function replace__variable( $file_path, $variable, $value, $serialized = false ){
-        if ($serialized) {
-            $value = serialize($value);
-        }
+	public static function replace__variable( $file_path, $variable, $value ){
 		$injection = "\n\t\$$variable = " . var_export( $value, true ) . ";";
 		$needle = '\s*\$' . $variable . '\s?=[\S\s]*?;';
-        if ($serialized) {
-            $needle = '\s*\$' . $variable . "\s?=[\S\s]*?';";
-        }
 		static::replace__code( $file_path, $injection, $needle );
 	}
 
-	public static function get__variable($file_path, $variable, $serialized = false)
+	public static function get__variable($file_path, $variable)
 	{
 		if (!is_file($file_path)) {
 			return Err::add(__CLASS__, __FUNCTION__, 'File not found', $file_path); // No PHP file
@@ -118,23 +112,9 @@ class File{
 
 		$file_content = file_get_contents($file_path);
 		$value_start = strpos($file_content, '$' . $variable . ' = ');
-        if ($value_start === false) {
-            return false;
-        }
 		$value_end = strpos($file_content, ';', $value_start);
-        if ($serialized) {
-            $value_end = strpos($file_content, ';\n', $value_start);
-        }
 		$value = substr($file_content, $value_start + strlen($variable) + 4, $value_end - $value_start - strlen($variable) - 4);
 		$value = trim($value, " \t\n\r\0\x0B'\"\'");
-
-        if (is_numeric($value)) {
-            $value = (int)$value;
-        }
-
-        if ($serialized) {
-            $value = unserialize($value);
-        }
 
 		return $value;
 	}
@@ -175,10 +155,7 @@ class File{
 		self::inject__code( $file_path, self::tag__php__end( $tag ) );
 	}
 	
-	public static function inject__variable( $file_path, $variable, $value, $serialize = false, $compact = false ){
-        if ($serialize) {
-            $value = serialize($value);
-        }
+	public static function inject__variable( $file_path, $variable, $value, $compact = false ){
 		$value = var_export( $value, true );
 		$value = $compact ? preg_replace( '/\s*/', '', $value ) : $value;
 		self::inject__code( $file_path, "\$$variable = $value;" );

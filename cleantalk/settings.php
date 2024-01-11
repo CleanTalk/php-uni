@@ -124,34 +124,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 die(Err::add('Forbidden')->get_last( 'as_json' ));
             break;
 
-        case 'serve_run_cron_sfw_update':
-            if (Post::get('security') === $security) {
-                /** @var \Cleantalk\Custom\Cron\Cron $cron_class */
-                $cron_class = \Cleantalk\Common\Mloader\Mloader::get('Cron');
-                $cron = new $cron_class();
-                $cron->serveCronActions('sfw_update', time() + 120);
-
-                Err::check() or die(json_encode(array('success' => true)));
-                die(Err::check_and_output( 'as_json' ));
-            } else {
-                die(Err::add('Forbidden')->get_last('as_json'));
-            }
-            break;
-
-        case 'serve_run_cron_sfw_send_logs':
-            if (Post::get('security') === $security) {
-                /** @var \Cleantalk\Custom\Cron\Cron $cron_class */
-                $cron_class = \Cleantalk\Common\Mloader\Mloader::get('Cron');
-                $cron = new $cron_class();
-                $cron->serveCronActions('sfw_send_logs', time() + 120);
-
-                Err::check() or die(json_encode(array('success' => true)));
-                die(Err::check_and_output( 'as_json' ));
-            } else {
-                die(Err::add('Forbidden')->get_last('as_json'));
-            }
-            break;
-
         case 'uninstall':
             if( Post::get( 'security' ) === $security ){
 
@@ -334,13 +306,6 @@ if( Server::is_post() && Post::get( 'action' ) ){
                 <img class="preloader" src="img/preloader.gif" style="display: none;">
             </div>
         </form>
-
-        <?php if(in_array(Server::get_domain(), array('lc', 'loc', 'lh'))) : ?>
-            <div class="text-center">
-                <button class="btn" id="serve_run_cron_sfw_update" style="display: inline">run cron task - sfw update in 120 sec</button>
-                <button class="btn" id="serve_run_cron_sfw_send_logs" style="display: inline">run cron task - send sfw logs in 120 sec</button>
-            </div>
-        <?php endif; ?>
 
         <?php
         /**

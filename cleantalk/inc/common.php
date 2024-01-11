@@ -50,20 +50,11 @@ define('CT_AJAX_URI', isset($result['path']) ? $result['path'] : '/cleantalk/cle
 // Create empty error object
 \Cleantalk\Common\Err::getInstance();
 // Run scheduled tasks
-require_once CLEANTALK_ROOT . 'inc' . DS . 'cron_functions.php';
-/** @var \Cleantalk\Custom\Cron\Cron $cron_class */
-$cron_class = \Cleantalk\Common\Mloader\Mloader::get('Cron');
-$cron = new $cron_class();
-$cron->checkCronData();
-$tasks_to_run = $cron->checkTasks();
-if (!empty( $tasks_to_run ) &&
-    (
-        !defined('DOING_CRON') ||
-        (defined('DOING_CRON') && DOING_CRON !== true)
-    )
-) {
-    $cron->runTasks($tasks_to_run);
-}
+$cron = new \Cleantalk\ApbctUni\Cron();
+$cron->checkTasks();
+if( ! empty( $cron->tasks_to_run ) )
+	require_once CLEANTALK_ROOT . 'inc' . DS . 'cron_functions.php'; // File with cron wrappers
+	$cron->runTasks();
 unset( $cron );
 
 /**
