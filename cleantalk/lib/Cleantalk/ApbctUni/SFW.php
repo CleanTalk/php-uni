@@ -25,10 +25,10 @@ class SFW extends \Cleantalk\Antispam\SFW
 	public function check()
 	{
 		$results = array();
-		
+
 		foreach( $this->ip_array as $ip_origin => $current_ip ) {
 			$ip_type = Helper::ip__validate($current_ip);
-			
+
 			if (!$ip_type || $ip_type !== 'v4') {
 				continue;
 			}
@@ -42,35 +42,55 @@ class SFW extends \Cleantalk\Antispam\SFW
 				$needles[] = sprintf("%u", bindec($mask & base_convert($current_ip_v4, 10, 2)));
 			}
 			$needles = array_unique($needles);
-			
+
 			$db = new FileDB('fw_nets');
 			$db_results = $db
 				->setWhere(array('network' => $needles))
 				->setLimit(0, 20)
 				->select('network', 'mask', 'status', 'is_personal');
-	
+
 			if (!empty($db_results)) {
 				foreach( $db_results as $entry ) {
-					$this->pass = false;
+					$this->pass = true;
+
+                    $is_personal = isset($entry['is_personal']) ? $entry['is_personal'] : 0;
+                    $status = isset($entry['status']) ? $entry['status'] : null;
+
+                    if (is_null($status)) {
+                        continue;
+                    }
 
 					$result_entry = array(
 						'ip' => $current_ip,
 						'network' => $entry['network'],
 						'mask' => $entry['mask'],
+                        'status' => $status,
+                        'is_personal' => $is_personal,
 					);
 
-					$this->blocked_ips[$ip_origin] = array(
-						'ip'      => $current_ip,
-						'network' => long2ip($entry['network']),
-						'mask'    => $this->helper()->ip__mask__long_to_number($entry['mask']),
-					);
-					$this->all_ips[$ip_origin] = array(
-						'ip'      => $current_ip,
-						'network' => long2ip($entry['network']),
-						'mask'    => $this->helper()->ip__mask__long_to_number($entry['mask']),
-						'status'  => -1,
-					);
-					
+                    $handled_record = array(
+                        'ip'      => $current_ip,
+                        'network' => long2ip($entry['network']),
+                        'mask'    => $this->helper()->ip__mask__long_to_number($entry['mask']),
+                        'status'  => $status,
+                        'is_personal' => $is_personal,
+                    );
+
+                    if ($status == 0) {
+                        $this->blocked_ips[$ip_origin] = $handled_record;
+                        $this->pass = false;
+                    } else {
+                        $this->passed_ips[$ip_origin] = $handled_record;
+                    }
+
+                    $this->all_ips[$ip_origin] = array(
+                        'ip'      => $current_ip,
+                        'network' => long2ip($entry['network']),
+                        'mask'    => $this->helper()->ip__mask__long_to_number($entry['mask']),
+                        'status'  => $status,
+                        'is_personal' => $is_personal,
+                    );
+
 					$results[] = $result_entry;
 				}
 
@@ -84,7 +104,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				'ip'     => $current_ip,
 				'status' => 1,
 			);
-			
+
 			$results[] = array(
 				'ip' => $current_ip,
 				'network' => null,
@@ -92,12 +112,10 @@ class SFW extends \Cleantalk\Antispam\SFW
 				'status' => 'PASS',
 			);
 		}
-		
 		return $results;
 	}
 
 	public function logs__update($ip, $result) {
-
 		if($ip === NULL || $result === NULL)
 			return;
 
@@ -219,9 +237,9 @@ class SFW extends \Cleantalk\Antispam\SFW
 				}
 
 				$buffer_size = 4096;
-				$out_file_name = $update_folder_path . 'sfw_data.csv'; 
+				$out_file_name = $update_folder_path . 'sfw_data.csv';
 				$file = gzopen($gz_files[0], 'rb');
-				$out_file = fopen($out_file_name, 'wb'); 
+				$out_file = fopen($out_file_name, 'wb');
 				while (!gzeof($file)) {
 					fwrite($out_file, gzread($file, $buffer_size));
 				}
@@ -274,7 +292,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 
 					$this->sfw_update__remote_call($ct_key, "insert_to_db");
 				break;
-			
+
 			case "insert_to_db":
 				$files = glob($update_folder_path . 'sfw_data-*.csv');
 				if (!$files || !isset($files[0])) {
@@ -316,17 +334,17 @@ class SFW extends \Cleantalk\Antispam\SFW
 		if (!file_exists($path)) {
 			return array('error' => 'File doesn\'t exists: ' . $path);
 		}
-	
+
 		if (!is_readable($path)) {
 			return array('error' => 'File is not readable: ' . $path);
 		}
-		
+
 		$data = file_get_contents($path);
-		
+
 		if (!$data) {
 			return array('error' => 'Couldn\'t get data');
 		}
-			
+
 		// Write to DB
 		$db = new FileDB('fw_nets');
 		$networks_to_skip = array();
@@ -350,23 +368,23 @@ class SFW extends \Cleantalk\Antispam\SFW
 				if (!is_numeric($entry[0])) {
 					continue;
 				}
-				
+
 				$nets_for_save[] = array(
 					'network'     => $entry[0],
 					'mask'        => $entry[1],
 					'status'      => isset( $entry[2] ) ? $entry[2] : 0,
 					'is_personal' => isset( $entry[3] ) ? intval( $entry[3] ) : 0,
 				);
-				
+
 			}
-			
+
 			if(empty($nets_for_save)) {
 				Err::add( 'Updating FW', 'No data to save' );
 				return $inserted;
 			}
 
 			$inserted += $db->insertTemp($nets_for_save);
-			
+
 			if (Err::check()) {
 				Err::prepend('Updating FW');
 				error_log(var_export(Err::get_all('string'), true));
@@ -381,7 +399,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 	{
 		$db = new FileDB('fw_nets');
 		$db->deleteTemp();
-		
+
 		return array('success' => true);
 	}
 
@@ -409,12 +427,12 @@ class SFW extends \Cleantalk\Antispam\SFW
 		if (!is_dir(CLEANTALK_ROOT . 'data')) {
 			mkdir(CLEANTALK_ROOT . 'data');
 		}
-    
+
         if (!is_dir($dir_name) && !mkdir($dir_name)) {
             return !is_writable(CLEANTALK_ROOT . 'data')
                 ? array('error' => 'Can not to make FW dir. Low permissions: ' . fileperms(CLEANTALK_ROOT . 'data'))
                 : array('error' => 'Can not to make FW dir. Unknown reason.');
-            
+
         }
 
 		$files = glob( $dir_name . '/*' );
@@ -429,7 +447,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 				return array( 'error' => 'Can not delete the FW file: ' . $file );
 			}
 		}
-        
+
         return (bool) file_put_contents( $dir_name . 'index.php', '<?php' );
     }
 
