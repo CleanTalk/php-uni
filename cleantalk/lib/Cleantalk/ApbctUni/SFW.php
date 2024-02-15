@@ -115,7 +115,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 		return $results;
 	}
 
-	public function logs__update($ip, $result) {
+	public function logs__update($ip, $result, $status) {
 		if($ip === NULL || $result === NULL)
 			return;
 
@@ -133,13 +133,13 @@ class SFW extends \Cleantalk\Antispam\SFW
 			$blocked_entries = isset( $log[2] ) ? $log[2] : 0;
 			$blocked_entries = $result == 'blocked' ? $blocked_entries+1 : $blocked_entries;
 
-			$log = array( $ip, intval( $all_entries ) + 1, $blocked_entries, $time );
+			$log = array( $ip, intval( $all_entries ) + 1, $blocked_entries, $time, (int)$status );
 
 		}else{
 
 			$blocked = $result == 'blocked' ? 1 : 0;
 
-			$log = array( $ip, 1, $blocked, $time);
+			$log = array( $ip, 1, $blocked, $time, (int)$status);
 
 		}
 
@@ -166,11 +166,13 @@ class SFW extends \Cleantalk\Antispam\SFW
 					$all_entries       = isset( $log[1] ) ? $log[1] : 0;
 					$blocked_entries   = isset( $log[2] ) ? $log[2] : 0;
 					$timestamp_entries = isset( $log[3] ) ? $log[3] : 0;
+					$status 		   = isset( $log[4] ) && (int)$log[4] === 1 ? 'PERSONAL_LIST_MATCH' : 'DENY_SFW';
 					$data[] = array(
 						$ip,
 						$all_entries,
 						$all_entries - $blocked_entries,
-						$timestamp_entries
+						$timestamp_entries,
+						$status
 					);
 				}
 				unset( $log_file );

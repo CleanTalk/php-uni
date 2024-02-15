@@ -36,13 +36,13 @@
 
 			if (!empty($sfw->blocked_ips)) {
 				if($sfw->test){
-					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked', current($sfw->blocked_ips)['is_personal']);
 					$sfw->sfw_die($apikey, '', '', 'test');
 				}
 
 				if ($sfw->pass === false)
 				{
-					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked');
+					$sfw->logs__update(current(current($sfw->blocked_ips)), 'blocked', current($sfw->blocked_ips)['is_personal']);
 					$sfw->sfw_die($apikey);
 				}
 			}
