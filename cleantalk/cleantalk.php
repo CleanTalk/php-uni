@@ -70,8 +70,8 @@
 		){
 			$html_addition =
 				'<script>var apbct_checkjs_val = "' . $apbct_checkjs_val . '";</script>'
-				.'<script src="cleantalk/js/ct_js_test.js"></script>'
-				.'<script src="cleantalk/js/ct_ajax_catch.js"></script>';
+				.'<script src="/cleantalk/js/ct_js_test.js"></script>'
+				.'<script src="/cleantalk/js/ct_ajax_catch.js"></script>';
 			$buffer = preg_replace(
 				'/<\/body>\s*<\/html>/i',
 				$html_addition.'</body></html>',
