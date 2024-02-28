@@ -322,8 +322,8 @@ class SFW extends \Cleantalk\Antispam\SFW
 				break;
 
 			case "replace_temp_to_permanent":
-				rename(CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network_temp.btree', CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_network.btree');
-				rename(CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets_temp.storage', CLEANTALK_ROOT . DS . 'data' . DS . 'fw_nets.storage');
+				rename(CLEANTALK_ROOT . 'data' . DS . 'fw_nets_network_temp.btree', CLEANTALK_ROOT . 'data' . DS . 'fw_nets_network.btree');
+				rename(CLEANTALK_ROOT . 'data' . DS . 'fw_nets_temp.storage', CLEANTALK_ROOT . 'data' . DS . 'fw_nets.storage');
 				break;
 		}
 
