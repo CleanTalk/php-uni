@@ -115,7 +115,7 @@ class SFW extends \Cleantalk\Antispam\SFW
 		return $results;
 	}
 
-	public function logs__update($ip, $result, $status) {
+	public function logs__update($ip, $result, $status = 1) {
 		if($ip === NULL || $result === NULL)
 			return;
 
