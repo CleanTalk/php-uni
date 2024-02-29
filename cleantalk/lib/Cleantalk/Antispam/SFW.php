@@ -171,9 +171,10 @@ class SFW
 	 * Writes to database.
 	 *
 	 * @param string $ip
+	 * @param string $status
 	 * @param string $result "blocked" or "passed"
 	 */
-	public function logs__update($ip, $result){
+	public function logs__update($ip, $result, $status){
 		
 		if($ip === NULL || $result === NULL){
 			return;

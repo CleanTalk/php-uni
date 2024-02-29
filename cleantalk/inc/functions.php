@@ -541,6 +541,12 @@ function apbct_spam_test($data){
             return true;
         }
 
+		if (\Cleantalk\Variables\Get::equal('controller', 'ajax') &&
+			\Cleantalk\Variables\Get::equal('do', 'passwordStrength')
+		) {
+			return true;
+		}
+
         return false;
     }
 
