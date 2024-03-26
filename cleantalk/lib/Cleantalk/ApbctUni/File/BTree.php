@@ -142,7 +142,7 @@ class BTree {
         
         // No BTreeLeafNode was found
         if( $found === false ){
-            // return false;
+            return false;
         }
         
         $leaf_links_to_search = array();
