@@ -543,7 +543,7 @@ class Helper{
 					case 'get':
                         try {
                             $data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
-                        } catch (\JsonException) {
+                        } catch (\JsonException $e) {
                             $data = false;
                         }
                         if (is_array($data)) {
@@ -617,7 +617,7 @@ class Helper{
                     try {
                         $data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
                         $data = str_replace( "&amp;", "&", http_build_query( $data ) );
-                    } catch (\JsonException) {
+                    } catch (\JsonException $e) {
                         $data = false;
                     }
                 }
