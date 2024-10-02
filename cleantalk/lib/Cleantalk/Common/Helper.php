@@ -478,7 +478,13 @@ class Helper{
 	 */
 	static public function http__request($url, $data = array(), $presets = null, $opts = array())
 	{
-		// For debug purposes
+        if (stripos($url, 'http') !== 0) {
+            $https_prefix = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
+                ? 'https://'
+                : 'http://';
+            $url = $https_prefix . $url;
+        }
+        // For debug purposes
 		if( defined( 'CLEANTALK_DEBUG' ) && CLEANTALK_DEBUG ){
 			global $apbct_debug;
 			$apbct_debug['data'] = $data;
@@ -579,7 +585,7 @@ class Helper{
 			curl_setopt_array($ch, $opts);
 			$result = curl_exec($ch);
 
-			// RETURN if async request
+            // RETURN if async request
 			if(in_array('async', $presets))
 				return true;
 
