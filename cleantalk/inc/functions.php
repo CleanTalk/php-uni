@@ -689,3 +689,19 @@ function apbct_array($array)
 {
     return new Arr($array);
 }
+
+/**
+ * For OS CLASS CMS only.
+ * Restart attaching JS and CSRF built-in protection to avoid tokens missing and correct CT JS working.
+ * @return void
+ */
+function apbct_osc_restart_csrf_service()
+{
+    $buffer = ob_get_contents();
+    ob_end_clean();
+    $buffer = ct_attach_js($buffer);
+    if (function_exists('osc_csrfguard_start')) {
+        osc_csrfguard_start();
+    }
+    die($buffer);
+}

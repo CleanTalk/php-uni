@@ -78,10 +78,16 @@ function install( $files, $api_key, $cms, $exclusions ){
 					// Addition to index.php Bottom (JavaScript test)
 					File::inject__code(
 						$file,
-						"\t\nif(ob_get_contents()){\nob_end_flush();\n}\n"
-						."\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
-						."\t\tdie();\n"
-						."\t}",
+						"\tif(ob_get_contents()){\n"
+                        . "\t\tif (defined('__OSC_LOADED__') && function_exists('apbct_osc_restart_csrf_service')) {\n"
+                        . "\t\tapbct_osc_restart_csrf_service();\n"
+                        . "\t\t} else {\n"
+                        . "\t\t\tob_end_flush();\n"
+                        . "\t\t}\n"
+                        . "\t}\n"
+						. "\tif(isset(\$_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower(\$_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest'){\n"
+						. "\t\tdie();\n"
+						. "\t}",
 						'end',
 						'bottom_code'
 					);
