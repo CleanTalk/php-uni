@@ -2,7 +2,7 @@ php-uni
 =======
 [![Build Status](https://travis-ci.org/CleanTalk/php-uni.svg)](https://travis-ci.org/CleanTalk/php-uni)
 
-# Version 2.7.2
+# Version 2.8.0
 
 Module for any CMS
 ## Installation
