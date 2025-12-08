@@ -547,11 +547,19 @@ class Helper{
 						break;
 
 					case 'get':
-                        try {
-                            $data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
-                        } catch (\JsonException $e) {
-                            $data = false;
-                        }
+						if (PHP_VERSION_ID >= 70300) {
+							try {
+								$data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
+							} catch (\JsonException $e) {
+								$data = false;
+							}
+						} else {
+							try {
+								$data = is_string($data) ? json_decode($data, true) : $data;
+							} catch (\Exception $e) {
+								$data = false;
+							}
+						}
                         if (is_array($data)) {
                             $opts[ CURLOPT_URL ] .= $data ? '?' . str_replace( "&amp;", "&", http_build_query( $data ) ) : '';
                             $opts[CURLOPT_POST] = false;
@@ -620,12 +628,21 @@ class Helper{
 			} else {
                 $method = in_array( 'get', $presets ) ? 'GET' : 'POST';
                 if ($method === 'GET') {
-                    try {
-                        $data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
-                        $data = str_replace( "&amp;", "&", http_build_query( $data ) );
-                    } catch (\JsonException $e) {
-                        $data = false;
-                    }
+					if (PHP_VERSION_ID >= 70300) {
+						try {
+							$data = is_string($data) ? json_decode($data, true, 512, JSON_THROW_ON_ERROR) : $data;
+							$data = str_replace( "&amp;", "&", http_build_query( $data ) );
+						} catch (\JsonException $e) {
+							$data = false;
+						}
+					} else {
+						try {
+							$data = is_string($data) ? json_decode($data, true) : $data;
+							$data = str_replace( "&amp;", "&", http_build_query( $data ) );
+						} catch (\Exception $e) {
+							$data = false;
+						}
+					}
                 }
 
                 if (is_string($data)) {
