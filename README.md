@@ -19,3 +19,7 @@ Module for any CMS
 
 * PHP 5.6 or higher
 * CleanTalk account https://cleantalk.org/register?product=anti-spam
+
+### Websites that trust CleanTalk!
+
+![CleanTalk Anti-Spam Rating](https://cleantalk.org/webpack/img/cleantalk_rating.png)
