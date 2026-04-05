@@ -4,6 +4,8 @@ php-uni
 
 # Version 2.7.2
 
+If you find this project useful, please consider starring ⭐ it on GitHub — it helps us grow and support development!
+
 Module for any CMS
 ## Installation
 * Download archive and drop a contained files to thewebsites's  ROOT directory.
